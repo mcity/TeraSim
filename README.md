@@ -1,14 +1,14 @@
 <!-- PROJECT LOGO -->
 <p align="center">
-  <h3 align="center">Michigan Traffic Lab Simulation Platform</h3>
+  <h3 align="center">TeraSim</h3>
   <p align="center">
     An autonomous vehicle testing and training platform based on SUMO
     <br />
-    <a href="https://github.com/michigan-traffic-lab/MTL-Simulation-Platform">View Demo</a>
+    <a href="https://github.com/michigan-traffic-lab/TeraSim">View Demo</a>
     ·
-    <a href="https://github.com/michigan-traffic-lab/MTL-Simulation-Platform/issues">Report Bug</a>
+    <a href="https://github.com/michigan-traffic-lab/TeraSim/issues">Report Bug</a>
     ·
-    <a href="https://github.com/michigan-traffic-lab/MTL-Simulation-Platform/issues">Request Feature</a>
+    <a href="https://github.com/michigan-traffic-lab/TeraSim/issues">Request Feature</a>
   </p>
 </p>
 
@@ -69,10 +69,10 @@ pip install eclipse-sumo traci libsumo sumolib
 Additionally, you can also install SUMO and SUMO-Tools using the pre-built binaries or build from source. Please refer to [SUMO](https://sumo.dlr.de/docs/Installing.html) for detailed instructions.
 
 ## Download mtlsp
-- Download from Github: `git clone https://github.com/michigan-traffic-lab/MTL-Simulation-Platform.git`
+- Download from Github: `git clone https://github.com/michigan-traffic-lab/TeraSim.git`
 
 ## Install mtlsp
-Navigate to the directory of the project (`cd MTL-Simulation-Platform`), and then
+Navigate to the directory of the project (`cd TeraSim`), and then
 
 - Normal install: `pip install .`
 - Development install: `pip install -e .`
@@ -172,4 +172,4 @@ Distributed under the MIT License.
 - Shuo Feng - fshuo@umich.edu - Michigan Traffic Lab
 - Henry Liu - henryliu@umich.edu - Michigan Traffic Lab
 
-Project Link: [https://github.com/michigan-traffic-lab/MTL-Simulation-Platform](https://github.com/michigan-traffic-lab/MTL-Simulation-Platform)
+Project Link: [https://github.com/michigan-traffic-lab/TeraSim](https://github.com/michigan-traffic-lab/TeraSim)

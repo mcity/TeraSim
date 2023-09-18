@@ -7,9 +7,9 @@ setup(
     author_email='haoweis@umich.edu, zhuhj@umich.edu, fshuo@umich.edu, zyxin@umich.edu',
     packages=["mtlsp", "mtlsp.envs", "mtlsp.logger", "mtlsp.measure", "mtlsp.network", "mtlsp.vehicle", "mtlsp.vehicle.controllers", "mtlsp.vehicle.decision_models", "mtlsp.vehicle.factories", "mtlsp.vehicle.sensors", "mtlsp.physics"],
     scripts=[],
-    url='https://github.com/michigan-traffic-lab/MTL-Simulation-Platform',
+    url='https://github.com/michigan-traffic-lab/TeraSim',
     license='MIT',
-    description='A SUMO-based environment for CAV simulation and evaluation',
+    description='A SUMO-based environment for AV testing and evaluation',
     long_description=open('README.md').read(),
     install_requires=['numpy', "bidict", "attrs", "addict", "scipy"],
 )

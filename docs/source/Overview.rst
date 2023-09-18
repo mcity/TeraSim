@@ -63,4 +63,4 @@ Shuo Feng- fshuo@umich.edu - Michigan Traffic Lab
 
 Henry Liu - henryliu@umich.edu - Michigan Traffic Lab
 
-Project Link: https://github.com/michigan-traffic-lab/MTL-Simulation-Platform
+Project Link: https://github.com/michigan-traffic-lab/TeraSim
