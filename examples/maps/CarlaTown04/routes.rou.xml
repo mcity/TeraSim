@@ -1,0 +1,9 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!--This file is for representing the routes for the vehicles generated from codes-->
+<routes xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://sumo.dlr.de/xsd/routes_file.xsd">
+    <!-- Routes -->
+    <route id="r_0" edges="45.0.00 40.0.00 39.0.00 38.0.00 37.0.00 36.0.00 35.0.00 42.0.00 49.0.00 48.0.00 47.0.00 46.0.00"/>
+    <route id="r_1" edges="-23.0.00 -41.0.00 -22.0.00 37.0.00 36.0.00 35.0.00 42.0.00"/>
+    <route id="r_2" edges="51.0.00 -0.0.00 -1.0.00 -2.0.00 -3.0.00 -4.0.00 19.0.00 -28.0.00 10.0.00 -18.0.00 -19.0.00 -20.0.00 13.0.00 21.0.00 2.0.00 25.0.00 24.0.00 4.0.00 11.0.00 -29.0.00 -27.0.00 -52.0.00 8.0.00 51.0.00"/>
+    <route id="r_3" edges="-36.0.00 -37.0.00 -38.0.00 -39.0.00 33.0.00 47.0.00 44.0.00 39.0.00 31.0.00 -47.0.00 -48.0.00 -49.0.00 -50.0.00 -43.0.00 -36.0.00"/>
+</routes>

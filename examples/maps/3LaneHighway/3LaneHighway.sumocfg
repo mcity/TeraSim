@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<configuration>
+
+    <input>
+        <net-file value="3LaneHighway.net.xml"/>
+        <route-files value="3LaneHighway.rou.xml"/>
+    </input>
+
+    <time>
+        <begin value="0"/>
+        <end value="3600"/>
+        <step-length value="0.1"/>
+    </time>
+
+    <random_number>
+        <random value="1"/>
+    </random_number>
+
+    <processing>
+        <default.action-step-length value="0.1"/>
+        <lateral-resolution value="0.25"/>
+        <collision.mingap-factor value="0"/>
+        <collision.action value="warn"/>
+    </processing>
+
+
+
+</configuration>
