@@ -5,11 +5,11 @@ Here is an example usage of MTL Simulation Platform.
 
 .. code:: python3
 
-    from mtlsp.simulator import Simulator
-    from mtlsp.envs.env import BaseEnv
-    from mtlsp.controller.vehicle_controller.idmcontroller import IDMController
-    from mtlsp.controller.vehicle_controller.globalcontroller import DummyGlobalController
-    from mtlsp.logger.infoextractor import InfoExtractor
+    from terasim.simulator import Simulator
+    from terasim.envs.env import BaseEnv
+    from terasim.controller.vehicle_controller.idmcontroller import IDMController
+    from terasim.controller.vehicle_controller.globalcontroller import DummyGlobalController
+    from terasim.logger.infoextractor import InfoExtractor
 
     env = BaseEnv(
         global_controller_dict={"BV":DummyGlobalController, "CAV":DummyGlobalController},
@@ -35,11 +35,11 @@ The essential step to implement MTL Simulation Platform is shown as follows.
 * Import modules from MTL Simulation Platform;
     .. code:: python3
 
-        from mtlsp.simulator import Simulator
-        from mtlsp.envs.env import BaseEnv
-        from mtlsp.controller.vehicle_controller.idmcontroller import IDMController
-        from mtlsp.controller.vehicle_controller.globalcontroller import DummyGlobalController
-        from mtlsp.logger.infoextractor import InfoExtractor
+        from terasim.simulator import Simulator
+        from terasim.envs.env import BaseEnv
+        from terasim.controller.vehicle_controller.idmcontroller import IDMController
+        from terasim.controller.vehicle_controller.globalcontroller import DummyGlobalController
+        from terasim.logger.infoextractor import InfoExtractor
 
 * Initialize the Environment;
     .. code:: python3

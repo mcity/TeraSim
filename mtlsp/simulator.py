@@ -7,12 +7,12 @@ import sumolib
 from traci import constants as tc
 import numpy as np
 import math
-import mtlsp
+import terasim
 from typing import Optional
-from mtlsp.state_manager import StateManager
-from mtlsp.command_manager import CommandManager
-from mtlsp.agent import Agent, AgentId, AgentInitialInfo
-import mtlsp.utils as utils
+from terasim.state_manager import StateManager
+from terasim.command_manager import CommandManager
+from terasim.agent import Agent, AgentId, AgentInitialInfo
+import terasim.utils as utils
 from .overlay import traci, has_libsumo
 from .pipeline import Pipeline, PipelineElement
 from pathlib import Path
@@ -78,7 +78,7 @@ class Simulator(object):
         self._remove_vehicle_from_sim = Pipeline('remove_vehicle_pipeline', # params: agent
                                                  [PipelineElement("sumo_remove", self._remove_vehicle_from_sumo)])
 
-    def bind_env(self, env: mtlsp.envs.base.BaseEnv):
+    def bind_env(self, env: terasim.envs.base.BaseEnv):
         """Combine the environment with the simulator
 
         Args:

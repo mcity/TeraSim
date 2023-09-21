@@ -1,9 +1,9 @@
 import addict
 
 from .base import BaseSensor
-from mtlsp.simulator import Simulator
-from mtlsp.overlay import traci
-from mtlsp import utils
+from terasim.simulator import Simulator
+from terasim.overlay import traci
+from terasim import utils
 import traci.constants as tc
 
 class LocalSensor(BaseSensor):

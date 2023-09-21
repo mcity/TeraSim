@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from mtlsp.simulator import Simulator
+from terasim.simulator import Simulator
 
 current_path = Path(__file__).parent
 maps_path = current_path / 'maps' / '3LaneHighway'

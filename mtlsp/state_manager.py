@@ -3,9 +3,9 @@ from functools import partial
 from collections import namedtuple, defaultdict
 import logging
 
-from mtlsp.overlay import traci
-from mtlsp.agent import AgentId
-from mtlsp.vehicle import Vehicle
+from terasim.overlay import traci
+from terasim.agent import AgentId
+from terasim.vehicle import Vehicle
 from traci import constants as tc
 
 StampedData = namedtuple("StampedData", ["data", "timestamp"])

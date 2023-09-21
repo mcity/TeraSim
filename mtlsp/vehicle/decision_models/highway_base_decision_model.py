@@ -1,7 +1,7 @@
-from mtlsp.vehicle.decision_models.base_decision_model import BaseDecisionModel
+from terasim.vehicle.decision_models.base_decision_model import BaseDecisionModel
 from bidict import bidict
 import numpy as np
-import mtlsp.utils as utils
+import terasim.utils as utils
 
 class HighwayBaseDecisionModel(BaseDecisionModel):
     longi_safety_buffer, lateral_safety_buffer = 2, 2

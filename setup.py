@@ -1,11 +1,11 @@
 from setuptools import setup, find_packages
 
 setup(
-    name='mtlsp',
+    name='terasim',
     version='2.0',
     author='Haowei Sun, Haojie Zhu, Shuo Feng, Yuanxin Zhong',
     author_email='haoweis@umich.edu, zhuhj@umich.edu, fshuo@umich.edu, zyxin@umich.edu',
-    packages=["mtlsp", "mtlsp.envs", "mtlsp.logger", "mtlsp.measure", "mtlsp.network", "mtlsp.vehicle", "mtlsp.vehicle.controllers", "mtlsp.vehicle.decision_models", "mtlsp.vehicle.factories", "mtlsp.vehicle.sensors", "mtlsp.physics"],
+    packages=["terasim", "terasim.envs", "terasim.logger", "terasim.measure", "terasim.network", "terasim.vehicle", "terasim.vehicle.controllers", "terasim.vehicle.decision_models", "terasim.vehicle.factories", "terasim.vehicle.sensors", "terasim.physics"],
     scripts=[],
     url='https://github.com/michigan-traffic-lab/TeraSim',
     license='MIT',

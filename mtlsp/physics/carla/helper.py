@@ -13,7 +13,7 @@ import random
 
 from collections import namedtuple
 
-from mtlsp.overlay import carla, traci
+from terasim.overlay import carla, traci
 import traci.constants as tc
 
 SumoActor = namedtuple('SumoActor', 'type_id vclass transform signals extent color')

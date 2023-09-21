@@ -2,12 +2,12 @@ import logging
 import bidict
 from collections import defaultdict
 
-from mtlsp.overlay import carla
-from mtlsp.physics.carla.helper import BridgeHelper
-from mtlsp.physics.carla.sensors import CarlaSensor
-from mtlsp.physics.base import PhysicSimulator, SensorData
-from mtlsp.simulator import Simulator, traci
-from mtlsp.agent import Agent, AgentId, AgentInitialInfo
+from terasim.overlay import carla
+from terasim.physics.carla.helper import BridgeHelper
+from terasim.physics.carla.sensors import CarlaSensor
+from terasim.physics.base import PhysicSimulator, SensorData
+from terasim.simulator import Simulator, traci
+from terasim.agent import Agent, AgentId, AgentInitialInfo
 
 class SensorDataBuffer:
     def __init__(self) -> None:

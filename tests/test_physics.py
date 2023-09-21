@@ -1,4 +1,4 @@
-from mtlsp.physics import DummyPhysics
+from terasim.physics import DummyPhysics
 import pytest
 
 def test_dummy():

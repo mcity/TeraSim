@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 import numpy as np
 from bidict import bidict
-import mtlsp.utils as utils
+import terasim.utils as utils
 
 class BaseDecisionModel(ABC):
     """DecisionModel class deal with the control of the vehicle based on observation

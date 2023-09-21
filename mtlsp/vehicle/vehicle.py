@@ -1,8 +1,8 @@
 from copy import copy
 from typing import Iterable, Dict
-from mtlsp.vehicle.decision_models.base_decision_model import BaseDecisionModel
-from mtlsp.vehicle.sensors import BaseSensor
-from mtlsp.agent import Agent
+from terasim.vehicle.decision_models.base_decision_model import BaseDecisionModel
+from terasim.vehicle.sensors import BaseSensor
+from terasim.agent import Agent
 import logging
 
 class Vehicle(Agent):

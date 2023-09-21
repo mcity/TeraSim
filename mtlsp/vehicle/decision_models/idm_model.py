@@ -1,10 +1,10 @@
 from __future__ import division, print_function
 import numpy as np
-from mtlsp.simulator import Simulator
-from mtlsp.vehicle.decision_models.highway_base_decision_model import HighwayBaseDecisionModel
+from terasim.simulator import Simulator
+from terasim.vehicle.decision_models.highway_base_decision_model import HighwayBaseDecisionModel
 import scipy
 # Longitudinal policy parameters
-from mtlsp.overlay import traci
+from terasim.overlay import traci
 
 # Lateral policy parameters
 POLITENESS = 0.  # in [0, 1]

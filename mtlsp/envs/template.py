@@ -1,4 +1,4 @@
-from mtlsp.envs.base import BaseEnv
+from terasim.envs.base import BaseEnv
 
 class EnvTemplate(BaseEnv):
     '''This Env provides a basic Env implementation.

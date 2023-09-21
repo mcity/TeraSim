@@ -1,7 +1,7 @@
-from mtlsp.vehicle.controllers.base_controller import BaseController
+from terasim.vehicle.controllers.base_controller import BaseController
 import logging
-import mtlsp.utils as utils
-from mtlsp.simulator import traci
+import terasim.utils as utils
+from terasim.simulator import traci
 
 class HighEfficiencyController(BaseController):
     params = {

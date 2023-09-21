@@ -1,7 +1,7 @@
-from mtlsp.vehicle.factories.vehicle_fatory import VehicleFactory
-from mtlsp.vehicle.controllers.high_efficiency_controller import HighEfficiencyController
-from mtlsp.vehicle.vehicle import Vehicle
-from mtlsp.vehicle.decision_models.dummy_decision_model import DummyDecisionModel
+from terasim.vehicle.factories.vehicle_fatory import VehicleFactory
+from terasim.vehicle.controllers.high_efficiency_controller import HighEfficiencyController
+from terasim.vehicle.vehicle import Vehicle
+from terasim.vehicle.decision_models.dummy_decision_model import DummyDecisionModel
 
 
 class DummyVehicleFactory(VehicleFactory):

@@ -1,8 +1,8 @@
-from mtlsp.simulator import Simulator
-from mtlsp.vehicle.vehicle import VehicleList
-from mtlsp.agent import AgentInitialInfo, AgentDepartureInfo
+from terasim.simulator import Simulator
+from terasim.vehicle.vehicle import VehicleList
+from terasim.agent import AgentInitialInfo, AgentDepartureInfo
 from abc import ABC, abstractmethod
-import mtlsp.utils as utils
+import terasim.utils as utils
 from typing import Union
 
 class BaseEnv(ABC):

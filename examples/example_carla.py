@@ -1,6 +1,6 @@
 from pathlib import Path
-from mtlsp.simulator import Simulator
-from mtlsp.physics import CarlaPhysics
+from terasim.simulator import Simulator
+from terasim.physics import CarlaPhysics
 
 current_path = Path(__file__).parent
 maps_path = current_path / 'maps' / 'CarlaTown04'

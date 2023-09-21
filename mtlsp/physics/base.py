@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import NewType, Union, List, Optional, Dict, Any
-from mtlsp.simulator import Simulator
-from mtlsp.agent import Agent, AgentId, AgentInitialInfo
+from terasim.simulator import Simulator
+from terasim.agent import Agent, AgentId, AgentInitialInfo
 
 # TODO: define these types or combine with types in other modules
 

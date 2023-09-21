@@ -1,6 +1,6 @@
 from enum import Enum
-from mtlsp.overlay import carla
-from mtlsp.vehicle.sensors.base import BaseSensor
+from terasim.overlay import carla
+from terasim.vehicle.sensors.base import BaseSensor
 from threading import Event
 
 class CarlaSensor(BaseSensor):

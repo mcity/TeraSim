@@ -1,11 +1,11 @@
 from pathlib import Path
-from mtlsp.simulator import Simulator
-from mtlsp.envs import EnvTemplate
-from mtlsp.logger.infoextractor import InfoExtractor
-from mtlsp.vehicle.factories.dummy_vehicle_factory import DummyVehicleFactory
-from mtlsp.vehicle.vehicle import Vehicle
-from mtlsp.vehicle.decision_models.dummy_setsumo_transform_decision_model import DummySetSUMOTranformDecisionModel
-from mtlsp.vehicle.controllers.sumo_move_controller import SUMOMOVEController
+from terasim.simulator import Simulator
+from terasim.envs import EnvTemplate
+from terasim.logger.infoextractor import InfoExtractor
+from terasim.vehicle.factories.dummy_vehicle_factory import DummyVehicleFactory
+from terasim.vehicle.vehicle import Vehicle
+from terasim.vehicle.decision_models.dummy_setsumo_transform_decision_model import DummySetSUMOTranformDecisionModel
+from terasim.vehicle.controllers.sumo_move_controller import SUMOMOVEController
 
 class ExampleVehicleFactory(DummyVehicleFactory):
 

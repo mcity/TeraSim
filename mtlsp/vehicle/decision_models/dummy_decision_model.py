@@ -1,4 +1,4 @@
-from mtlsp.vehicle.decision_models.base_decision_model import BaseDecisionModel
+from terasim.vehicle.decision_models.base_decision_model import BaseDecisionModel
 
 class DummyDecisionModel(BaseDecisionModel):
     """dummy decision model:

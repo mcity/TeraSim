@@ -1,4 +1,4 @@
-from mtlsp.overlay import traci
+from terasim.overlay import traci
 from traci import constants as tc
 from typing import List
 

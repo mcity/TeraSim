@@ -3,15 +3,15 @@ import random
 import numpy as np
 from PIL import Image
 
-from mtlsp.simulator import Simulator
-from mtlsp.vehicle import Vehicle
-from mtlsp.vehicle.factories.vehicle_fatory import VehicleFactory
-from mtlsp.logger.infoextractor import InfoExtractor
-from mtlsp.physics import CarlaPhysics
-from mtlsp.physics.carla.sensors import Camera
-from mtlsp.envs import EnvTemplate
-from mtlsp.vehicle.decision_models.dummy_setsumo_transform_decision_model import DummySetSUMOTranformDecisionModel
-from mtlsp.vehicle.controllers.sumo_move_controller import SUMOMOVEController
+from terasim.simulator import Simulator
+from terasim.vehicle import Vehicle
+from terasim.vehicle.factories.vehicle_fatory import VehicleFactory
+from terasim.logger.infoextractor import InfoExtractor
+from terasim.physics import CarlaPhysics
+from terasim.physics.carla.sensors import Camera
+from terasim.envs import EnvTemplate
+from terasim.vehicle.decision_models.dummy_setsumo_transform_decision_model import DummySetSUMOTranformDecisionModel
+from terasim.vehicle.controllers.sumo_move_controller import SUMOMOVEController
 
 current_path = Path(__file__).parent
 maps_path = current_path / 'maps' / 'CarlaTown04'

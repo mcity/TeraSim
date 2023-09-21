@@ -1,13 +1,13 @@
 from pathlib import Path
-from mtlsp.simulator import Simulator
-from mtlsp.envs.template import EnvTemplate
-from mtlsp.logger.infoextractor import InfoExtractor
-from mtlsp.vehicle.factories.dummy_vehicle_factory import DummyVehicleFactory
-from mtlsp.vehicle.sensors.ego import EgoSensor
-from mtlsp.vehicle.sensors.local import LocalSensor
-from mtlsp.vehicle.controllers.high_efficiency_controller import HighEfficiencyController
-from mtlsp.vehicle.vehicle import Vehicle
-from mtlsp.vehicle.decision_models.idm_model import IDMModel
+from terasim.simulator import Simulator
+from terasim.envs.template import EnvTemplate
+from terasim.logger.infoextractor import InfoExtractor
+from terasim.vehicle.factories.dummy_vehicle_factory import DummyVehicleFactory
+from terasim.vehicle.sensors.ego import EgoSensor
+from terasim.vehicle.sensors.local import LocalSensor
+from terasim.vehicle.controllers.high_efficiency_controller import HighEfficiencyController
+from terasim.vehicle.vehicle import Vehicle
+from terasim.vehicle.decision_models.idm_model import IDMModel
 
 current_path = Path(__file__).parent
 maps_path = current_path / 'maps' / '3LaneHighway'

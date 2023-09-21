@@ -1,7 +1,7 @@
 import uuid
 import numpy as np
 import math
-from mtlsp.overlay import traci
+from terasim.overlay import traci
 import logging
 
 

@@ -1,4 +1,4 @@
-from mtlsp.vehicle.controllers.base_controller import BaseController
+from terasim.vehicle.controllers.base_controller import BaseController
 
 class SUMOMOVEController(BaseController):
 

@@ -4,10 +4,10 @@ import addict
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING
 
-from mtlsp import utils
-from mtlsp.agent import Agent
+from terasim import utils
+from terasim.agent import Agent
 if TYPE_CHECKING:
-    from mtlsp.simulator import Simulator
+    from terasim.simulator import Simulator
 
 class BaseSensor(ABC):
     DEFAULT_PARAMS = {}

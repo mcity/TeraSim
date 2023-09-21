@@ -22,8 +22,8 @@ This project aims at providing a microsim simulation environment based on SUMO. 
 ## Code Structure
 
 - docs: extra documentations on this repo
-- examples: examples of using mtlsp to run driving simulations of vehicle models
-- mtlsp: main contents
+- examples: examples of using terasim to run driving simulations of vehicle models
+- terasim: main contents
   - envs: uses functions from 'vehicle' and create an integrated driving environment with multiple vehicles in which the given autonomous vehicles are tested
   - logger: tracks the information in the environment
   - measure: measures to take along with simulations
@@ -50,7 +50,7 @@ Minimum versioned environment:
 - Python 3.8
 - SUMO 1.8
 
-We recoomend using Conda to create a virtual environment and install the MTLSP.
+We recoomend using Conda to create a virtual environment and install the terasim.
 ```
 conda create -n $env_name$ python=3.8
 conda activate $env_name$
@@ -68,10 +68,10 @@ pip install eclipse-sumo traci libsumo sumolib
 
 Additionally, you can also install SUMO and SUMO-Tools using the pre-built binaries or build from source. Please refer to [SUMO](https://sumo.dlr.de/docs/Installing.html) for detailed instructions.
 
-## Download mtlsp
+## Download terasim
 - Download from Github: `git clone https://github.com/michigan-traffic-lab/TeraSim.git`
 
-## Install mtlsp
+## Install terasim
 Navigate to the directory of the project (`cd TeraSim`), and then
 
 - Normal install: `pip install .`
@@ -83,16 +83,16 @@ Navigate to the directory of the project (`cd TeraSim`), and then
 The package consists of multiple classes, including simulator, environment, vehicle and controller. for basic usage, we only need the Simulator class and the Environment class. For example, to build a simulation with one dummy AV running in a 3lane highway, we neeed the following script:
 
 ```python
-from mtlsp.simulator import Simulator
-from mtlsp.envs.env import BaseEnv
-from mtlsp.logger.infoextractor import InfoExtractor
-import mtlsp.vehicle
-from mtlsp.vehicle.factories.dummy_vehicle_factory import DummyVehicleFactory
-from mtlsp.vehicle.sensors.local_sensor import LocalSensor
-from mtlsp.vehicle.controllers.high_efficiency_controller import HighEfficiencyController
-from mtlsp.vehicle.vehicle import Vehicle
-from mtlsp.vehicle.decision_models.dummy_decision_model import DummyDecisionModel
-from mtlsp.vehicle.decision_models.idm_model import IDMModel
+from terasim.simulator import Simulator
+from terasim.envs.env import BaseEnv
+from terasim.logger.infoextractor import InfoExtractor
+import terasim.vehicle
+from terasim.vehicle.factories.dummy_vehicle_factory import DummyVehicleFactory
+from terasim.vehicle.sensors.local_sensor import LocalSensor
+from terasim.vehicle.controllers.high_efficiency_controller import HighEfficiencyController
+from terasim.vehicle.vehicle import Vehicle
+from terasim.vehicle.decision_models.dummy_decision_model import DummyDecisionModel
+from terasim.vehicle.decision_models.idm_model import IDMModel
 
 
 class ExampleVehicleFactory(DummyVehicleFactory):

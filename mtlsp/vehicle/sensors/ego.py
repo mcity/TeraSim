@@ -1,8 +1,8 @@
 from .base import BaseSensor
 
 import traci.constants as tc
-from mtlsp.overlay import traci
-from mtlsp.agent import AgentId
+from terasim.overlay import traci
+from terasim.agent import AgentId
 
 class EgoSensor(BaseSensor):
     ''' A sensor for reporting basic states (position, speed, heading, etc.) '''
