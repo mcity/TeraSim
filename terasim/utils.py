@@ -4,6 +4,37 @@ import math
 from terasim.overlay import traci
 import logging
 
+def center_coordinate_to_sumo_coordinate(x, y, heading, length=5):
+    """
+    Convert the center coordinate to the SUMO coordinate. the input will be a list of {x, y, heading, vx}.
+    """
+    x = x + math.cos(heading) * 0.5 * length
+    y = y + math.sin(heading) * 0.5 * length
+    return x, y
+
+def sumo_coordinate_to_center_coordinate(x, y, heading, length=5):
+    """
+    Convert the SUMO coordinate to the center coordinate. the input will be a list of {x, y, heading, vx}.
+    """
+    x = x - math.cos(heading) * 0.5 * length
+    y = y - math.sin(heading) * 0.5 * length
+    return x, y
+
+def sumo_heading_to_orientation(sumo_heading):
+    """
+    Convert the SUMO heading to orientation.
+    """
+    radians = math.radians(90 - sumo_heading)
+    return math.atan2(math.sin(radians), math.cos(radians))
+
+def orientation_to_sumo_heading(orientation):
+    """
+    Convert the orientation to SUMO heading.
+    """
+    degrees = math.degrees(orientation)
+    degrees = (degrees + 360) % 360
+    degrees = (90 - degrees) % 360
+    return degrees
 
 def getLoadedIDList():
     return traci.simulation.getLoadedIDList()
