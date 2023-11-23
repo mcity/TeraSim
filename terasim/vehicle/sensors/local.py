@@ -37,13 +37,6 @@ class LocalSensor(BaseSensor):
                                        self.params.obs_range,
                                        self.params.subscription_component)
 
-        downstream_dist = self.params.downstream_dist or self.params.obs_range
-        upstream_dist = self.params.upstream_dist or self.params.obs_range
-        traci.vehicle.addSubscriptionFilterLanes(self.params.lane_filter_list,
-                                                 noOpposite=self.params.no_opposite,
-                                                 downstreamDist=downstream_dist,
-                                                 upstreamDist=upstream_dist)
-
     def unsubscribe(self):
         traci.vehicle.unsubscribeContext(self._agent.id,
                                          tc.CMD_GET_VEHICLE_VARIABLE,
