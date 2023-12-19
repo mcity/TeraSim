@@ -411,7 +411,7 @@ def highlight_vehicle(vehID, duration=-1, color=(255, 0, 0, 255)):
         vehID (str): Vehicle ID.
         duration (int, optional): Duration of the highlight. Defaults to -1.
     """
-    traci.vehicle.highlight(vehID, duration=duration, color=color)
+    traci.vehicle.highlight(vehID, duration=duration, color=color, alphaMax=0.1)
 
 def get_waiting_time(vehID):
     """Returns the waiting time of the named vehicle in seconds.
