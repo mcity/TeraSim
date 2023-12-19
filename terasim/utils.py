@@ -404,14 +404,14 @@ def get_vehicle_speedmode(vehID):
     """
     return traci.vehicle.getSpeedMode(vehID)
 
-def highlight_vehicle(vehID, duration=-1):
+def highlight_vehicle(vehID, duration=-1, color=(255, 0, 0, 255)):
     """Highlight the vehicle with the given ID in the GUI.
 
     Args:
         vehID (str): Vehicle ID.
         duration (int, optional): Duration of the highlight. Defaults to -1.
     """
-    traci.vehicle.highlight(vehID, duration=duration)
+    traci.vehicle.highlight(vehID, duration=duration, color=color)
 
 def get_waiting_time(vehID):
     """Returns the waiting time of the named vehicle in seconds.
