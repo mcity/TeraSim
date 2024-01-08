@@ -3,6 +3,7 @@ import numpy as np
 from terasim.simulator import Simulator
 from terasim.vehicle.decision_models.highway_base_decision_model import HighwayBaseDecisionModel
 import scipy
+from scipy import stats
 # Longitudinal policy parameters
 from terasim.overlay import traci
 
@@ -174,7 +175,7 @@ class IDMModel(HighwayBaseDecisionModel):
         tmp_acc = np.clip(tmp_acc, self.acc_low, self.acc_high)
         stochastic_IDM_num = int((self.acc_high - self.acc_low) / self.stochastic_IDM_resolution) + 1
         acc_list = np.linspace(self.acc_low, self.acc_high, stochastic_IDM_num)
-        acc_possi_list = scipy.stats.norm.pdf(acc_list, tmp_acc, 1)
+        acc_possi_list = stats.norm.pdf(acc_list, tmp_acc, 1)
         # Delete possi if smaller than certain threshold
         acc_possi_list = [val if val > self.stochastic_IDM_prob_threshold else 0 for val in acc_possi_list]
         assert(sum(acc_possi_list) > 0), "The sum of the probability is 0"

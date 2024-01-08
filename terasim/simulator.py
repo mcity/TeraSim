@@ -17,6 +17,10 @@ from .overlay import traci, has_libsumo
 from .pipeline import Pipeline, PipelineElement
 from pathlib import Path
 
+import redis
+import json
+import lxml.etree as ET  # pylint: disable=import-error
+
 class Context():
     def __init__(self) -> None:
         self.plugins = []
@@ -69,14 +73,21 @@ class Simulator(object):
         self.start_pipeline = Pipeline('start_pipeline', []) # params: simulator, ctx
         self.step_pipeline = Pipeline('step_pipeline', # params: simulator, ctx
                                       [PipelineElement("record_step_start_time", self.record_step_start_time, priority=-10000),
+                                       PipelineElement("cosim_step", self.cosim_step, priority=10),
                                        PipelineElement("sumo_step", self.sumo_step, priority=10),
                                        PipelineElement("state_manager_gc", self.state_manager.garbage_collection, priority=10),
                                        PipelineElement("compensate_step_end_time", self.compensate_step_end_time, priority=10000)])
+        
         self.stop_pipeline = Pipeline('stop_pipeline', []) # params: simulator, ctx
         self._add_vehicle_to_sim = Pipeline('add_vehicle_pipeline',  # params: agent, init_info. If init_info is None, then the initial info should be inferred from traci.
                                             [PipelineElement("sumo_add", self._add_vehicle_to_sumo)])
         self._remove_vehicle_from_sim = Pipeline('remove_vehicle_pipeline', # params: agent
                                                  [PipelineElement("sumo_remove", self._remove_vehicle_from_sumo)])
+        
+        self._routes = set()
+        self.sumo2carla_ids = set()
+        self.carla2sumo_ids = set()
+        self.redis = redis.Redis(host='localhost', port=6379, db=0)
 
     def bind_env(self, env: terasim.envs.base.BaseEnv):
         """Combine the environment with the simulator
@@ -89,6 +100,113 @@ class Simulator(object):
         self.start_pipeline.hook("env_start", env._start, priority=0)
         self.step_pipeline.hook("env_step", env._step, priority=0)
         self.stop_pipeline.hook("env_stop", env._stop, priority=0)
+
+    def cosim_step(self, simulator, ctx):
+        # # update carla controlled vehicle in sumo
+        # cosim_thirdpartysim_vehicle_info = self.redis.get('cosim_thirdpartysim_vehicle_info')
+        # if cosim_thirdpartysim_vehicle_info is not None:
+        #     cosim_thirdpartysim_vehicle_info = json.loads(cosim_thirdpartysim_vehicle_info)
+
+        #     for vehID in cosim_thirdpartysim_vehicle_info:
+        #         if vehID not in self.carla2sumo_ids:
+        #             try:
+        #                 vclass = traci.vehicletype.getVehicleClass('IDM_waymo_motion')
+        #                 net = self._get_sumo_net(self.sumo_config_file_path)
+        #                 if vclass not in self._routes:
+        #                     print('Creating route for %s vehicle class', vclass)
+        #                     allowed_edges = [e for e in net.getEdges() if e.allows(vclass)]
+        #                     if allowed_edges:
+        #                         traci.route.add("carla_route_{}".format(vclass), [allowed_edges[0].getID()])
+        #                         self._routes.add(vclass)
+        #                     else:
+        #                         print('Could not found a route for %s. No vehicle will be spawned in sumo', 'IDM_waymo_motion')
+                        
+        #                     traci.vehicle.add(vehID, 'carla_route_{}'.format(vclass), typeID='IDM_waymo_motion')
+        #                     traci.vehicle.subscribe(vehID)
+        #                     traci.vehicle.setColor(vehID, (255, 0, 0, 255))
+        #                     self.carla2sumo_ids.add(vehID)
+        #             except traci.exceptions.TraCIException as error:
+        #                 print('Spawn sumo actor failed: %s', error)
+        #         else:
+        #             loc_x = cosim_thirdpartysim_vehicle_info[vehID]['location']['x']
+        #             loc_y = cosim_thirdpartysim_vehicle_info[vehID]['location']['y']
+        #             yaw = cosim_thirdpartysim_vehicle_info[vehID]['rotation']['z']
+
+        #             traci.vehicle.moveToXY(vehID, "", 0, loc_x, loc_y, angle=yaw, keepRoute=2)
+
+        #     to_remove = {k for k in self.carla2sumo_ids if k not in cosim_thirdpartysim_vehicle_info}
+
+        #     for vehID in to_remove:
+        #         print('Removing vehicle %s from sumo 1', vehID)
+        #         traci.vehicle.remove(vehID)
+        #         self.carla2sumo_ids.remove(vehID)
+
+        # else:
+        #     veh_list = self.get_vehID_list()
+        #     for vehID in self.carla2sumo_ids:
+        #         if vehID in traci.vehicle.getIDList():
+        #             print('Removing vehicle %s from sumo 2', vehID)
+        #             traci.vehicle.unsubscribe(vehID)
+        #             traci.vehicle.remove(vehID)
+        #             try:
+        #                 traci.simulation.step()
+        #             except traci.exceptions.TraCIException as error:
+        #                 print('Remove sumo actor failed: %s', error)
+        #             print('Removing vehicle %s from sumo 2 successful', vehID)
+        #     self.carla2sumo_ids.clear()
+        #     veh_list = self.get_vehID_list()
+
+        # update sumo controlled vehicle in carla     
+        veh_list = self.get_vehID_list()
+        sumo2carla_ids = set()
+
+        sumo2carla_ids = {vehID for vehID in veh_list if 'BV' in vehID}
+        cosim_terasim_vehicle_info = {}
+
+        for vehID in sumo2carla_ids:
+            pos = traci.vehicle.getPosition3D(vehID)
+            slope = traci.vehicle.getSlope(vehID)
+            angle = traci.vehicle.getAngle(vehID)
+
+            actor = {
+                "location": { "x": pos[0] + 100.0, "y": pos[1] + 122.0, "z": pos[2] - 34.5 },
+                "rotation": { "x": slope, "y": angle, "z" : 0.0},
+                "extent": {
+                    "x": traci.vehicle.getLength(vehID) / 2.0,
+                    "y": traci.vehicle.getWidth(vehID) / 2.0,
+                    "z": traci.vehicle.getHeight(vehID) / 2.0
+                },
+                "type_id": traci.vehicle.getTypeID(vehID),
+                "vclass": traci.vehicle.getVehicleClass(vehID),
+                "color": traci.vehicle.getColor(vehID),
+                "lights": traci.vehicle.getSignals(vehID),
+                "speed": traci.vehicle.getSpeed(vehID)
+            }
+
+            cosim_terasim_vehicle_info[vehID] = actor
+
+        cosim_terasim_vehicle_info_json = json.dumps(cosim_terasim_vehicle_info)
+        self.redis.set('cosim_terasim_vehicle_info', cosim_terasim_vehicle_info_json)
+
+    def _get_sumo_net(self, cfg_file):
+        """
+        Returns sumo net.
+
+        This method reads the sumo configuration file and retrieve the sumo net filename to create the
+        net.
+        """
+        cfg_file = os.path.join(os.getcwd(), cfg_file)
+
+        tree = ET.parse(cfg_file)
+        tag = tree.find('//net-file')
+        if tag is None:
+            return None
+
+        net_file = os.path.join(os.path.dirname(cfg_file), tag.get('value'))
+        print('Reading net file: %s', net_file)
+
+        sumo_net = sumolib.net.readNet(net_file)
+        return sumo_net 
 
     def start(self):
         """Start SUMO simulation or initialize environment.
@@ -1085,3 +1203,4 @@ class Simulator(object):
         """   
         traci.trafficlight.setProgramLogic(tlsID, newlogic)   
     
+

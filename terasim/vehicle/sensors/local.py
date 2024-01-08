@@ -37,6 +37,13 @@ class LocalSensor(BaseSensor):
                                        self.params.obs_range,
                                        self.params.subscription_component)
 
+        downstream_dist = self.params.downstream_dist or self.params.obs_range
+        upstream_dist = self.params.upstream_dist or self.params.obs_range
+        traci.vehicle.addSubscriptionFilterLanes(self.params.lane_filter_list,
+                                                 noOpposite=self.params.no_opposite,
+                                                 downstreamDist=downstream_dist,
+                                                 upstreamDist=upstream_dist)
+
     def unsubscribe(self):
         traci.vehicle.unsubscribeContext(self._agent.id,
                                          tc.CMD_GET_VEHICLE_VARIABLE,
@@ -70,19 +77,24 @@ class LocalSensor(BaseSensor):
             dict: Standard for of vehicle information.
         """
         subscription = traci.vehicle.getContextSubscriptionResults(veh_id)
-        veh_info = addict.Dict(
-            veh_id=veh_id,
-            could_drive_adjacent_lane_left=Simulator.get_vehicle_lane_adjacent(veh_id, 1),
-            could_drive_adjacent_lane_right=Simulator.get_vehicle_lane_adjacent(veh_id, -1),
-            distance=distance,
-            heading=subscription[veh_id][67],
-            lane_index=subscription[veh_id][82],
-            lateral_speed=subscription[veh_id][50],
-            lateral_offset=subscription[veh_id][184],
-            position=subscription[veh_id][66],
-            position3D=subscription[veh_id][57],
-            velocity=subscription[veh_id][64],
-            road_id=subscription[veh_id][80]
-        )
+        try:
+            veh_info = addict.Dict(
+                veh_id=veh_id,
+                could_drive_adjacent_lane_left=Simulator.get_vehicle_lane_adjacent(veh_id, 1),
+                could_drive_adjacent_lane_right=Simulator.get_vehicle_lane_adjacent(veh_id, -1),
+                distance=distance,
+                heading=subscription[veh_id][67],
+                lane_index=subscription[veh_id][82],
+                lateral_speed=subscription[veh_id][50],
+                lateral_offset=subscription[veh_id][184],
+                position=subscription[veh_id][66],
+                position3D=subscription[veh_id][57],
+                velocity=subscription[veh_id][64],
+                road_id=subscription[veh_id][80]
+            )
+        except KeyError:
+            return None
+        
         return veh_info
+
 
