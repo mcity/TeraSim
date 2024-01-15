@@ -45,7 +45,6 @@ class LocalSensor(BaseSensor):
                                                  upstreamDist=upstream_dist)
 
     def unsubscribe(self):
-        print("unsubscribe", self._agent.id)
         traci.vehicle.unsubscribeContext(self._agent.id,
                                          tc.CMD_GET_VEHICLE_VARIABLE,
                                          self.params.obs_range)

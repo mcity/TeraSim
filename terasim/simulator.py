@@ -1,5 +1,4 @@
 from __future__ import annotations
-import os, sys
 from pathlib import Path
 import time
 
@@ -88,21 +87,10 @@ class Simulator(object):
         """
         self.env = env
         self.env.simulator = self
+        
         self.start_pipeline.hook("env_start", env._start, priority=0)
         self.step_pipeline.hook("env_step", env._step, priority=0)
         self.stop_pipeline.hook("env_stop", env._stop, priority=0)
-
-    def bind_cosim(self, cosim: terasim.envs.base.BaseEnv):
-        """Combine the environment with the simulator
-
-        Args:
-            env (Environment): Simulation environment
-        """
-        self.cosim = cosim
-        self.cosim.simulator = self
-        self.start_pipeline.hook("cosim_start", cosim._start, priority=0)
-        self.step_pipeline.hook("cosim_step", cosim._step, priority=0)
-        self.stop_pipeline.hook("cosim_stop", cosim._stop, priority=0)
 
     def start(self):
         """Start SUMO simulation or initialize environment.
