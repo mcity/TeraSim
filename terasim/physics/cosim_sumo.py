@@ -1,5 +1,6 @@
 import os
 import json
+import time
 import redis
 import sumolib
 import lxml.etree as ET
@@ -10,7 +11,7 @@ from terasim.simulator import Simulator
 from terasim_mr.communicationtools import constants
 
 
-class CarlrCosim(BaseEnv):
+class CosimSumo(BaseEnv):
 
     def __init__(self, vehicle_factory, info_extractor):
         self._routes = set()
@@ -24,7 +25,7 @@ class CarlrCosim(BaseEnv):
 
     def on_start(self, simulator: Simulator, ctx):
         self.redis_client = redis.Redis(host='localhost', port=6379, db=0)
-        self.redis_client.set(constants.REDIS_CONSTANTS.TERASIM_STATUS, "1")
+        time.sleep(1)
 
     def on_step(self, simulator: Simulator, ctx):
         self.sync_sumo_to_carla()
@@ -37,9 +38,9 @@ class CarlrCosim(BaseEnv):
 
     def inject(self, simulator: Simulator):
         self.simulator = simulator
-        simulator.start_pipeline.hook("cosim_start", self.on_start, priority=10)
-        simulator.step_pipeline.hook("cosim_step", self.on_step, priority=10)
-        simulator.stop_pipeline.hook("cosim_stop", self.on_stop, priority=10)
+        simulator.start_pipeline.hook("cosim_start", self.on_start, priority=-100)
+        simulator.step_pipeline.hook("cosim_step", self.on_step, priority=-100)
+        simulator.stop_pipeline.hook("cosim_stop", self.on_stop, priority=-100)
 
     def sync_sumo_to_carla(self):
         ''' sync sumo controlled vehicle to carla '''   
@@ -95,7 +96,7 @@ class CarlrCosim(BaseEnv):
                                 print('Could not found a route for %s. No vehicle will be spawned in sumo', 'IDM_waymo_motion')
 
                         self.add_vehicle(vehID, 'carla_route_{}'.format(vclass), lane_id=None, speed=0)
-                        # self.subscribe_vehicle_all_information(vehID, max_obs_range=120)
+                        # self.simulator.subscribe_vehicle_all_information(vehID, max_obs_range=120)
                         traci.vehicle.setColor(vehID, (255, 0, 0, 255))
                         self.carla2sumo_ids.add(vehID)
                         print('Adding vehicle to sumo successful', vehID)
