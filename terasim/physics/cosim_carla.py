@@ -159,7 +159,7 @@ class SimulationSynchronization(object):
             # Creating new carla actor or updating existing one.
             if sumo_actor_id not in self.sumo2carla_ids:
                 carla_blueprint = BridgeHelper.get_carla_blueprint_from_sumo_redis(
-                    sumo_actor_type_id, sumo_actor_color_tuple, sumo_actor_vclass_value)
+                    sumo_actor_id, sumo_actor_type_id, sumo_actor_color_tuple, sumo_actor_vclass_value)
 
                 if carla_blueprint is not None:
                     carla_actor_id = self.carla.spawn_actor(carla_blueprint, carla_transform)
