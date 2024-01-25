@@ -32,7 +32,7 @@ class EnvTemplate(BaseEnv):
 
         # by default, all vehicles in the vehicle list will make decisions
         control_command_and_info = {
-            veh.id: veh.make_decision() for veh in self.vehicle_list
+            veh.id: veh.make_decision() for veh in self.vehicle_list if "CARLA" not in veh.id
         }
         control_command_dict = {
             veh_id: command_and_info[0] for veh_id, command_and_info in control_command_and_info.items()

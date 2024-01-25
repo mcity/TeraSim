@@ -50,7 +50,6 @@ from sumo_integration.constants import INVALID_ACTOR_ID  # pylint: disable=wrong
 # -- synchronization_loop --------------------------------------------------------------------------
 # ==================================================================================================
 
-
 class SimulationSynchronization(object):
     """
     SimulationSynchronization class is responsible for the synchronization of sumo and carla
@@ -74,10 +73,9 @@ class SimulationSynchronization(object):
 
         # terasim cosim settings
         BridgeHelper.blueprint_library = self.carla.world.get_blueprint_library()
-        BridgeHelper.offset = [102.89, 281.25]
-
+        BridgeHelper.offset = [2.0, 159.0, 34.5]
         # redis server for communication
-        self.redis = redis.Redis(host='localhost', port=6379, db=0)
+        self.redis_server = redis.Redis(host='localhost', port=6379, db=0)
 
         # Mapped actor ids.
         self.sumo2carla_ids = {}  # Contains only actors controlled by sumo.
@@ -86,9 +84,46 @@ class SimulationSynchronization(object):
         """
         Tick to simulation synchronization
         """
+        
+        self.sync_sumo_to_carla()
+        self.sync_carla_to_sumo()
 
+    def sync_carla_to_sumo(self):
+        carla_actor_list = self.carla.world.get_actors()
+        carla_vehicle_list = [actor for actor in carla_actor_list if 'vehicle' in actor.type_id]
+        carla_vehicle_ids = [vehicle.id for vehicle in carla_vehicle_list]
+
+        sumo2carla_id_values = self.sumo2carla_ids.values()
+
+        diff_ids = [id for id in carla_vehicle_ids if id not in sumo2carla_id_values]
+        
+        cosim_thirdpartysim_vehicle_info = {}
+
+        for vehicle_id in diff_ids:
+            carla_vehicle = self.carla.get_actor(vehicle_id)
+            sumo_transform = BridgeHelper.get_sumo_transform(carla_vehicle.get_transform(),
+                                            carla_vehicle.bounding_box.extent)
+            vehicle = {
+                "location": {
+                    'x': sumo_transform.location.x,
+                    'y': sumo_transform.location.y,
+                    'z': sumo_transform.location.z,
+                },
+                "rotation": {
+                    'x': sumo_transform.rotation.roll,
+                    'y': sumo_transform.rotation.pitch,
+                    'z': sumo_transform.rotation.yaw,
+                },
+            }
+
+            redis_key = "CARLA_" + str(vehicle_id)
+            cosim_thirdpartysim_vehicle_info[redis_key] = vehicle
+
+        self.redis_server.set('cosim_thirdpartysim_vehicle_info', json.dumps(cosim_thirdpartysim_vehicle_info))
+
+    def sync_sumo_to_carla(self):
         # reads sumo context from redis.
-        cosim_terasim_vehicle_info_json = self.redis.get('cosim_terasim_vehicle_info')
+        cosim_terasim_vehicle_info_json = self.redis_server.get('cosim_terasim_vehicle_info')
         if cosim_terasim_vehicle_info_json is not None:
             cosim_terasim_vehicle_info_dict = json.loads(cosim_terasim_vehicle_info_json)
         else:
@@ -139,7 +174,7 @@ class SimulationSynchronization(object):
             if sumo_actor_id not in cosim_terasim_vehicle_info_dict:
                 print("Destroy actor: ", sumo_actor_id)
                 self.carla.destroy_actor(self.sumo2carla_ids.pop(sumo_actor_id))
-                
+
         self.carla.tick()
 
     def close(self):

@@ -33,7 +33,7 @@ class BridgeHelper(object):
     """
 
     blueprint_library = []
-    offset = (0, 0)
+    offset = [0, 0, 0]
 
     _vtypes_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "..", "data",
                                 "vtypes.json")
@@ -59,11 +59,11 @@ class BridgeHelper(object):
         out_rotation = (in_rotation.pitch, in_rotation.yaw, in_rotation.roll)
 
         # Applying offset sumo-carla net.
-        out_location = (out_location[0] - offset[0], out_location[1] - offset[1], out_location[2])
+        out_location = (out_location[0] - offset[0],  -(out_location[1] - offset[1]), out_location[2] - offset[2])
 
         # Transform to carla reference system (left-handed system).
         out_transform = carla.Transform(
-            carla.Location(out_location[0], -out_location[1], out_location[2]),
+            carla.Location(out_location[0], out_location[1], out_location[2]),
             carla.Rotation(out_rotation[0], out_rotation[1] - 90, out_rotation[2]))
 
         return out_transform
@@ -85,12 +85,12 @@ class BridgeHelper(object):
                         in_location.z - math.sin(math.radians(pitch)) * extent.x)
         out_rotation = (in_rotation.pitch, in_rotation.yaw, in_rotation.roll)
 
-        # Applying offset carla-sumo net
-        out_location = (out_location[0] + offset[0], out_location[1] - offset[1], out_location[2])
+        # Applying offset sumo-carla net.
+        out_location = (out_location[0] + offset[0], -out_location[1] + offset[1], out_location[2] + offset[2])
 
         # Transform to sumo reference system.
         out_transform = carla.Transform(
-            carla.Location(out_location[0], -out_location[1], out_location[2]),
+            carla.Location(out_location[0], out_location[1], out_location[2]),
             carla.Rotation(out_rotation[0], out_rotation[1] + 90, out_rotation[2]))
 
         return out_transform

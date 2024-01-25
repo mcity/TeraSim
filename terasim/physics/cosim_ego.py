@@ -1057,13 +1057,14 @@ def game_loop(args):
             world.render(display)
             pygame.display.flip()
 
+            BridgeHelper.offset = [-1.9, 159.0, 34.5]
+
             sumo_transform = BridgeHelper.get_sumo_transform(world.player.get_transform(),
                                         world.player.bounding_box.extent)
-
             vehicle = {
                 "location": {
-                    'x': sumo_transform.location.x + 2.2, 
-                    'y': sumo_transform.location.y + 159.0, 
+                    'x': sumo_transform.location.x, 
+                    'y': sumo_transform.location.y, 
                     'z': sumo_transform.location.z
                 },
                 "rotation": {
@@ -1077,7 +1078,6 @@ def game_loop(args):
             redis_server.set('cosim_thirdpartysim_vehicle_info', json.dumps(cosim_thirdpartysim_vehicle_info))
 
     finally:
-
         if (world and world.recording_enabled):
             client.stop_recorder()
 

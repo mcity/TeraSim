@@ -8,7 +8,6 @@ import lxml.etree as ET
 from terasim.overlay import traci
 from terasim.envs.base import BaseEnv
 from terasim.simulator import Simulator
-from terasim_mr.communicationtools import constants
 
 
 class CosimSumo(BaseEnv):
@@ -56,7 +55,7 @@ class CosimSumo(BaseEnv):
             angle = traci.vehicle.getAngle(vehID)
 
             actor = {
-                "location": { "x": pos[0] + 100.0, "y": pos[1] + 122.0, "z": pos[2] - 34.5 },
+                "location": { "x": pos[0], "y": pos[1], "z": pos[2]},
                 "rotation": { "x": slope, "y": angle, "z" : 0.0},
                 "extent": {
                     "x": traci.vehicle.getLength(vehID) / 2.0,
@@ -96,8 +95,7 @@ class CosimSumo(BaseEnv):
                                 print('Could not found a route for %s. No vehicle will be spawned in sumo', 'IDM_waymo_motion')
 
                         self.add_vehicle(vehID, 'carla_route_{}'.format(vclass), lane_id=None, speed=0)
-                        # self.simulator.subscribe_vehicle_all_information(vehID, max_obs_range=120)
-                        traci.vehicle.setColor(vehID, (255, 0, 0, 255))
+                        traci.vehicle.setColor(vehID, (150, 255, 255, 255))
                         self.carla2sumo_ids.add(vehID)
                         print('Adding vehicle to sumo successful', vehID)
 
@@ -112,7 +110,6 @@ class CosimSumo(BaseEnv):
 
             # remove vehicles that are not in cosim_thirdpartysim_vehicle_info
             to_remove = [vehID for vehID in self.carla2sumo_ids if vehID not in cosim_thirdpartysim_vehicle_info]
-
             self._remove_vehicle_from_env(to_remove)
             self.carla2sumo_ids -= set(to_remove)
         else:
