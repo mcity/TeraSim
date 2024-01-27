@@ -4,7 +4,7 @@ high fidelity physics and sensor simulation.
 """
 
 from .base import PhysicSimulator
-from .cosim_sumo import CosimSumo
+from .terasim_cosim_plugin import TeraSimCoSimPlugin
 
 class PhysicsPlugin:
     def __init__(self, engine, step_length, **connect_args) -> None:

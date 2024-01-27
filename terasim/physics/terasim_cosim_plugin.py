@@ -10,7 +10,7 @@ from terasim.envs.base import BaseEnv
 from terasim.simulator import Simulator
 
 
-class CosimSumo(BaseEnv):
+class TeraSimCoSimPlugin(BaseEnv):
 
     def __init__(self, vehicle_factory, info_extractor):
         self._routes = set()

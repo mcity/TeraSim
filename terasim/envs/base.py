@@ -104,8 +104,8 @@ class BaseEnv(ABC):
             for vehID in realtime_vehID_set:
                 if vehID not in vehID_set:
                     vehicle = self._add_vehicle_to_env(vehID)
-                    if "CARLA" not in vehID:
-                        vehicle._install()
+                    # if "CARLA" not in vehID:
+                    vehicle._install()
             for vehID in vehID_set:
                 if vehID not in realtime_vehID_set:
                     self._remove_vehicle_from_env(vehID)

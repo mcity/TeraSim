@@ -191,8 +191,11 @@ class World(object):
         # Keep same camera config if the camera manager exists.
         cam_index = self.camera_manager.index if self.camera_manager is not None else 0
         cam_pos_index = self.camera_manager.transform_index if self.camera_manager is not None else 0
+        # Get lincoln MKZ2017
+        blueprint_library = self.world.get_blueprint_library()
+        blueprint = blueprint_library.find('vehicle.lincoln.mkz2017')
         # Get a random blueprint.
-        blueprint = random.choice(self.world.get_blueprint_library().filter(self._actor_filter))
+        # blueprint = random.choice(self.world.get_blueprint_library().filter(self._actor_filter))
         blueprint.set_attribute('role_name', self.actor_role_name)
         if blueprint.has_attribute('color'):
             color = random.choice(blueprint.get_attribute('color').recommended_values)
@@ -1049,6 +1052,11 @@ def game_loop(args):
         controller = KeyboardControl(world, args.autopilot)
 
         clock = pygame.time.Clock()
+
+        import time
+
+        current_time = time.time()
+
         while True:
             clock.tick_busy_loop(60)
             if controller.parse_events(client, world, clock):
@@ -1057,25 +1065,30 @@ def game_loop(args):
             world.render(display)
             pygame.display.flip()
 
-            BridgeHelper.offset = [-1.9, 159.0, 34.5]
+            BridgeHelper.offset = [2.0, 159.0, 34.5]
 
             sumo_transform = BridgeHelper.get_sumo_transform(world.player.get_transform(),
                                         world.player.bounding_box.extent)
-            vehicle = {
+            
+            v = world.player.get_velocity()
+
+            print("sumo_transform.location.x: ", sumo_transform.location.x)
+            print("sumo_transform.location.y: ", sumo_transform.location.y)
+
+            cosim_ego_vehicle_info = {
                 "location": {
-                    'x': sumo_transform.location.x, 
-                    'y': sumo_transform.location.y, 
-                    'z': sumo_transform.location.z
+                    'lat': world.gnss_sensor.lat,
+                    'lon': world.gnss_sensor.lon,
                 },
                 "rotation": {
-                    'x': sumo_transform.rotation.roll, 
-                    'y': sumo_transform.rotation.pitch, 
-                    'z': sumo_transform.rotation.yaw
+                    'roll': sumo_transform.rotation.roll, 
+                    'pitch': sumo_transform.rotation.pitch, 
+                    'yaw': sumo_transform.rotation.yaw
                 },
+                "velocity": math.sqrt(v.x**2 + v.y**2 + v.z**2),
             }
 
-            cosim_thirdpartysim_vehicle_info = {"CARLA_EGO": vehicle}
-            redis_server.set('cosim_thirdpartysim_vehicle_info', json.dumps(cosim_thirdpartysim_vehicle_info))
+            redis_server.set('cosim_ego_vehicle_info', json.dumps(cosim_ego_vehicle_info))
 
     finally:
         if (world and world.recording_enabled):
