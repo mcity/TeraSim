@@ -1,6 +1,5 @@
 import os
 import json
-import time
 import redis
 import sumolib
 import lxml.etree as ET
@@ -13,10 +12,12 @@ from terasim.simulator import Simulator
 class TeraSimCoSimPlugin(BaseEnv):
 
     def __init__(self, vehicle_factory, info_extractor):
+        self.net = None
         self._routes = set()
         self.sumo2carla_ids = set()
         self.carla2sumo_ids = set()
 
+        self.ctx = None
         self.simulator = None
         self.redis_client = None
 
@@ -24,19 +25,24 @@ class TeraSimCoSimPlugin(BaseEnv):
 
     def on_start(self, simulator: Simulator, ctx):
         self.redis_client = redis.Redis(host='localhost', port=6379, db=0)
-        time.sleep(1)
+        self.net = self._get_sumo_net(self.simulator.sumo_config_file_path)
 
     def on_step(self, simulator: Simulator, ctx):
         self.sync_sumo_to_carla()
         self.sync_carla_to_sumo()
+
+        # update sumo controlled vehicles to global context
+        self.ctx["sumo2carla_ids"] = list(self.sumo2carla_ids)
         
         return True
 
     def on_stop(self, simulator: Simulator, ctx):
         pass
 
-    def inject(self, simulator: Simulator):
+    def inject(self, simulator: Simulator, ctx):
+        self.ctx = ctx
         self.simulator = simulator
+
         simulator.start_pipeline.hook("cosim_start", self.on_start, priority=-100)
         simulator.step_pipeline.hook("cosim_step", self.on_step, priority=-100)
         simulator.stop_pipeline.hook("cosim_stop", self.on_stop, priority=-100)
@@ -44,12 +50,15 @@ class TeraSimCoSimPlugin(BaseEnv):
     def sync_sumo_to_carla(self):
         ''' sync sumo controlled vehicle to carla '''   
         veh_list = self.simulator.get_vehID_list()
-        sumo2carla_ids = set()
 
-        sumo2carla_ids = {vehID for vehID in veh_list if 'BV' in vehID}
+        self.sumo2carla_ids = {
+            vehID for vehID in veh_list if 'BV' in vehID or 'CAV' in vehID
+        }
+        self.sumo2carla_ids = set(self.sumo2carla_ids)
+
         cosim_terasim_vehicle_info = {}
 
-        for vehID in sumo2carla_ids:
+        for vehID in self.sumo2carla_ids:
             pos = traci.vehicle.getPosition3D(vehID)
             slope = traci.vehicle.getSlope(vehID)
             angle = traci.vehicle.getAngle(vehID)
@@ -84,10 +93,9 @@ class TeraSimCoSimPlugin(BaseEnv):
                 if vehID not in self.carla2sumo_ids:
                     try:
                         vclass = traci.vehicletype.getVehicleClass('IDM_waymo_motion')
-                        net = self._get_sumo_net(self.simulator.sumo_config_file_path)
                         if vclass not in self._routes:
                             print('Creating route for %s vehicle class', vclass)
-                            allowed_edges = [e for e in net.getEdges() if e.allows(vclass)]
+                            allowed_edges = [e for e in self.net.getEdges() if e.allows(vclass)]
                             if allowed_edges:
                                 traci.route.add("carla_route_{}".format(vclass), [allowed_edges[0].getID()])
                                 self._routes.add(vclass)

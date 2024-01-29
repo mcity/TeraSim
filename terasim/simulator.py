@@ -63,7 +63,7 @@ class Simulator(object):
         self.state_manager = StateManager(self)
         self.command_manager = CommandManager(self)
         self._plugin_list = []
-        self.ctx = None # context for the execution pipeline
+        self.ctx = {} # context for the execution pipeline
 
         # pipelines
         self.start_pipeline = Pipeline('start_pipeline', []) # params: simulator, ctx
@@ -140,6 +140,7 @@ class Simulator(object):
             list_lanes.append(sumo_edge.getLanes()) 
         return list_lanes 
 
+    #changes
     def add_plugin(self, plugin):
         """Plugin a plugin to the simulator.
 
@@ -147,7 +148,7 @@ class Simulator(object):
             plugin (Plugin): Plugin object.
         """
         self._plugin_list.append(plugin)
-        plugin.inject(self)
+        plugin.inject(self, self.ctx)
 
     @property
     def plugins(self):

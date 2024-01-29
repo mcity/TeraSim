@@ -15,7 +15,7 @@ class EnvTemplate(BaseEnv):
     
     def on_step(self, ctx):
         # Make decisions and execute commands
-        control_cmds, infos = self.make_decisions()
+        control_cmds, infos = self.make_decisions(ctx)
         self.execute_control_commands(control_cmds)
         
         # Simulation stop check
@@ -24,16 +24,22 @@ class EnvTemplate(BaseEnv):
     def on_stop(self, ctx):
         pass
 
-    def make_decisions(self):
+    #changes
+    def make_decisions(self, ctx):
         """Make decisions for all vehicles.
         """        
         # You can also make decisions for specific vehicles, e.g., only let vehicles near the AV make decisions
         # Cooperative decision making is also possible, e.g., let the AV and the BV make decisions together
 
         # by default, all vehicles in the vehicle list will make decisions
-        control_command_and_info = {
-            veh.id: veh.make_decision() for veh in self.vehicle_list if "CARLA" not in veh.id
-        }
+        if "sumo2carla_ids" in ctx:
+            control_command_and_info = {veh.id: veh.make_decision() for veh in self.vehicle_list if veh.id in ctx["sumo2carla_ids"]}
+        else:
+            control_command_and_info = {veh.id: veh.make_decision() for veh in self.vehicle_list}
+
+        # control_command_and_info = {
+        #     veh.id: veh.make_decision() for veh in self.vehicle_list
+        # }
         control_command_dict = {
             veh_id: command_and_info[0] for veh_id, command_and_info in control_command_and_info.items()
         }

@@ -3,7 +3,7 @@ This module defines the interfaces to physics simulator, which provide
 high fidelity physics and sensor simulation.
 """
 
-from .base import PhysicSimulator
+# from .base import PhysicSimulator
 from .terasim_cosim_plugin import TeraSimCoSimPlugin
 
 class PhysicsPlugin:

@@ -211,7 +211,9 @@ class BridgeHelper(object):
             driver_id = random.choice(blueprint.get_attribute('driver_id').recommended_values)
             blueprint.set_attribute('driver_id', driver_id)
 
-        attribute = str(sumo_actor_id).replace("BV", "TeraSim")
+        attribute = str(sumo_actor_id)
+        attribute = attribute.replace("BV", "TeraSim_BV")
+        attribute = attribute.replace("CAV", "TeraSim_CAV")
 
         blueprint.set_attribute('role_name', attribute)
 
