@@ -140,7 +140,6 @@ class Simulator(object):
             list_lanes.append(sumo_edge.getLanes()) 
         return list_lanes 
 
-    #changes
     def add_plugin(self, plugin):
         """Plugin a plugin to the simulator.
 

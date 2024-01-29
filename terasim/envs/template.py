@@ -24,7 +24,6 @@ class EnvTemplate(BaseEnv):
     def on_stop(self, ctx):
         pass
 
-    #changes
     def make_decisions(self, ctx):
         """Make decisions for all vehicles.
         """        
