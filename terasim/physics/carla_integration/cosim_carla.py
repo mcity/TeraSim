@@ -156,18 +156,23 @@ class SimulationSynchronization(object):
             sumo_actor_extent.z = sumo_actor_value['extent']['z']
 
             carla_transform = BridgeHelper.get_carla_transform(sumo_actor_transform, sumo_actor_extent)
+
             # Creating new carla actor or updating existing one.
             if sumo_actor_id not in self.sumo2carla_ids:
-                carla_blueprint = BridgeHelper.get_carla_blueprint_from_sumo_redis(
-                    sumo_actor_id, sumo_actor_type_id, sumo_actor_color_tuple, sumo_actor_vclass_value)
+                if sumo_actor_id == "CAV":
+                    blueprint_library = BridgeHelper.blueprint_library
+                    carla_blueprint = blueprint_library.find('vehicle.lincoln.mkz2017')
+                    carla_blueprint.set_attribute('color', '255,255,255')
+                    carla_blueprint.set_attribute('role_name', 'TeraSim_CAV')
+                else:
+                    carla_blueprint = BridgeHelper.get_carla_blueprint_from_sumo_redis(
+                        sumo_actor_id, sumo_actor_type_id, sumo_actor_color_tuple, sumo_actor_vclass_value)
 
                 if carla_blueprint is not None:
                     carla_actor_id = self.carla.spawn_actor(carla_blueprint, carla_transform)
+                    print("Spawn actor: ", sumo_actor_id, carla_actor_id)
                     if carla_actor_id != INVALID_ACTOR_ID:
                         self.sumo2carla_ids[sumo_actor_id] = carla_actor_id
-
-                    print("Spawn actor: ", sumo_actor_id, carla_actor_id)
-                        
             else:
                 carla_actor_id = self.sumo2carla_ids[sumo_actor_id]
                 self.carla.synchronize_vehicle(carla_actor_id, carla_transform, lights=None)

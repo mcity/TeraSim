@@ -213,7 +213,6 @@ class BridgeHelper(object):
 
         attribute = str(sumo_actor_id)
         attribute = attribute.replace("BV", "TeraSim_BV")
-        attribute = attribute.replace("CAV", "TeraSim_CAV")
 
         blueprint.set_attribute('role_name', attribute)
 

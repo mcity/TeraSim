@@ -28,7 +28,7 @@ args = parser.parse_args()
 client = carla.Client('localhost', 2000)
 
 # Set the timeout
-client.set_timeout(10.0) 
+client.set_timeout(2.0) 
 
 # Get the world from the server
 world = client.get_world()
