@@ -1,6 +1,6 @@
 from terasim.simulator import Simulator
 from terasim.vehicle.vehicle import VehicleList
-from terasim.agent import AgentInitialInfo, AgentDepartureInfo
+from terasim.agent.agent import AgentInitialInfo, AgentDepartureInfo
 from abc import ABC, abstractmethod
 import terasim.utils as utils
 from typing import Union

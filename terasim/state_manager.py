@@ -4,7 +4,7 @@ from collections import namedtuple, defaultdict
 import logging
 
 from terasim.overlay import traci
-from terasim.agent import AgentId
+from terasim.agent.agent import AgentId
 from terasim.vehicle import Vehicle
 from traci import constants as tc
 

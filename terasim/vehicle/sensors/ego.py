@@ -1,10 +1,9 @@
-from .base import BaseSensor
-
+from terasim.agent.agent_sensor import AgentSensor
 import traci.constants as tc
 from terasim.overlay import traci
-from terasim.agent import AgentId
+from terasim.agent.agent import AgentId
 
-class EgoSensor(BaseSensor):
+class EgoSensor(AgentSensor):
     ''' A sensor for reporting basic states (position, speed, heading, etc.) '''
 
     DEFAULT_PARAMS = dict(

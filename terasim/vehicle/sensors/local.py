@@ -1,12 +1,11 @@
 import addict
-
-from .base import BaseSensor
+from terasim.agent.agent_sensor import AgentSensor
 from terasim.simulator import Simulator
 from terasim.overlay import traci
 from terasim import utils
 import traci.constants as tc
 
-class LocalSensor(BaseSensor):
+class LocalSensor(AgentSensor):
     """
     LocalSensor is a basic sensor that subscribe to some SUMO variables of a vehicle.
     

@@ -1,9 +1,9 @@
-from terasim.vehicle.controllers.base_controller import BaseController
+from terasim.agent.agent_controller import AgentController
 import logging
 import terasim.utils as utils
 from terasim.simulator import traci
 
-class HighEfficiencyController(BaseController):
+class HighEfficiencyController(AgentController):
     params = {
             "v_high": 40,
             "v_low": 20,
