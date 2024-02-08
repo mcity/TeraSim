@@ -5,11 +5,11 @@ from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING
 
 from terasim import utils
-from terasim.agent import Agent
+from terasim.agent.agent import Agent
 if TYPE_CHECKING:
     from terasim.simulator import Simulator
 
-class BaseSensor(ABC):
+class AgentSensor(ABC):
     DEFAULT_PARAMS = {}
 
     def __init__(self, name = "base", **params):

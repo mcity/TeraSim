@@ -11,7 +11,7 @@ import terasim
 from typing import Optional
 from terasim.state_manager import StateManager
 from terasim.command_manager import CommandManager
-from terasim.agent import Agent, AgentId, AgentInitialInfo
+from terasim.agent.agent import Agent, AgentId, AgentInitialInfo
 import terasim.utils as utils
 from .overlay import traci, has_libsumo
 from .pipeline import Pipeline, PipelineElement

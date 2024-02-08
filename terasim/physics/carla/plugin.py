@@ -7,7 +7,7 @@ from terasim.physics.carla.helper import BridgeHelper
 from terasim.physics.carla.sensors import CarlaSensor
 from terasim.physics.base import PhysicSimulator, SensorData
 from terasim.simulator import Simulator, traci
-from terasim.agent import Agent, AgentId, AgentInitialInfo
+from terasim.agent.agent import Agent, AgentId, AgentInitialInfo
 
 class SensorDataBuffer:
     def __init__(self) -> None:

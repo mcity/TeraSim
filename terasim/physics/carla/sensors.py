@@ -1,9 +1,9 @@
 from enum import Enum
 from terasim.overlay import carla
-from terasim.vehicle.sensors.base import BaseSensor
+from terasim.agent.agent_sensor import AgentSensor
 from threading import Event
 
-class CarlaSensor(BaseSensor):
+class CarlaSensor(AgentSensor):
     DEFAULT_PARAMS = dict(
         location = (0, 0, 0), # (x, y, z) in UE4 coordinate
         rotation = (0, 0, 0), # (pitch, yaw, roll) in UE4 coordinate
