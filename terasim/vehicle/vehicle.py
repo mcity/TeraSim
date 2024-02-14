@@ -1,8 +1,8 @@
 from copy import copy
 from typing import Iterable, Dict
-from terasim.vehicle.decision_models.base_decision_model import BaseDecisionModel
-from terasim.vehicle.sensors import BaseSensor
-from terasim.agent import Agent
+from terasim.agent.agent_decision_model import AgentDecisionModel
+from terasim.agent.agent_sensor import AgentSensor
+from terasim.agent.agent import Agent
 import logging
 
 class Vehicle(Agent):
@@ -18,19 +18,19 @@ class Vehicle(Agent):
     )
 
     def __init__(self, id, simulator,
-                 sensors: Iterable[BaseSensor] = [],
+                 sensors: Iterable[AgentSensor] = [],
                  decision_model=None,
                  controller=None,
                  **params):
         super().__init__(id, simulator, **params)
 
-        self.sensors: Dict[str, BaseSensor] = {}
+        self.sensors: Dict[str, AgentSensor] = {}
         for s in sensors:
             if s.name in sensors:
                 raise ValueError("Multiple sensors with the same name!")
             self.sensors[s.name] = s
             
-        if not isinstance(decision_model, BaseDecisionModel):
+        if not isinstance(decision_model, AgentDecisionModel):
             raise ValueError("Installing non-decision_model instance as decision_model!")
         self.decision_model = decision_model
 
@@ -47,7 +47,7 @@ class Vehicle(Agent):
             self._simulator.state_manager.register_sensor(self, name)
 
         # install decision model
-        if not isinstance(self.decision_model, BaseDecisionModel):
+        if not isinstance(self.decision_model, AgentDecisionModel):
             raise ValueError("Installing non-decision_model instance as decision_model!")
         self.decision_model.vehicle = self
         self.decision_model.install()

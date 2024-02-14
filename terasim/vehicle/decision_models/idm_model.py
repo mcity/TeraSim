@@ -72,7 +72,6 @@ class IDMModel(HighwayBaseDecisionModel):
 
     def install(self):
         super().install()
-        # self.vehicle.simulator.set_vehicle_color(self.vehicle.id, self.vehicle.COLOR_RED)
     
     def decision(self, observation):
         """Vehicle decides next action based on IDM model.

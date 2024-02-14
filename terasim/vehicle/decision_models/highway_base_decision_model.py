@@ -1,9 +1,9 @@
-from terasim.vehicle.decision_models.base_decision_model import BaseDecisionModel
+from terasim.agent.agent_decision_model import AgentDecisionModel
 from bidict import bidict
 import numpy as np
 import terasim.utils as utils
 
-class HighwayBaseDecisionModel(BaseDecisionModel):
+class HighwayBaseDecisionModel(AgentDecisionModel):
     longi_safety_buffer, lateral_safety_buffer = 2, 2
     v_low, v_high, r_low, r_high, rr_low, rr_high, acc_low, acc_high =20, 40, 0, 115, -10, 8, -4, 2
     acc_resolution = 0.2
@@ -26,7 +26,7 @@ class HighwayBaseDecisionModel(BaseDecisionModel):
         self.ego_info = self.vehicle.observation.information["Ego"]
     
     def install(self):
-        super().install() 
+        super().install()
 
     @staticmethod
     def _check_longitudinal_safety(obs, pdf_array, lateral_result=None, CAV_flag=False):

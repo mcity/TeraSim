@@ -1,6 +1,6 @@
 from terasim.simulator import Simulator
 from terasim.vehicle.vehicle import VehicleList
-from terasim.agent import AgentInitialInfo, AgentDepartureInfo
+from terasim.agent.agent import AgentInitialInfo, AgentDepartureInfo
 from abc import ABC, abstractmethod
 import terasim.utils as utils
 from typing import Union
@@ -44,7 +44,6 @@ class BaseEnv(ABC):
     def add_vehicle(self, veh_id, route, lane=None, lane_id="", position=0, speed=-1, type_id="DEFAULT_VEHTYPE"):
         # create the vehicle object from the vehicle factory and add the vehicle to the vehicle list
         vehicle = self._add_vehicle_to_env(veh_id)
-        
         # add the vehicle to the simulators
         self.simulator._add_vehicle_to_sim(vehicle,
             AgentInitialInfo(route=route,

@@ -5,7 +5,7 @@ from PIL import Image
 
 from terasim.simulator import Simulator
 from terasim.vehicle import Vehicle
-from terasim.vehicle.factories.vehicle_fatory import VehicleFactory
+from terasim.vehicle.factories.vehicle_factory import VehicleFactory
 from terasim.logger.infoextractor import InfoExtractor
 from terasim.physics import CarlaPhysics
 from terasim.physics.carla.sensors import Camera

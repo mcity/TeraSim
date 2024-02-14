@@ -1,24 +1,22 @@
-from .base import BaseSensor
-
+from terasim.agent.agent_sensor import AgentSensor
 import traci.constants as tc
 from terasim.overlay import traci
-from terasim.agent import AgentId
 
-class EgoSensor(BaseSensor):
+class EgoSensor(AgentSensor):
     ''' A sensor for reporting basic states (position, speed, heading, etc.) '''
 
     DEFAULT_PARAMS = dict(
         fields = {
+            'velocity': tc.VAR_SPEED,
             'position': tc.VAR_POSITION,
             'position3d': tc.VAR_POSITION3D,
-            'speed': tc.VAR_SPEED,
             'heading': tc.VAR_ANGLE,
             'edge_id': tc.VAR_ROAD_ID,
+            "lane_id": tc.VAR_LANE_ID,
             'lane_index': tc.VAR_LANE_INDEX,
             'acceleration': tc.VAR_ACCELERATION,
         }
     )
-
     def __init__(self, name = "ego", **params):
         super().__init__(name, **params)
 

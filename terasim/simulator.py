@@ -10,12 +10,11 @@ import terasim
 from typing import Optional
 from terasim.state_manager import StateManager
 from terasim.command_manager import CommandManager
-from terasim.agent import Agent, AgentId, AgentInitialInfo
+from terasim.agent.agent import Agent, AgentId, AgentInitialInfo
 import terasim.utils as utils
 from .overlay import traci, has_libsumo
 from .pipeline import Pipeline, PipelineElement
 from pathlib import Path
-
 
 class Context():
     def __init__(self) -> None:
@@ -72,7 +71,6 @@ class Simulator(object):
                                        PipelineElement("sumo_step", self.sumo_step, priority=10),
                                        PipelineElement("state_manager_gc", self.state_manager.garbage_collection, priority=10),
                                        PipelineElement("compensate_step_end_time", self.compensate_step_end_time, priority=10000)])
-        
         self.stop_pipeline = Pipeline('stop_pipeline', []) # params: simulator, ctx
         self._add_vehicle_to_sim = Pipeline('add_vehicle_pipeline',  # params: agent, init_info. If init_info is None, then the initial info should be inferred from traci.
                                             [PipelineElement("sumo_add", self._add_vehicle_to_sumo)])
@@ -87,7 +85,6 @@ class Simulator(object):
         """
         self.env = env
         self.env.simulator = self
-        
         self.start_pipeline.hook("env_start", env._start, priority=0)
         self.step_pipeline.hook("env_step", env._step, priority=0)
         self.stop_pipeline.hook("env_stop", env._stop, priority=0)
@@ -1085,6 +1082,4 @@ class Simulator(object):
             tlsID (str): Signal ID.
             newlogic (Logic): New traffic light logic.
         """   
-        traci.trafficlight.setProgramLogic(tlsID, newlogic)   
-    
-
+        traci.trafficlight.setProgramLogic(tlsID, newlogic)
