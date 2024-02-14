@@ -99,8 +99,8 @@ class BaseEnv(ABC):
         """Maintain the vehicle list based on the departed vehicle list and arrived vehicle list.
         """
 
-        if "sumo2carla_ids" in ctx:
-            realtime_vehID_set = set(ctx["sumo2carla_ids"])
+        if "terasim_controlled_vehicle_ids" in ctx:
+            realtime_vehID_set = set(ctx["terasim_controlled_vehicle_ids"])
         else:
             realtime_vehID_set = set(self.simulator.get_vehID_list())
 

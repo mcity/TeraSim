@@ -31,8 +31,8 @@ class EnvTemplate(BaseEnv):
         # Cooperative decision making is also possible, e.g., let the AV and the BV make decisions together
 
         # by default, all vehicles in the vehicle list will make decisions
-        if "sumo2carla_ids" in ctx:
-            control_command_and_info = {veh.id: veh.make_decision() for veh in self.vehicle_list if veh.id in ctx["sumo2carla_ids"]}
+        if "terasim_controlled_vehicle_ids" in ctx:
+            control_command_and_info = {veh.id: veh.make_decision() for veh in self.vehicle_list if veh.id in ctx["terasim_controlled_vehicle_ids"]}
         else:
             control_command_and_info = {veh.id: veh.make_decision() for veh in self.vehicle_list}
 

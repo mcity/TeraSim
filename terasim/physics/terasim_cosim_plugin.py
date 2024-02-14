@@ -14,7 +14,7 @@ class TeraSimCoSimPlugin(BaseEnv):
     def __init__(self, vehicle_factory, info_extractor):
         self.net = None
         self._routes = set()
-        self.sumo2carla_ids = set()
+        self.terasim_controlled_vehicle_ids = set()
         self.carla2sumo_ids = set()
 
         self.ctx = None
@@ -32,7 +32,7 @@ class TeraSimCoSimPlugin(BaseEnv):
         self.sync_carla_to_sumo()
 
         # update sumo controlled vehicles to global context
-        self.ctx["sumo2carla_ids"] = list(self.sumo2carla_ids)
+        self.ctx["terasim_controlled_vehicle_ids"] = list(self.terasim_controlled_vehicle_ids)
         
         return True
 
@@ -51,14 +51,14 @@ class TeraSimCoSimPlugin(BaseEnv):
         ''' sync sumo controlled vehicle to carla '''   
         veh_list = self.simulator.get_vehID_list()
 
-        self.sumo2carla_ids = {
+        self.terasim_controlled_vehicle_ids = {
             vehID for vehID in veh_list if 'BV' in vehID or 'CAV' in vehID
         }
-        self.sumo2carla_ids = set(self.sumo2carla_ids)
+        self.terasim_controlled_vehicle_ids = set(self.terasim_controlled_vehicle_ids)
 
         cosim_terasim_vehicle_info = {}
 
-        for vehID in self.sumo2carla_ids:
+        for vehID in self.terasim_controlled_vehicle_ids:
             pos = traci.vehicle.getPosition3D(vehID)
             slope = traci.vehicle.getSlope(vehID)
             angle = traci.vehicle.getAngle(vehID)

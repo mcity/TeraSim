@@ -78,7 +78,7 @@ class SimulationSynchronization(object):
         self.redis_server = redis.Redis(host='localhost', port=6379, db=0)
 
         # Mapped actor ids.
-        self.sumo2carla_ids = {}  # Contains only actors controlled by sumo.
+        self.terasim_controlled_vehicle_ids = {}  # Contains only actors controlled by sumo.
 
     def tick(self):
         """
@@ -93,7 +93,7 @@ class SimulationSynchronization(object):
         carla_vehicle_list = [actor for actor in carla_actor_list if 'vehicle' in actor.type_id]
         carla_vehicle_ids = [vehicle.id for vehicle in carla_vehicle_list]
 
-        sumo2carla_id_values = self.sumo2carla_ids.values()
+        sumo2carla_id_values = self.terasim_controlled_vehicle_ids.values()
 
         diff_ids = [id for id in carla_vehicle_ids if id not in sumo2carla_id_values]
         
@@ -128,10 +128,10 @@ class SimulationSynchronization(object):
             cosim_terasim_vehicle_info_dict = json.loads(cosim_terasim_vehicle_info_json)
         else:
             # Destroying synchronized actors.
-            for carla_actor_id in self.sumo2carla_ids.values():
+            for carla_actor_id in self.terasim_controlled_vehicle_ids.values():
                 self.carla.destroy_actor(carla_actor_id)
             print("No data found for cosim_terasim_vehicle_info, destroying all actors.")
-            self.sumo2carla_ids = {}
+            self.terasim_controlled_vehicle_ids = {}
             time.sleep(2)
             return
 
@@ -158,7 +158,7 @@ class SimulationSynchronization(object):
             carla_transform = BridgeHelper.get_carla_transform(sumo_actor_transform, sumo_actor_extent)
 
             # Creating new carla actor or updating existing one.
-            if sumo_actor_id not in self.sumo2carla_ids:
+            if sumo_actor_id not in self.terasim_controlled_vehicle_ids:
                 if sumo_actor_id == "CAV":
                     blueprint_library = BridgeHelper.blueprint_library
                     carla_blueprint = blueprint_library.find('vehicle.lincoln.mkz2017')
@@ -172,16 +172,16 @@ class SimulationSynchronization(object):
                     carla_actor_id = self.carla.spawn_actor(carla_blueprint, carla_transform)
                     print("Spawn actor: ", sumo_actor_id, carla_actor_id)
                     if carla_actor_id != INVALID_ACTOR_ID:
-                        self.sumo2carla_ids[sumo_actor_id] = carla_actor_id
+                        self.terasim_controlled_vehicle_ids[sumo_actor_id] = carla_actor_id
             else:
-                carla_actor_id = self.sumo2carla_ids[sumo_actor_id]
+                carla_actor_id = self.terasim_controlled_vehicle_ids[sumo_actor_id]
                 self.carla.synchronize_vehicle(carla_actor_id, carla_transform, lights=None)
 
-        # Iterate over sumo2carla_ids dictionary and destroy actors that are not in sumo_actor_ids.
-        for sumo_actor_id in list(self.sumo2carla_ids.keys()):
+        # Iterate over terasim_controlled_vehicle_ids dictionary and destroy actors that are not in sumo_actor_ids.
+        for sumo_actor_id in list(self.terasim_controlled_vehicle_ids.keys()):
             if sumo_actor_id not in cosim_terasim_vehicle_info_dict:
                 print("Destroy actor: ", sumo_actor_id)
-                self.carla.destroy_actor(self.sumo2carla_ids.pop(sumo_actor_id))
+                self.carla.destroy_actor(self.terasim_controlled_vehicle_ids.pop(sumo_actor_id))
 
         self.carla.tick()
 
@@ -196,7 +196,7 @@ class SimulationSynchronization(object):
         self.carla.world.apply_settings(settings)
 
         # Destroying synchronized actors.
-        for carla_actor_id in self.sumo2carla_ids.values():
+        for carla_actor_id in self.terasim_controlled_vehicle_ids.values():
             self.carla.destroy_actor(carla_actor_id)
 
         # Closing carla client.

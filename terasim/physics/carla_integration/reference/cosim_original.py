@@ -81,7 +81,7 @@ class SimulationSynchronization(object):
             self.carla.switch_off_traffic_lights()
 
         # Mapped actor ids.
-        self.sumo2carla_ids = {}  # Contains only actors controlled by sumo.
+        self.terasim_controlled_vehicle_ids = {}  # Contains only actors controlled by sumo.
         self.carla2sumo_ids = {}  # Contains only actors controlled by carla.
 
         BridgeHelper.blueprint_library = self.carla.world.get_blueprint_library()
@@ -115,18 +115,18 @@ class SimulationSynchronization(object):
 
                 carla_actor_id = self.carla.spawn_actor(carla_blueprint, carla_transform)
                 if carla_actor_id != INVALID_ACTOR_ID:
-                    self.sumo2carla_ids[sumo_actor_id] = carla_actor_id
+                    self.terasim_controlled_vehicle_ids[sumo_actor_id] = carla_actor_id
             else:
                 self.sumo.unsubscribe(sumo_actor_id)
 
         # Destroying sumo arrived actors in carla.
         for sumo_actor_id in self.sumo.destroyed_actors:
-            if sumo_actor_id in self.sumo2carla_ids:
-                self.carla.destroy_actor(self.sumo2carla_ids.pop(sumo_actor_id))
+            if sumo_actor_id in self.terasim_controlled_vehicle_ids:
+                self.carla.destroy_actor(self.terasim_controlled_vehicle_ids.pop(sumo_actor_id))
 
         # Updating sumo actors in carla.
-        for sumo_actor_id in self.sumo2carla_ids:
-            carla_actor_id = self.sumo2carla_ids[sumo_actor_id]
+        for sumo_actor_id in self.terasim_controlled_vehicle_ids:
+            carla_actor_id = self.terasim_controlled_vehicle_ids[sumo_actor_id]
 
             sumo_actor = self.sumo.get_actor(sumo_actor_id)
             carla_actor = self.carla.get_actor(carla_actor_id)
@@ -162,7 +162,7 @@ class SimulationSynchronization(object):
         self.carla.tick()
 
         # Spawning new carla actors (not controlled by sumo)
-        carla_spawned_actors = self.carla.spawned_actors - set(self.sumo2carla_ids.values())
+        carla_spawned_actors = self.carla.spawned_actors - set(self.terasim_controlled_vehicle_ids.values())
         for carla_actor_id in carla_spawned_actors:
             carla_actor = self.carla.get_actor(carla_actor_id)
 
@@ -221,7 +221,7 @@ class SimulationSynchronization(object):
         self.carla.world.apply_settings(settings)
 
         # Destroying synchronized actors.
-        for carla_actor_id in self.sumo2carla_ids.values():
+        for carla_actor_id in self.terasim_controlled_vehicle_ids.values():
             self.carla.destroy_actor(carla_actor_id)
 
         for sumo_actor_id in self.carla2sumo_ids.values():
