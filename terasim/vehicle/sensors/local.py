@@ -85,4 +85,3 @@ class LocalSensor(BaseSensor):
             road_id=subscription[veh_id][80]
         )
         return veh_info
-

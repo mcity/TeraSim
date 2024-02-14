@@ -23,7 +23,7 @@ class BaseDecisionModel(ABC):
     def install(self):
         utils.set_vehicle_speedmode(self.vehicle.id)
         utils.set_vehicle_lanechangemode(self.vehicle.id)
-        self.vehicle.simulator.set_vehicle_color(self.vehicle.id, self.vehicle.COLOR_YELLOW)
+        # self.vehicle.simulator.set_vehicle_color(self.vehicle.id, self.vehicle.COLOR_YELLOW)
 
 
 

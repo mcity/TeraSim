@@ -7,3 +7,4 @@ import terasim.logger
 import terasim.measure
 import terasim.network
 import terasim.vehicle
+import terasim.physics

@@ -56,7 +56,7 @@ class Vehicle(Agent):
         self.controller._install(self)
 
         # apply params
-        self.simulator.set_vehicle_color(self.id, self.params.properties.color)
+        # self.simulator.set_vehicle_color(self.id, self.params.properties.color)
 
     def _uninstall(self):
         # uninstall sensors

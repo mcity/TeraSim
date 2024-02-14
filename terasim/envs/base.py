@@ -44,7 +44,7 @@ class BaseEnv(ABC):
     def add_vehicle(self, veh_id, route, lane=None, lane_id="", position=0, speed=-1, type_id="DEFAULT_VEHTYPE"):
         # create the vehicle object from the vehicle factory and add the vehicle to the vehicle list
         vehicle = self._add_vehicle_to_env(veh_id)
-
+        
         # add the vehicle to the simulators
         self.simulator._add_vehicle_to_sim(vehicle,
             AgentInitialInfo(route=route,
@@ -72,7 +72,7 @@ class BaseEnv(ABC):
 
     def _step(self, simulator, ctx) -> bool:
         # First synchronize the vehicle list
-        self._maintain_all_vehicles()
+        self._maintain_all_vehicles(ctx)
 
         # Then call custom env defined step
         step_result = self.on_step(ctx)
@@ -95,10 +95,15 @@ class BaseEnv(ABC):
 
     ########## Other private utility functions that should not be directly called by custom env
 
-    def _maintain_all_vehicles(self):
+    def _maintain_all_vehicles(self, ctx):
         """Maintain the vehicle list based on the departed vehicle list and arrived vehicle list.
-        """        
-        realtime_vehID_set = set(self.simulator.get_vehID_list())
+        """
+
+        if "terasim_controlled_vehicle_ids" in ctx:
+            realtime_vehID_set = set(ctx["terasim_controlled_vehicle_ids"])
+        else:
+            realtime_vehID_set = set(self.simulator.get_vehID_list())
+
         vehID_set = set(self.vehicle_list.keys())
         if vehID_set != realtime_vehID_set:
             for vehID in realtime_vehID_set:

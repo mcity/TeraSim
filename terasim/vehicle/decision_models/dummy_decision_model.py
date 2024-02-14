@@ -32,18 +32,19 @@ class DummyDecisionModel(BaseDecisionModel):
         super().__init__()
 
     def derive_control_command_from_observation(self, obs_dict):
-        """derive control command from observation
+        return None, None
+        # """derive control command from observation
 
-        Args:
-            obs_dict (dict): vehicle observation dictionary
+        # Args:
+        #     obs_dict (dict): vehicle observation dictionary
 
-        Returns:
-            dict: command
-        """
-        if self.mode == "constant":
-            return self.constant_control_command, None
-        else:
-            import random
-            rand_int = random.randint(0, 2)
-            command_list = [self.longitudinal_control_command, self.left_control_command, self.right_control_command]
-            return command_list[rand_int], None
+        # Returns:
+        #     dict: command
+        # """
+        # if self.mode == "constant":
+        #     return self.constant_control_command, None
+        # else:
+        #     import random
+        #     rand_int = random.randint(0, 2)
+        #     command_list = [self.longitudinal_control_command, self.left_control_command, self.right_control_command]
+        #     return command_list[rand_int], None
