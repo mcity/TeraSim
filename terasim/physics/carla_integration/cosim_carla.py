@@ -74,11 +74,17 @@ class SimulationSynchronization(object):
         # terasim cosim settings
         BridgeHelper.blueprint_library = self.carla.world.get_blueprint_library()
         BridgeHelper.offset = [2.0, 159.0, 34.5]
+        
         # redis server for communication
         self.redis_server = redis.Redis(host='localhost', port=6379, db=0)
+        self.redis_server.flushall()
+        print("Redis server connected, flush all")
 
         # Mapped actor ids.
         self.terasim_controlled_vehicle_ids = {}  # Contains only actors controlled by sumo.
+        self.teraim_to_voices_id_mapping = {}
+
+        self.available_terasim_voices_ids = [1, 2, 3, 4]
 
     def tick(self):
         """
@@ -88,14 +94,16 @@ class SimulationSynchronization(object):
         self.sync_sumo_to_carla()
         self.sync_carla_to_sumo()
 
+        self.carla.tick()
+
     def sync_carla_to_sumo(self):
         carla_actor_list = self.carla.world.get_actors()
         carla_vehicle_list = [actor for actor in carla_actor_list if 'vehicle' in actor.type_id]
         carla_vehicle_ids = [vehicle.id for vehicle in carla_vehicle_list]
 
-        sumo2carla_id_values = self.terasim_controlled_vehicle_ids.values()
+        terasim_controlled_vehicle_id_values = self.terasim_controlled_vehicle_ids.values()
 
-        diff_ids = [id for id in carla_vehicle_ids if id not in sumo2carla_id_values]
+        diff_ids = [id for id in carla_vehicle_ids if id not in terasim_controlled_vehicle_id_values]
         
         cosim_thirdpartysim_vehicle_info = {}
 
@@ -122,26 +130,22 @@ class SimulationSynchronization(object):
         self.redis_server.set('cosim_thirdpartysim_vehicle_info', json.dumps(cosim_thirdpartysim_vehicle_info))
 
     def sync_sumo_to_carla(self):
-        # reads sumo context from redis.
         cosim_terasim_vehicle_info_json = self.redis_server.get('cosim_terasim_vehicle_info')
-        if cosim_terasim_vehicle_info_json is not None:
-            cosim_terasim_vehicle_info_dict = json.loads(cosim_terasim_vehicle_info_json)
-        else:
-            # Destroying synchronized actors.
+        terasim_status = self.redis_server.get('terasim_status')
+
+        if cosim_terasim_vehicle_info_json is None or terasim_status == b'0':
             for carla_actor_id in self.terasim_controlled_vehicle_ids.values():
                 self.carla.destroy_actor(carla_actor_id)
-            print("No data found for cosim_terasim_vehicle_info, destroying all actors.")
+                print("destroy terasim controlled carla actor: ", carla_actor_id)
+                
             self.terasim_controlled_vehicle_ids = {}
-            time.sleep(2)
+            self.available_terasim_voices_ids = [1, 2, 3, 4]
             return
+          
+        cosim_terasim_vehicle_info_dict = json.loads(cosim_terasim_vehicle_info_json)
 
         # iterates over sumo actors and updates them in carla.
         for sumo_actor_id, sumo_actor_value in cosim_terasim_vehicle_info_dict.items():
-            sumo_actor_type_id = sumo_actor_value['type_id']
-            sumo_actor_vclass_value = sumo_actor_value['vclass']
-            sumo_actor_color_list = sumo_actor_value['color']
-            sumo_actor_color_tuple = tuple(sumo_actor_color_list)
-
             sumo_actor_transform = carla.Transform()
             sumo_actor_transform.location.x = sumo_actor_value['location']['x']
             sumo_actor_transform.location.y = sumo_actor_value['location']['y']
@@ -159,20 +163,26 @@ class SimulationSynchronization(object):
 
             # Creating new carla actor or updating existing one.
             if sumo_actor_id not in self.terasim_controlled_vehicle_ids:
-                if sumo_actor_id == "CAV":
-                    blueprint_library = BridgeHelper.blueprint_library
-                    carla_blueprint = blueprint_library.find('vehicle.lincoln.mkz2017')
-                    carla_blueprint.set_attribute('color', '255,255,255')
-                    carla_blueprint.set_attribute('role_name', 'TeraSim_CAV')
-                else:
-                    carla_blueprint = BridgeHelper.get_carla_blueprint_from_sumo_redis(
-                        sumo_actor_id, sumo_actor_type_id, sumo_actor_color_tuple, sumo_actor_vclass_value)
+                blueprint_library = BridgeHelper.blueprint_library
+                carla_blueprint = blueprint_library.find('vehicle.lincoln.mkz2017')
 
-                if carla_blueprint is not None:
+                if sumo_actor_id == "CAV":
+                    carla_blueprint.set_attribute('color', '255,255,255')
+                    carla_blueprint.set_attribute('role_name', 'MCITY_CAV_01')
                     carla_actor_id = self.carla.spawn_actor(carla_blueprint, carla_transform)
+                    self.terasim_controlled_vehicle_ids[sumo_actor_id] = carla_actor_id
                     print("Spawn actor: ", sumo_actor_id, carla_actor_id)
-                    if carla_actor_id != INVALID_ACTOR_ID:
+                else:
+                    try:
+                        terasim_voices_ids = self.available_terasim_voices_ids.pop(0)
+                        self.teraim_to_voices_id_mapping[sumo_actor_id] = terasim_voices_ids
+                        carla_blueprint.set_attribute('color', '0,0,0')
+                        carla_blueprint.set_attribute('role_name', 'MCITY_TERASIM_0' + str(terasim_voices_ids))
+                        carla_actor_id = self.carla.spawn_actor(carla_blueprint, carla_transform)
                         self.terasim_controlled_vehicle_ids[sumo_actor_id] = carla_actor_id
+                        print("Spawn actor: ", sumo_actor_id, carla_actor_id)
+                    except IndexError:
+                        print("Exceeded maximum number of vehicles. Cannot add to voices carla.")
             else:
                 carla_actor_id = self.terasim_controlled_vehicle_ids[sumo_actor_id]
                 self.carla.synchronize_vehicle(carla_actor_id, carla_transform, lights=None)
@@ -182,8 +192,7 @@ class SimulationSynchronization(object):
             if sumo_actor_id not in cosim_terasim_vehicle_info_dict:
                 print("Destroy actor: ", sumo_actor_id)
                 self.carla.destroy_actor(self.terasim_controlled_vehicle_ids.pop(sumo_actor_id))
-
-        self.carla.tick()
+                self.available_terasim_voices_ids.append(self.teraim_to_voices_id_mapping.pop(sumo_actor_id))
 
     def close(self):
         """

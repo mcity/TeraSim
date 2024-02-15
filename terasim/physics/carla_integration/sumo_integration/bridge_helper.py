@@ -177,7 +177,7 @@ class BridgeHelper(object):
         return blueprint
 
     @staticmethod
-    def get_carla_blueprint_from_sumo_redis(sumo_actor_id, sumo_actor_type_id, sumo_actor_color, sumo_actor_vclass_value, sync_color=False):
+    def get_carla_blueprint_from_sumo_redis(sumo_actor_type_id, sumo_actor_color, sumo_actor_vclass_value, sync_color=False):
         """
         Returns an appropriate blueprint based on the received sumo actor.
         """
@@ -210,11 +210,6 @@ class BridgeHelper(object):
         if blueprint.has_attribute('driver_id'):
             driver_id = random.choice(blueprint.get_attribute('driver_id').recommended_values)
             blueprint.set_attribute('driver_id', driver_id)
-
-        attribute = str(sumo_actor_id)
-        attribute = attribute.replace("BV", "TeraSim_BV")
-
-        blueprint.set_attribute('role_name', attribute)
 
         logging.debug(
             '''[BridgeHelper] sumo vtype %s will be spawned in carla with the following attributes:

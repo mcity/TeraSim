@@ -71,9 +71,6 @@ class TeraSimCoSimPlugin(BaseEnv):
                     "y": traci.vehicle.getWidth(vehID) / 2.0,
                     "z": traci.vehicle.getHeight(vehID) / 2.0
                 },
-                "type_id": traci.vehicle.getTypeID(vehID),
-                "vclass": traci.vehicle.getVehicleClass(vehID),
-                "color": traci.vehicle.getColor(vehID),
                 "lights": traci.vehicle.getSignals(vehID),
                 "speed": traci.vehicle.getSpeed(vehID)
             }
