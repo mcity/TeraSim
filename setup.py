@@ -11,5 +11,5 @@ setup(
     license='MIT',
     description='A SUMO-based environment for AV testing and evaluation',
     long_description=open('README.md').read(),
-    install_requires=['numpy', "bidict", "attrs", "addict", "scipy", "eclipse-sumo", "traci", "libsumo", "sumolib"],
+    install_requires=['numpy', "bidict", "attrs", "addict", "scipy", "eclipse-sumo", "traci", "libsumo", "sumolib", "redis", "lxml"],
 )
