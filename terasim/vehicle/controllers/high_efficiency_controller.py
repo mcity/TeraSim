@@ -65,8 +65,8 @@ class HighEfficiencyController(AgentController):
         else:
             utils.set_vehicle_lanechangemode(veh_id, 0)
             if control_command["lateral"] == "central":
-                current_lane_offset = utils.get_vehicle_lateral_lane_position(veh_id)
-                self.simulator.change_vehicle_sublane_dist(veh_id, -current_lane_offset, self.step_size)
+                # current_lane_offset = utils.get_vehicle_lateral_lane_position(veh_id)
+                # self.simulator.change_vehicle_sublane_dist(veh_id, -current_lane_offset, self.step_size)
                 self.simulator.change_vehicle_speed(veh_id, controlled_acc, self.params["acc_duration"])
             else:
                 self.simulator.change_vehicle_lane(veh_id, control_command["lateral"], self.params["lc_duration"])
