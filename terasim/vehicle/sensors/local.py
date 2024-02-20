@@ -1,12 +1,11 @@
 import addict
-
-from .base import BaseSensor
+from terasim.agent.agent_sensor import AgentSensor
 from terasim.simulator import Simulator
 from terasim.overlay import traci
 from terasim import utils
 import traci.constants as tc
 
-class LocalSensor(BaseSensor):
+class LocalSensor(AgentSensor):
     """
     LocalSensor is a basic sensor that subscribe to some SUMO variables of a vehicle.
     
@@ -72,16 +71,18 @@ class LocalSensor(BaseSensor):
         subscription = traci.vehicle.getContextSubscriptionResults(veh_id)
         veh_info = addict.Dict(
             veh_id=veh_id,
+            velocity=subscription[veh_id][64],
+            position=subscription[veh_id][66],
+            position3d=subscription[veh_id][57],
+            heading=subscription[veh_id][67],
+            edge_id=subscription[veh_id][80],
+            lane_id=subscription[veh_id][81],
+            lane_index=subscription[veh_id][82],
+            acceleration=subscription[veh_id][114],
             could_drive_adjacent_lane_left=Simulator.get_vehicle_lane_adjacent(veh_id, 1),
             could_drive_adjacent_lane_right=Simulator.get_vehicle_lane_adjacent(veh_id, -1),
             distance=distance,
-            heading=subscription[veh_id][67],
-            lane_index=subscription[veh_id][82],
             lateral_speed=subscription[veh_id][50],
             lateral_offset=subscription[veh_id][184],
-            position=subscription[veh_id][66],
-            position3D=subscription[veh_id][57],
-            velocity=subscription[veh_id][64],
-            road_id=subscription[veh_id][80]
         )
         return veh_info

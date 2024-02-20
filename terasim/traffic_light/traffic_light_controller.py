@@ -1,4 +1,4 @@
-class BaseController:
+class TrafficLightController:
     params = {}
     def __init__(self, simulator, params=None):
         self.simulator = simulator
@@ -8,8 +8,8 @@ class BaseController:
     def _install(self, vehicle):
         pass
     
-    def _is_command_legal(self, veh_id, control_command):
+    def _is_command_legal(self, traffic_light_id, control_command):
         return True
 
-    def execute_control_command(self, veh_id, control_command, obs_dict):
+    def execute_control_command(self, traffic_light_id, control_command, obs_dict):
         pass

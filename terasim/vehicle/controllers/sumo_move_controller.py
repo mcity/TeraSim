@@ -1,6 +1,6 @@
-from terasim.vehicle.controllers.base_controller import BaseController
+from terasim.agent.agent_controller import AgentController
 
-class SUMOMOVEController(BaseController):
+class SUMOMOVEController(AgentController):
 
     def _is_command_legal(self, veh_id, control_command):
         return self.simulator.command_manager._is_command_legal(veh_id, control_command)

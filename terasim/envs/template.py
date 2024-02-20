@@ -35,10 +35,6 @@ class EnvTemplate(BaseEnv):
             control_command_and_info = {veh.id: veh.make_decision() for veh in self.vehicle_list if veh.id in ctx["terasim_controlled_vehicle_ids"]}
         else:
             control_command_and_info = {veh.id: veh.make_decision() for veh in self.vehicle_list}
-
-        # control_command_and_info = {
-        #     veh.id: veh.make_decision() for veh in self.vehicle_list
-        # }
         control_command_dict = {
             veh_id: command_and_info[0] for veh_id, command_and_info in control_command_and_info.items()
         }

@@ -1,9 +1,9 @@
-from terasim.vehicle.controllers.base_controller import BaseController
+from terasim.agent.agent_controller import AgentController
 import logging
 import terasim.utils as utils
 from terasim.simulator import traci
 
-class HighEfficiencyController(BaseController):
+class HighEfficiencyController(AgentController):
     params = {
             "v_high": 40,
             "v_low": 20,
@@ -53,7 +53,7 @@ class HighEfficiencyController(BaseController):
         
         # Longitudinal control
         controlled_acc = control_command["longitudinal"]
-        current_velocity = obs_dict["ego"].data["speed"]
+        current_velocity = obs_dict["ego"].data["velocity"]
         if current_velocity + controlled_acc > self.params["v_high"]:
             controlled_acc = self.params["v_high"] - current_velocity
         elif current_velocity + controlled_acc < self.params["v_low"]:

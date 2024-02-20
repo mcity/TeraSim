@@ -58,16 +58,6 @@ conda activate $env_name$
 
 The simulation requires map files in SUMO format (.net.xml). Please refer to '/examples' for detailed guidelines.
 
-## Install SUMO
-
-We recommend using pip to install SUMO and SUMO-Tools for simplicity. Please run the following commands:
-
-```
-pip install eclipse-sumo traci libsumo sumolib
-```
-
-Additionally, you can also install SUMO and SUMO-Tools using the pre-built binaries or build from source. Please refer to [SUMO](https://sumo.dlr.de/docs/Installing.html) for detailed instructions.
-
 ## Download terasim
 - Download from Github: `git clone https://github.com/michigan-traffic-lab/TeraSim.git`
 
@@ -76,6 +66,18 @@ Navigate to the directory of the project (`cd TeraSim`), and then
 
 - Normal install: `pip install .`
 - Development install: `pip install -e .`
+
+## Commonly Seen Errors
+
+After the installation, if you encounter the following error and the SUMO gui does not show up:
+```bash
+libGL error: failed to load driver: swrast
+X Error: code 2 major 152 minor 3: BadValue (integer parameter out of range for operation).
+```
+You can run the following command to fix the error (using Anaconda):
+```bash
+conda install -c conda-forge libstdcxx-ng
+```
 
 <!-- USAGE EXAMPLES -->
 # Usage
