@@ -191,7 +191,7 @@ class Simulator(object):
         self.start()
         while True:
             self.step()
-            if self.running is False or traci.simulation.getMinExpectedNumber() == 0:
+            if self.running is False:
                 break
         self.stop()
         
