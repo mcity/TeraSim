@@ -79,10 +79,11 @@ class AgentSensor(ABC):
         For SUMO sensors, it will be no-op.
         """
         self._agent = parent
+        self.subscribe()
 
     def uninstall(self):
         """Uninstall the sensor from the simulator.
 
         For SUMO sensors, it will be no-op.
         """
-        self._agent = None
+        self.unsubscribe()

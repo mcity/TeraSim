@@ -61,8 +61,8 @@ class Vehicle(Agent):
     def _uninstall(self):
         # uninstall sensors
         for name, sensor in self.sensors.items():
+            sensor.uninstall()
             self._simulator.state_manager.unregister_sensor(self, name)
-            sensor._agent = None # remove back-reference
 
     def __str__(self):
         return f'Vehicle(id: {self.id})'
