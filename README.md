@@ -89,7 +89,7 @@ from terasim.simulator import Simulator
 from terasim.envs.env import BaseEnv
 from terasim.logger.infoextractor import InfoExtractor
 import terasim.vehicle
-from terasim.vehicle.factories.dummy_vehicle_factory import DummyVehicleFactory
+from terasim.vehicle.factories.vehicle_facotory import VehicleFactory
 from terasim.vehicle.sensors.local_sensor import LocalSensor
 from terasim.vehicle.controllers.high_efficiency_controller import HighEfficiencyController
 from terasim.vehicle.vehicle import Vehicle
@@ -97,7 +97,7 @@ from terasim.vehicle.decision_models.dummy_decision_model import DummyDecisionMo
 from terasim.vehicle.decision_models.idm_model import IDMModel
 
 
-class ExampleVehicleFactory(DummyVehicleFactory):
+class ExampleVehicleFactory(VehicleFactory):
 
     def create_vehicle(self, veh_id, simulator):
         """Generate a vehicle with the given vehicle id in the simulator, composed of a decision model, a controller, and a list of sensors, which should be defined or customized by the user.
