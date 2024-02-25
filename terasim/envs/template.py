@@ -45,6 +45,9 @@ class EnvTemplate(BaseEnv):
         """
         for veh_id, command in control_commands.items():
             self.vehicle_list[veh_id].apply_control(command)
+
+    def on_stop(self, ctx) -> bool:
+        pass
     
     def should_continue_simulation(self):
         """
