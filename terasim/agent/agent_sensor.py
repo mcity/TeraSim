@@ -1,9 +1,9 @@
 from __future__ import annotations
-
+from collections import namedtuple, defaultdict
 import addict
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING
-
+from terasim.overlay import traci
 from terasim import utils
 from terasim.agent.agent import Agent
 if TYPE_CHECKING:
@@ -23,6 +23,8 @@ class AgentSensor(ABC):
         self._name = name
         self._params = addict.Dict(self.DEFAULT_PARAMS)
         self._params.update(params)
+        self._updated_observation = None
+        self._updated_time = None
     
     def __str__(self) -> str:
         """string method
@@ -52,17 +54,11 @@ class AgentSensor(ABC):
     @property
     def observation(self):
         assert self.is_installed, "Sensor not installed, you should install sensor before fetching observations."
-        return self._simulator.state_manager.retrieve_variable(self._agent.id, self._name)
-
-    def subscribe(self):
-        """Install the subscriber for the sensor into the simulator.
-        """
-        pass
-
-    def unsubscribe(self):
-        """Remove the subscriber for the sensor from the simulator.
-        """
-        pass
+        current_time = traci.simulation.getTime()
+        if self._updated_time is None or self._updated_time < current_time:
+            self._updated_observation = self.fetch()
+            self._updated_time = current_time
+        return self._updated_observation
 
     @abstractmethod
     def fetch(self):
@@ -79,11 +75,10 @@ class AgentSensor(ABC):
         For SUMO sensors, it will be no-op.
         """
         self._agent = parent
-        self.subscribe()
 
     def uninstall(self):
         """Uninstall the sensor from the simulator.
 
         For SUMO sensors, it will be no-op.
         """
-        self.unsubscribe()
+        pass

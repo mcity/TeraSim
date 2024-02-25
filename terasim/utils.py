@@ -299,28 +299,14 @@ def get_ego_vehicle(vehID, obs_range, dist = 0.0):
     if dist <= obs_range:
         ego_veh = {'veh_id':vehID}
         ego_veh['distance'] = dist
-        try:
-            # try the subscription method
-            ego_info = traci.vehicle.getSubscriptionResults(vehID)
-            ego_veh['velocity'] = ego_info[64]
-            ego_veh['position'] = ego_info[66]
-            ego_veh['position3d'] = ego_info[57]
-            ego_veh['heading'] = ego_info[67]
-            ego_veh["edge_id"] = ego_info[80]
-            ego_veh["lane_id"] = ego_info[81]
-            ego_veh['lane_index'] = ego_info[82]
-            ego_veh["acceleration"] = ego_info[114]
-            
-        except: # Try the traci based method, which is actually slower
-            logging.warning(f"Vehicle {vehID} fail to fetch raw data from subscription, use traci fetch method instead!")
-            ego_veh['velocity'] = traci.vehicle.getSpeed(vehID)
-            ego_veh['position'] = traci.vehicle.getPosition(vehID)
-            ego_veh['position3d'] = traci.vehicle.getPosition3D(vehID)
-            ego_veh['heading'] = traci.vehicle.getAngle(vehID)
-            ego_veh["edge_id"] = traci.vehicle.getRoadID(vehID)
-            ego_veh["lane_id"] = traci.vehicle.getLaneID(vehID)
-            ego_veh['lane_index'] = traci.vehicle.getLaneIndex(vehID)
-            ego_veh["acceleration"] = traci.vehicle.getAcceleration(vehID)
+        ego_veh['velocity'] = traci.vehicle.getSpeed(vehID)
+        ego_veh['position'] = traci.vehicle.getPosition(vehID)
+        ego_veh['position3d'] = traci.vehicle.getPosition3D(vehID)
+        ego_veh['heading'] = traci.vehicle.getAngle(vehID)
+        ego_veh["edge_id"] = traci.vehicle.getRoadID(vehID)
+        ego_veh["lane_id"] = traci.vehicle.getLaneID(vehID)
+        ego_veh['lane_index'] = traci.vehicle.getLaneIndex(vehID)
+        ego_veh["acceleration"] = traci.vehicle.getAcceleration(vehID)
     return ego_veh
 
 def set_vehicle_speedmode(vehID, speedmode=31):

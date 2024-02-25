@@ -14,7 +14,6 @@ class TrafficLight(Agent):
         # install sensors
         for name, sensor in self.sensors.items():
             sensor.install(self)
-            self._simulator.state_manager.register_sensor(self, name)
 
         # install decision model
         if not isinstance(self.decision_model, AgentDecisionModel):
@@ -31,5 +30,4 @@ class TrafficLight(Agent):
     def _uninstall(self):
         # uninstall sensors
         for name, sensor in self.sensors.items():
-            self._simulator.state_manager.unregister_sensor(self, name)
             sensor._agent = None # remove back-reference

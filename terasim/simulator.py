@@ -8,8 +8,6 @@ import numpy as np
 import math
 import terasim
 from typing import Optional
-from terasim.state_manager import StateManager
-from terasim.command_manager import CommandManager
 from terasim.agent.agent import Agent, AgentId, AgentInitialInfo
 import terasim.utils as utils
 from .overlay import traci, has_libsumo
@@ -59,8 +57,6 @@ class Simulator(object):
         else:
             print("Warning: output_path is not specified. No output will be generated.")
         self.sumo_output_file_types = sumo_output_file_types if sumo_output_file_types is not None else []
-        self.state_manager = StateManager(self)
-        self.command_manager = CommandManager(self)
         self._plugin_list = []
         self.ctx = {} # context for the execution pipeline
 
@@ -69,7 +65,6 @@ class Simulator(object):
         self.step_pipeline = Pipeline('step_pipeline', # params: simulator, ctx
                                       [PipelineElement("record_step_start_time", self.record_step_start_time, priority=-10000),
                                        PipelineElement("sumo_step", self.sumo_step, priority=10),
-                                       PipelineElement("state_manager_gc", self.state_manager.garbage_collection, priority=10),
                                        PipelineElement("compensate_step_end_time", self.compensate_step_end_time, priority=10000)])
         self.stop_pipeline = Pipeline('stop_pipeline', []) # params: simulator, ctx
         self._add_vehicle_to_sim = Pipeline('add_vehicle_pipeline',  # params: agent, init_info. If init_info is None, then the initial info should be inferred from traci.

@@ -67,7 +67,7 @@ class IDMModel(HighwayBaseDecisionModel):
     def derive_control_command_from_observation(self, obs_dict):
         if "local" not in obs_dict:
             raise ValueError("No local observation")
-        control_command, mode = self.decision(obs_dict["local"].data)
+        control_command, mode = self.decision(obs_dict["local"])
         return control_command, None
 
     def install(self):

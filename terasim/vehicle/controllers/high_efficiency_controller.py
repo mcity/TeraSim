@@ -53,7 +53,7 @@ class HighEfficiencyController(AgentController):
         
         # Longitudinal control
         controlled_acc = control_command["longitudinal"]
-        current_velocity = obs_dict["ego"].data["velocity"]
+        current_velocity = obs_dict["ego"]["velocity"]
         if current_velocity + controlled_acc > self.params["v_high"]:
             controlled_acc = self.params["v_high"] - current_velocity
         elif current_velocity + controlled_acc < self.params["v_low"]:

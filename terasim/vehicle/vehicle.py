@@ -44,7 +44,6 @@ class Vehicle(Agent):
         # install sensors
         for name, sensor in self.sensors.items():
             sensor.install(self)
-            self._simulator.state_manager.register_sensor(self, name)
 
         # install decision model
         if not isinstance(self.decision_model, AgentDecisionModel):
@@ -62,7 +61,6 @@ class Vehicle(Agent):
         # uninstall sensors
         for name, sensor in self.sensors.items():
             sensor.uninstall()
-            self._simulator.state_manager.unregister_sensor(self, name)
 
     def __str__(self):
         return f'Vehicle(id: {self.id})'

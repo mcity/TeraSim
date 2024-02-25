@@ -58,7 +58,7 @@ class CarlaTestingEnv(EnvTemplate):
         # check sensor
         VIS_AGENT_ID = '0'
         if VIS_AGENT_ID in self.vehicle_list:
-            data = self.vehicle_list[VIS_AGENT_ID].sensors['camera'].observation.data
+            data = self.vehicle_list[VIS_AGENT_ID].sensors['camera'].observation
             if data is not None:
                 data_arr = np.ndarray(shape=(data.height, data.width, 4), dtype=np.uint8, buffer=data.raw_data)
                 img = Image.fromarray(data_arr[:, :, 2::-1]) # BGRA to RGB
