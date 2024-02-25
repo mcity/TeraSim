@@ -1,12 +1,17 @@
 from terasim.envs.base import BaseEnv
+import multiprocessing as mp
+from multiprocessing import Pool
 
 class EnvTemplate(BaseEnv):
     '''This Env provides a basic Env implementation.
     
     Env developers can derived from this class or build their own implementations directly on BaseEnv
     '''
-    def __init__(self, vehicle_factory, info_extractor):
+    def __init__(self, vehicle_factory, info_extractor, use_multi_process = False):
         super().__init__(vehicle_factory, info_extractor)
+        self.use_multi_process = use_multi_process
+        if self.use_multi_process:
+            self.mp_pool = Pool(mp.cpu_count())
     
     def on_start(self, ctx):
         # your initialization (vehicle position, etc.), for example:
@@ -22,19 +27,29 @@ class EnvTemplate(BaseEnv):
         return self.should_continue_simulation()
     
     def on_stop(self, ctx):
-        pass
+        if self.use_multi_process:
+            self.mp_pool.close()
+            self.mp_pool.join()
 
     def make_decisions(self, ctx):
         """Make decisions for all vehicles.
         """        
         # You can also make decisions for specific vehicles, e.g., only let vehicles near the AV make decisions
         # Cooperative decision making is also possible, e.g., let the AV and the BV make decisions together
-
         # by default, all vehicles in the vehicle list will make decisions
+        
+        # Initialize decision_vehicle_ids with all vehicle ids
+        decision_vehicle_ids = set(veh.id for veh in self.vehicle_list)
+
         if "terasim_controlled_vehicle_ids" in ctx:
-            control_command_and_info = {veh.id: veh.make_decision() for veh in self.vehicle_list if veh.id in ctx["terasim_controlled_vehicle_ids"]}
-        else:
-            control_command_and_info = {veh.id: veh.make_decision() for veh in self.vehicle_list}
+            controlled_vehicle_ids = set(ctx["terasim_controlled_vehicle_ids"])
+            decision_vehicle_ids = decision_vehicle_ids & controlled_vehicle_ids
+
+        if self.use_multi_process:
+            control_command_and_info = self.mp_pool.map(lambda veh_id: (veh_id, self.vehicle_list[veh_id].make_decision()), decision_vehicle_ids)
+        else:           
+            control_command_and_info = {veh.id: veh.make_decision() for veh in decision_vehicle_ids}
+
         control_command_dict = {
             veh_id: command_and_info[0] for veh_id, command_and_info in control_command_and_info.items()
         }
@@ -46,8 +61,11 @@ class EnvTemplate(BaseEnv):
     def execute_control_commands(self, control_commands: dict):
         """Execute the control commands of all vehicles.
         """
-        for veh_id, command in control_commands.items():
-            self.vehicle_list[veh_id].apply_control(command)
+        if self.use_multi_process:
+            self.mp_pool.map(lambda veh_id, command: self.vehicle_list[veh_id].apply_control(command), control_commands.items())
+        else:
+            for veh_id, command in control_commands.items():
+                self.vehicle_list[veh_id].apply_control(command)
     
     def should_continue_simulation(self):
         """
