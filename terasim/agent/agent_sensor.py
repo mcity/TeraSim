@@ -10,7 +10,9 @@ if TYPE_CHECKING:
     from terasim.simulator import Simulator
 
 class AgentSensor(ABC):
-    DEFAULT_PARAMS = {}
+    DEFAULT_PARAMS = {
+        "cache": True,
+    }
 
     def __init__(self, name = "base", **params):
         """base sensor initialization
@@ -23,8 +25,9 @@ class AgentSensor(ABC):
         self._name = name
         self._params = addict.Dict(self.DEFAULT_PARAMS)
         self._params.update(params)
-        self._updated_observation = None
-        self._updated_time = None
+        if self._params.cache:
+            self._updated_observation = None
+            self._updated_time = None
     
     def __str__(self) -> str:
         """string method
@@ -54,11 +57,14 @@ class AgentSensor(ABC):
     @property
     def observation(self):
         assert self.is_installed, "Sensor not installed, you should install sensor before fetching observations."
-        current_time = traci.simulation.getTime()
-        if self._updated_time is None or self._updated_time < current_time:
-            self._updated_observation = self.fetch()
-            self._updated_time = current_time
-        return self._updated_observation
+        if self._params.cache:
+            current_time = traci.simulation.getTime()
+            if self._updated_time is None or self._updated_time < current_time:
+                self._updated_observation = self.fetch()
+                self._updated_time = current_time
+            return self._updated_observation
+        else:
+            return self.fetch()
 
     @abstractmethod
     def fetch(self):
