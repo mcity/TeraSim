@@ -21,7 +21,7 @@ class EgoSensor(AgentSensor):
 
     def fetch(self) -> dict:
         veh_id = self._agent.id
-        data = {}
+        data = {"veh_id": veh_id}
         for field, getter in self.params.fields.items():
             data[field] = getter(veh_id)
         return data
