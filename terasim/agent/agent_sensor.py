@@ -60,11 +60,11 @@ class AgentSensor(ABC):
         if self._params.cache:
             current_time = traci.simulation.getTime()
             if self._updated_time is None or self._updated_time < current_time:
-                self._updated_observation = self.fetch()
+                self._updated_observation = addict.Dict(self.fetch())
                 self._updated_time = current_time
             return self._updated_observation
         else:
-            return self.fetch()
+            return addict.Dict(self.fetch())
 
     @abstractmethod
     def fetch(self):

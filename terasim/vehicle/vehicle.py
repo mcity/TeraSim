@@ -4,7 +4,7 @@ from terasim.agent.agent_decision_model import AgentDecisionModel
 from terasim.agent.agent_sensor import AgentSensor
 from terasim.agent.agent import Agent
 import logging
-
+import addict
 class Vehicle(Agent):
     COLOR_RED    = (255, 0,   0)
     COLOR_YELLOW = (255, 255, 0)
@@ -73,7 +73,7 @@ class Vehicle(Agent):
         return self._fetch_observation()
 
     def _fetch_observation(self):
-        obs_dict = {name: self.sensors[name].observation for name in self.sensors}
+        obs_dict = addict.Dict({name: self.sensors[name].observation for name in self.sensors})
         return obs_dict
 
     def make_decision(self):
