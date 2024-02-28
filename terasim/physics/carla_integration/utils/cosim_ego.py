@@ -71,13 +71,9 @@ except IndexError:
 # -- imports -------------------------------------------------------------------
 # ==============================================================================
 
-import json
-import redis
 import carla
 
 from carla import ColorConverter as cc
-
-from sumo_integration.bridge_helper import BridgeHelper  # pylint: disable=wrong-import-position
 
 import argparse
 import collections
@@ -1037,8 +1033,6 @@ def game_loop(args):
     pygame.font.init()
     world = None
 
-    redis_server = redis.Redis(host='localhost', port=6379, db=0)
-
     try:
         client = carla.Client(args.host, args.port)
         client.set_timeout(2.0)
@@ -1064,31 +1058,6 @@ def game_loop(args):
             world.tick(clock)
             world.render(display)
             pygame.display.flip()
-
-            BridgeHelper.offset = [2.0, 159.0, 34.5]
-
-            sumo_transform = BridgeHelper.get_sumo_transform(world.player.get_transform(),
-                                        world.player.bounding_box.extent)
-            
-            v = world.player.get_velocity()
-
-            print("sumo_transform.location.x: ", sumo_transform.location.x)
-            print("sumo_transform.location.y: ", sumo_transform.location.y)
-
-            cosim_ego_vehicle_info = {
-                "location": {
-                    'lat': world.gnss_sensor.lat,
-                    'lon': world.gnss_sensor.lon,
-                },
-                "rotation": {
-                    'roll': sumo_transform.rotation.roll, 
-                    'pitch': sumo_transform.rotation.pitch, 
-                    'yaw': sumo_transform.rotation.yaw
-                },
-                "velocity": math.sqrt(v.x**2 + v.y**2 + v.z**2),
-            }
-
-            redis_server.set('cosim_ego_vehicle_info', json.dumps(cosim_ego_vehicle_info))
 
     finally:
         if (world and world.recording_enabled):

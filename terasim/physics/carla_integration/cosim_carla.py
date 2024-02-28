@@ -168,7 +168,7 @@ class SimulationSynchronization(object):
 
                 if sumo_actor_id == "CAV":
                     carla_blueprint.set_attribute('color', '255,255,255')
-                    carla_blueprint.set_attribute('role_name', 'MCITY_CAV_01')
+                    carla_blueprint.set_attribute('role_name', 'MCITY-CAV-01')
                     carla_actor_id = self.carla.spawn_actor(carla_blueprint, carla_transform)
                     self.terasim_controlled_vehicle_ids[sumo_actor_id] = carla_actor_id
                     print("Spawn actor: ", sumo_actor_id, carla_actor_id)
@@ -177,7 +177,7 @@ class SimulationSynchronization(object):
                         terasim_voices_ids = self.available_terasim_voices_ids.pop(0)
                         self.teraim_to_voices_id_mapping[sumo_actor_id] = terasim_voices_ids
                         carla_blueprint.set_attribute('color', '0,0,0')
-                        carla_blueprint.set_attribute('role_name', 'MCITY_TERASIM_0' + str(terasim_voices_ids))
+                        carla_blueprint.set_attribute('role_name', 'MCITY-TERASIM-0' + str(terasim_voices_ids))
                         carla_actor_id = self.carla.spawn_actor(carla_blueprint, carla_transform)
                         self.terasim_controlled_vehicle_ids[sumo_actor_id] = carla_actor_id
                         print("Spawn actor: ", sumo_actor_id, carla_actor_id)
