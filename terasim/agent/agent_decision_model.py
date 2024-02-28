@@ -15,9 +15,7 @@ class AgentDecisionModel(ABC):
 
     def install(self):
         pass
-        utils.set_vehicle_speedmode(self.vehicle.id)
-        utils.set_vehicle_lanechangemode(self.vehicle.id)
-        self.vehicle.simulator.set_vehicle_color(self.vehicle.id, self.vehicle.COLOR_YELLOW)
+
 
 
 

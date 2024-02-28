@@ -9,7 +9,7 @@ class BaseEnv(ABC):
     def __init__(self, vehicle_factory, info_extractor):
         self.episode_info = {"start_time": None, "end_time": None}
         self.vehicle_list = VehicleList({})
-        self.vehicle_f     actory = vehicle_factory
+        self.vehicle_factory = vehicle_factory
         self.info_extractor = info_extractor(self)
         self.simulator: Simulator = None # to be assigned by the simulator
 

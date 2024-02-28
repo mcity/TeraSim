@@ -10,7 +10,7 @@ class DummySetSUMOTranformDecisionModel(AgentDecisionModel):
         command = {
             "type": "SetSumoTransform",
             "position": (100, 46), # x, y
-            "velocity": None, # m/s
+            "velocity": 10, # m/s
             "angle": 0.2, # rad
         }
         return command, None

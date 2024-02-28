@@ -2,12 +2,12 @@ from pathlib import Path
 from terasim.simulator import Simulator
 from terasim.envs import EnvTemplate
 from terasim.logger.infoextractor import InfoExtractor
-from terasim.vehicle.factories.dummy_vehicle_factory import DummyVehicleFactory
+from terasim.vehicle.factories.vehicle_factory import VehicleFactory
 from terasim.vehicle.vehicle import Vehicle
 from terasim.vehicle.decision_models.dummy_setsumo_transform_decision_model import DummySetSUMOTranformDecisionModel
 from terasim.vehicle.controllers.sumo_move_controller import SUMOMOVEController
 
-class ExampleVehicleFactory(DummyVehicleFactory):
+class ExampleVehicleFactory(VehicleFactory):
 
     def create_vehicle(self, veh_id, simulator):
         """Generate a vehicle with the given vehicle id in the simulator, composed of a decision model, a controller, and a list of sensors, which should be defined or customized by the user.
