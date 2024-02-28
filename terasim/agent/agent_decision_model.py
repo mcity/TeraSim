@@ -1,4 +1,5 @@
 from abc import ABC
+from terasim import utils
 
 class AgentDecisionModel(ABC):
     """DecisionModel class deal with the control of the vehicle based on observation

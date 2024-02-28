@@ -1,11 +1,12 @@
 from terasim.agent.agent_sensor import AgentSensor
 import traci.constants as tc
+import traci
 
 class BaseTrafficLightSensor(AgentSensor):
     DEFAULT_PARAMS = {
         "fields": {
-            "traffic_light_state": tc.VAR_RED_YELLOW_GREEN_STATE,
-            "traffic_light_state_time": tc.VAR_NEXT_SWITCH,
+            "traffic_light_state": tc.TL_RED_YELLOW_GREEN_STATE,
+            "traffic_light_state_time": tc.TL_NEXT_SWITCH,
         }
     }
 
@@ -13,7 +14,7 @@ class BaseTrafficLightSensor(AgentSensor):
         super().__init__(name, **params)
 
     def subscribe(self) -> None:
-        traci.trafficlight.subscribe(self._agent.id, [tc.VAR_RED_YELLOW_GREEN_STATE])
+        traci.trafficlight.subscribe(self._agent.id, [tc.TL_RED_YELLOW_GREEN_STATE])
 
     def fetch(self) -> dict:
         raise NotImplementedError

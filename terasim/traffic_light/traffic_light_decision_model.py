@@ -31,4 +31,4 @@ class TrafficLightDecisionModel():
     def get_traffic_light_state(self):
         return self._traffic_light_state
 
-    def get_traffic_light_stat
+    # def get_traffic_light_stat
