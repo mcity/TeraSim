@@ -1,5 +1,4 @@
 from terasim.agent.agent_decision_model import AgentDecisionModel
-from terasim.simulator import traci
 
 class DummyStateDecisionModel(AgentDecisionModel):
     """dummy decision model:

@@ -27,7 +27,7 @@ class TrafficLight(Agent):
 
     def _install(self):
         '''
-        This method is designed to be called after the vehicle exists in the simulator. It installs
+        This method is designed to be called after the traffic light exists in the simulator. It installs
         the attaching objects (including sensors, the decision model and controller).
         '''
         # install sensors
@@ -38,7 +38,7 @@ class TrafficLight(Agent):
         # install decision model
         if not isinstance(self.decision_model, AgentDecisionModel):
             raise ValueError("Installing non-decision_model instance as decision_model!")
-        self.decision_model.vehicle = self
+        self.decision_model.traffic_light = self
 
         # install controller
         self.controller._install(self)
@@ -64,7 +64,7 @@ class TrafficLight(Agent):
         return obs_dict
 
     def make_decision(self):
-        """make decision of control command for a vehicle 
+        """make decision of control command for a traffic light 
 
         Returns:
             control_command : dict
@@ -74,7 +74,7 @@ class TrafficLight(Agent):
         return control_command, info
     
     def apply_control(self, control_command):
-        """apply the control command of given vehicle
+        """apply the control command of given traffic light
 
         Args:
             control_command (dict): the given control command of a specific decision_maker
@@ -92,33 +92,33 @@ class TrafficLight(Agent):
             
 class TrafficLightList(dict):
     def __init__(self, d):
-        """A vehicle list that store vehicles. It derives from a dictionary so that one can call a certain vehicle in O(1) time. Rewrote the iter method so it can iterate as a list.
+        """A TrafficLight list that store traffic lights. It derives from a dictionary so that one can call a certain traffic light in O(1) time. Rewrote the iter method so it can iterate as a list.
         """
         super().__init__(d)
 
     def __add__(self, another_tls_list):
         if not isinstance(another_tls_list, TrafficLightList):
-            raise TypeError('VehicleList object can only be added to another VehicleList')
+            raise TypeError('TrafficLightList object can only be added to another TrafficLightList')
         tls_list = copy(self)
         keys = self.keys()
         for tls in another_tls_list:
             if tls.id in keys:
-                print(f'WARNING: traffic light with same id {tls.id} is added and overwrote the vehicle list')
+                print(f'WARNING: traffic light with same id {tls.id} is added and overwrote the traffic light list')
             tls_list[tls.id] = tls
         return tls_list
 
     def add_trafficlight(self, tlslist):
-        """Add vehicles to the vehicle list.
+        """Add vehicles to the traffic light list.
 
         Args:
-            vlist (list(Vehicle)): List of Vehicle object or a single Vehicle object.
+            vlist (list(Vehicle)): List of TrafficLight object or a single TrafficLight object.
         """
         if not isinstance(tlslist, list):
             tlslist = [tlslist]
 
         for tls in tlslist:
             if tls.id in self.keys():
-                print(f'WARNING: vehicle with same id {tls.id} exists and this vehicle is dumped and not overriding the vehicle with same id in the original list')
+                print(f'WARNING: traffic light with same id {tls.id} exists and this traffic light is dumped and not overriding the traffic light with same id in the original list')
                 continue
             self[tls.id] = tls    
 

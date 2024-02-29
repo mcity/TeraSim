@@ -21,15 +21,10 @@ from terasim.traffic_light.traffic_light import TrafficLight
 from terasim.traffic_light.controllers.state_controller import StateController
 from terasim.traffic_light.decision_models.dummy_state_decision_model import DummyStateDecisionModel
 from terasim.traffic_light.sensors.ego_state_sensor import EgoStateSensor
-from terasim.traffic_light.sensors.dummy_sensor import DummySensor
 from terasim.traffic_light.factories.base_traffic_light_factory import BaseTrafficLightFactory
 
 # ExampleTrafficDecision
 class ExampleStateDecisionModel(AgentDecisionModel):
-    def __init__(self):
-        self._traffic_light = None
-        self._traffic_light_state = None
-        self._traffic_light_state_time = None
 
     def derive_control_command_from_observation(self, obs_dict):
         return self.get_decision(), None
@@ -73,6 +68,7 @@ class ExampleVehicleFactory(VehicleFactory):
         controller = AgentController(simulator)
         return Vehicle(veh_id, simulator, sensors=sensor_list,
                        decision_model=decision_model, controller=controller)
+
 class ExampleTrafficFactory(BaseTrafficLightFactory):
 
     def create_traffic_light(self, tls_id, simulator):
@@ -93,7 +89,7 @@ class ExampleTrafficFactory(BaseTrafficLightFactory):
             return TrafficLight(tls_id, simulator, sensors=sensor_list,
                         decision_model=decision_model, controller=controller)
         else:
-            sensor_list = [DummySensor()]
+            sensor_list = [EgoStateSensor()]
             decision_model = DummyStateDecisionModel()
             controller = StateController(simulator)
             return TrafficLight(tls_id, simulator, sensors=sensor_list,
