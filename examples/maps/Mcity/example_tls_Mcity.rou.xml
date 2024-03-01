@@ -1,0 +1,31 @@
+
+<routes xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://sumo.dlr.de/xsd/routes_file.xsd">
+    <!-- Routes -->
+    <vType id="IDM_waymo_motion" length="5.00" width="1.85" minGap="3.28" maxSpeed="10.00" carFollowModel="IDM" laneChangeModel="SL2015" accel="1.84" decel="9.0" tau="1.17" emergencyDecel="9.0" lcAccelLat="20000.0" latAlignment="center" lcSublane="1" lcSpeedGain="0" lcKeepRight="0" lcCooperative="0" />
+
+    <route id="r_0" edges="EG_9_1_23 EG_17_23_1 EG_16_1_1 EG_16_1_5 EG_15_1_8 gneE2"/>
+    <route id="r_1" edges="EG_6_1_1 EG_12_1_1 EG_12_1_2 EG_26_12_1 EG_23_2_1"/>
+    <route id="r_10" edges="EG_27_2_2 EG_13_1_1"/>
+    <route id="r_11" edges="EG_27_3_1 EG_16_1_1 EG_16_1_5 EG_15_1_8"/>
+    <route id="r_2" edges="EG_9_1_23 EG_17_23_1 EG_13_1_1"/>
+    <route id="r_3" edges="EG_9_1_23 EG_17_23_1 EG_26_12_1"/>
+    <route id="r_4" edges="EG_6_1_1 EG_12_1_1 gneE5 EG_12_2_1 EG_17_1_1"/>
+    <route id="r_5" edges="EG_6_1_1 EG_12_1_1 EG_12_1_2 EG_16_1_1 EG_16_1_5 EG_15_1_8"/>
+    <route id="r_6" edges="EG_15_1_1 EG_16_45_1 EG_16_23_1 EG_17_1_1"/>
+    <route id="r_7" edges="EG_15_1_1 EG_16_45_1 EG_16_23_1 EG_13_1_1"/>
+    <route id="r_8" edges="EG_15_1_1 EG_16_45_1 EG_16_23_1 EG_26_12_1"/>
+    <route id="r_9" edges="EG_27_1_1 EG_17_1_1"/>
+
+    <flow id="BV_0" type="IDM_waymo_motion" begin="0.00" departLane="best" route="r_0" vehsPerHour="37" />
+    <flow id="BV_1" type="IDM_waymo_motion" begin="0.00" departLane="best" route="r_1" vehsPerHour="67" />
+    <flow id="BV_10" type="IDM_waymo_motion" begin="0.00" departLane="best" route="r_9" vehsPerHour="96" />
+    <flow id="BV_11" type="IDM_waymo_motion" begin="0.00" departLane="best" route="r_10" vehsPerHour="47" />
+    <flow id="BV_12" type="IDM_waymo_motion" begin="0.00" departLane="best" route="r_11" vehsPerHour="74" />
+    <flow id="BV_13" type="IDM_waymo_motion" begin="0.00" departLane="best" route="r_2" vehsPerHour="54" />
+    <flow id="BV_14" type="IDM_waymo_motion" begin="0.00" departLane="best" route="r_3" vehsPerHour="60" />
+    <flow id="BV_15" type="IDM_waymo_motion" begin="0.00" departLane="best" route="r_4" vehsPerHour="73" />
+    <flow id="BV_16" type="IDM_waymo_motion" begin="0.00" departLane="best" route="r_5" vehsPerHour="45" />
+    <flow id="BV_17" type="IDM_waymo_motion" begin="0.00" departLane="best" route="r_6" vehsPerHour="279" />
+    <flow id="BV_21" type="IDM_waymo_motion" begin="0.00" departLane="best" route="r_7" vehsPerHour="279" />
+    <flow id="BV_18" type="IDM_waymo_motion" begin="0.00" departLane="best" route="r_8" vehsPerHour="94" />
+</routes>
