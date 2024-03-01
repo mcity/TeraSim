@@ -1,4 +1,3 @@
-
 from pathlib import Path
 from terasim.simulator import Simulator
 from terasim.logger.infoextractor import InfoExtractor
@@ -21,9 +20,9 @@ from terasim.traffic_light.traffic_light import TrafficLight
 from terasim.traffic_light.controllers.state_controller import StateController
 from terasim.traffic_light.decision_models.dummy_state_decision_model import DummyStateDecisionModel
 from terasim.traffic_light.sensors.ego_state_sensor import EgoStateSensor
-from terasim.traffic_light.factories.base_traffic_light_factory import BaseTrafficLightFactory
+from terasim.traffic_light.factories.traffic_light_factory import TrafficLightFactory
 
-# ExampleTrafficDecision
+# Example of traffic light decision model
 class ExampleStateDecisionModel(AgentDecisionModel):
 
     def derive_control_command_from_observation(self, obs_dict):
@@ -49,7 +48,8 @@ class ExampleStateDecisionModel(AgentDecisionModel):
             return "rrGrrrGGr"
         else:
             return "rryrrryyr"
-        
+
+# Example of vehicle factory
 class ExampleVehicleFactory(VehicleFactory):
 
     def create_vehicle(self, veh_id, simulator):
@@ -69,7 +69,8 @@ class ExampleVehicleFactory(VehicleFactory):
         return Vehicle(veh_id, simulator, sensors=sensor_list,
                        decision_model=decision_model, controller=controller)
 
-class ExampleTrafficFactory(BaseTrafficLightFactory):
+# Example of traffic light factory
+class ExampleTrafficLightFactory(TrafficLightFactory):
 
     def create_traffic_light(self, tls_id, simulator):
         
@@ -95,10 +96,10 @@ class ExampleTrafficFactory(BaseTrafficLightFactory):
             return TrafficLight(tls_id, simulator, sensors=sensor_list,
                         decision_model=decision_model, controller=controller)
         
-
+# Example of environment
 env = EnvTrafficLightTemplate(
     vehicle_factory = ExampleVehicleFactory(),
-    tls_factory = ExampleTrafficFactory(),
+    tls_factory = ExampleTrafficLightFactory(),
     info_extractor=InfoExtractor
 )
 
