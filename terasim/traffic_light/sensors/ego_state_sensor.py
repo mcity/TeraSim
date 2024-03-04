@@ -1,5 +1,5 @@
-from terasim.agent.agent_sensor import AgentSensor
 import traci.constants as tc
+from terasim.agent.agent_sensor import AgentSensor
 from terasim.simulator import traci
 
 class EgoStateSensor(AgentSensor):

@@ -1,5 +1,5 @@
 # Tutorial for creating agents and environment for the traffic light simulation
-This tutorial will guide you through the process of creating agents and environment for the traffic light simulation. The traffic light simulation is a typical multi-agent system, which includes vehicles and traffic lights. In this tutorial, we will show you how to create the decision model, controller, and sensor for the agents, and how to define the environment for the simulation. The detailed code is shown [here](examples/example_traffic_light.py). Let's break the code down:
+This tutorial will guide you through the process of creating agents and environment for the traffic light simulation. The traffic light simulation is a typical multi-agent system, which includes vehicles and traffic lights. In this tutorial, we will show you how to create the decision model, controller, and sensor for the agents, and how to define the environment for the simulation. The detailed code is shown [here](../../examples/example_traffic_light.py). Let's break the code down:
 
 ## 1. Import necessary packages and data
 ```python
@@ -145,4 +145,4 @@ sim.run()
 ```
 
 ## 5. Demo
-A short demonstation is shown [here](https://github.com/michigan-traffic-lab/TeraSim/blob/miracelplus-shuyang_branch/docs/videos/demo_traffic_light_simulation.gif).
+![](../videos/demo_traffic_light_simulation.gif)

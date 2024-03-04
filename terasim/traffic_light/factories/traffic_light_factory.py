@@ -1,6 +1,4 @@
-from abc import ABC
-from abc import abstractmethod
-
+from abc import ABC, abstractmethod
 
 class TrafficLightFactory(ABC):
     """
@@ -10,4 +8,4 @@ class TrafficLightFactory(ABC):
     
     @abstractmethod
     def create_traffic_light(self, tls_id, simulator):
-        raise ValueError("Create vehicle method not implemented!")
+        raise NotImplementedError("Create vehicle method not implemented!")

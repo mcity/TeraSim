@@ -1,9 +1,10 @@
 '''This module defines the interface for agents
 '''
-
 import addict
 from attrs import define
-from typing import NewType, Union, List, Optional, Dict, Any
+from typing import NewType, Dict, Any, Iterable
+from terasim.agent.agent_decision_model import AgentDecisionModel
+from terasim.agent.agent_sensor import AgentSensor
 
 AgentId = NewType('AgentId', str)
 
@@ -44,25 +45,121 @@ class AgentInitialInfo:
 
 class Agent:
     '''
-    A basic class holds the essential information for agents (vehicles, pedestrians, etc.) in the simulator
+    A basic class holds the essential information for agents (vehicles, pedestrians, traffic lights, etc.) in the simulator
     '''
 
-    DEFAULT_PARAMS = {}
+    DEFAULT_PARAMS = dict(
+        agent_type = "DefaultAgent",
+    )
 
-    def __init__(self, id: AgentId, simulator: Any, **params) -> None:
+    def __init__(self, id: AgentId, simulator: Any, 
+                 sensors: Iterable[AgentSensor] = [],
+                 decision_model=None,
+                 controller=None,
+                 **params):
         self._id = id
         self._simulator = simulator
         self._params = addict.Dict(self.DEFAULT_PARAMS)
         self._params.update(params)
 
+        self.sensors: Dict[str, AgentSensor] = {}
+        for s in sensors:
+            if s.name in sensors:
+                raise ValueError("Multiple sensors with the same name!")
+            self.sensors[s.name] = s
+            
+        if not isinstance(decision_model, AgentDecisionModel):
+            raise ValueError("Installing non-decision_model instance as decision_model!")
+        self.decision_model = decision_model
+
+        self.controller = controller
+    
+    def __repr__(self):
+        return self.__str__()
+    
+    def __str__(self):
+        return f'{self._params.agent_type}(id: {self.id})'
+    
+    @property
+    def id(self):
+        return self._id    
+    
+    @property
+    def observation(self):
+        return self._fetch_observation()    
+    
     @property
     def params(self) -> addict.Dict:
         return self._params
     
     @property
-    def id(self):
-        return self._id
-
-    @property
     def simulator(self):
         return self._simulator
+    
+    def _install(self):
+        '''
+        This method is designed to be called after the vehicle exists in the simulator. It installs
+        the attaching objects (including sensors, the decision model and controller).
+        '''
+        # install sensors
+        for name, sensor in self.sensors.items():
+            sensor._install(self)
+            self._simulator.state_manager.register_sensor(self, name)
+
+        # install decision model
+        if not isinstance(self.decision_model, AgentDecisionModel):
+            raise ValueError("Installing non-decision_model instance as decision_model!")
+        self.decision_model._install(self)
+
+        # install controller
+        self.controller._install(self)
+
+        # apply params
+        # self.simulator.set_vehicle_color(self.id, self.params.properties.color)
+
+    def _fetch_observation(self):
+        obs_dict = {name: self.sensors[name].observation for name in self.sensors}
+        return obs_dict
+    
+    def _uninstall(self):
+        # uninstall sensors
+        for name, sensor in self.sensors.items():
+            sensor._uninstall()
+            self._simulator.state_manager.unregister_sensor(self, name)
+    
+    def apply_control(self, control_command):
+        """apply the control command of given agent
+
+        Args:
+            control_command (dict): the given control command of a specific decision_maker
+        """
+        obs_dict = self._fetch_observation()
+        if type(control_command) == list:
+            for c in control_command:
+                self.apply_control(c)
+        else:
+            if self.controller._is_command_legal(self.id, control_command):
+                self.controller.execute_control_command(self.id, control_command, obs_dict)
+            else:
+                # logging.warning(f"Control command {control_command} is not legal for Vehicle {id}")
+                pass
+
+    def make_decision(self):
+        """make decision of control command for a traffic light 
+
+        Returns:
+            control_command : dict
+        """
+        obs_dict = self._fetch_observation()
+        control_command, info = self.decision_model.derive_control_command_from_observation(obs_dict)
+        return control_command, info
+
+class AgentList(dict):
+    def __init__(self, d):
+        """An agent list that store agents. It derives from a dictionary so that one can call a certain vehicle in O(1) time. Rewrote the iter method so it can iterate as a list.
+        """
+        super().__init__(d)
+
+    def __iter__(self):
+        for k in self.keys():
+            yield self[k]

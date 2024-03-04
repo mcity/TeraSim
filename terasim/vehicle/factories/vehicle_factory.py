@@ -10,4 +10,4 @@ class VehicleFactory(ABC):
     
     @abstractmethod
     def create_vehicle(self, veh_id, simulator):
-        raise ValueError("Create vehicle method not implemented!")
+        raise NotImplementedError("Create vehicle method not implemented!")

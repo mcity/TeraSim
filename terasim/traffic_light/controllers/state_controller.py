@@ -14,6 +14,6 @@ class StateController(AgentController):
     def set_traffic_light(self, tlsID, state):
         traci.trafficlight.setRedYellowGreenState(tlsID, state)
     
-    def execute_control_command(self, tls_id, control_command):
+    def execute_control_command(self, tls_id, control_command, obs_dict):
         # signal control
         self.set_traffic_light(tls_id, control_command)
