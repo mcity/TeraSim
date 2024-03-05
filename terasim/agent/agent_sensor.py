@@ -86,5 +86,5 @@ class AgentSensor(ABC):
 
         For SUMO sensors, it will be no-op.
         """
-        self._agent = None
         self.unsubscribe()
+        self._agent = None
