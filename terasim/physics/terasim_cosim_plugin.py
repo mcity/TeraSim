@@ -28,8 +28,10 @@ class TeraSimCoSimPlugin(BaseEnv):
         self.net = self._get_sumo_net(self.simulator.sumo_config_file_path)
 
     def on_step(self, simulator: Simulator, ctx):
-        self.sync_sumo_to_carla()
-        self.sync_carla_to_sumo()
+        self.sync_traffic_light()
+
+        self.sync_sumo_vehicle_to_carla()
+        self.sync_carla_vehicle_to_sumo()
 
         # update sumo controlled vehicles to global context
         self.ctx["terasim_controlled_vehicle_ids"] = list(self.terasim_controlled_vehicle_ids)
@@ -47,7 +49,14 @@ class TeraSimCoSimPlugin(BaseEnv):
         simulator.step_pipeline.hook("cosim_step", self.on_step, priority=-100)
         simulator.stop_pipeline.hook("cosim_stop", self.on_stop, priority=-100)
 
-    def sync_sumo_to_carla(self):
+    def sync_traffic_light(self):
+        cosim_traffic_light_state = self.redis_client.get("cosim_traffic_light_state")
+        if cosim_traffic_light_state is not None:
+            signal_information = json.loads(cosim_traffic_light_state)
+            for signal_id in signal_information:
+                traci.trafficlight.setRedYellowGreenState(signal_id, signal_information[signal_id])
+
+    def sync_sumo_vehicle_to_carla(self):
         ''' sync sumo controlled vehicle to carla '''   
         veh_list = self.simulator.get_vehID_list()
 
@@ -80,7 +89,7 @@ class TeraSimCoSimPlugin(BaseEnv):
         cosim_terasim_vehicle_info_json = json.dumps(cosim_terasim_vehicle_info)
         self.redis_client.set('cosim_terasim_vehicle_info', cosim_terasim_vehicle_info_json)
 
-    def sync_carla_to_sumo(self):
+    def sync_carla_vehicle_to_sumo(self):
         ''' update carla controlled vehicle in sumo '''
         cosim_thirdpartysim_vehicle_info = self.redis_client.get('cosim_thirdpartysim_vehicle_info')
         if cosim_thirdpartysim_vehicle_info is not None:
