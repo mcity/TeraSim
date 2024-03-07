@@ -83,7 +83,7 @@ class SimulationSynchronization(object):
         # Mapped actor ids.
         self.terasim_controlled_vehicle_ids = {}  # Contains only actors controlled by sumo.
         self.teraim_to_voices_id_mapping = {}
-        self.terasim_voices_vehicle_id = 0
+        self.terasim_voices_vehicle_id = 1
 
     def tick(self):
         """
@@ -183,7 +183,7 @@ class SimulationSynchronization(object):
                 print("destroy terasim controlled carla actor: ", carla_actor_id)
                 
             self.terasim_controlled_vehicle_ids = {}
-            self.terasim_voices_vehicle_id = 0
+            self.terasim_voices_vehicle_id = 1
             return
           
         cosim_terasim_vehicle_info_dict = json.loads(cosim_terasim_vehicle_info_json)
