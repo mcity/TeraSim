@@ -1,11 +1,12 @@
+'''This module defines the interface for agent sensors
+'''
 from __future__ import annotations
 from collections import namedtuple, defaultdict
 import addict
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING
 from terasim.overlay import traci
-from terasim import utils
-from terasim.agent.agent import Agent
+
 if TYPE_CHECKING:
     from terasim.simulator import Simulator
 
@@ -21,7 +22,7 @@ class AgentSensor(ABC):
             params (dict): all sensor paramters
             name (str, optional): define the name of the sensor. Defaults to "base".
         """
-        self._agent: Agent = None # to be assigned from outside
+        self._agent = None # to be assigned from outside
         self._name = name
         self._params = addict.Dict(self.DEFAULT_PARAMS)
         self._params.update(params)
@@ -75,14 +76,14 @@ class AgentSensor(ABC):
         """
         pass
 
-    def install(self, parent):
+    def _install(self, agent):
         """Install the sensor to the simulator (but not subscribe to the data yet).
 
         For SUMO sensors, it will be no-op.
         """
-        self._agent = parent
+        self._agent = agent
 
-    def uninstall(self):
+    def _uninstall(self):
         """Uninstall the sensor from the simulator.
 
         For SUMO sensors, it will be no-op.

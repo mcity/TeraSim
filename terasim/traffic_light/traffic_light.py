@@ -1,33 +1,34 @@
 from copy import copy
-from typing import Iterable, Dict
-from terasim.agent.agent_decision_model import AgentDecisionModel
-from terasim.agent.agent_sensor import AgentSensor
-from terasim.agent.agent import Agent
-
+from terasim.agent.agent import Agent, AgentList
 
 class TrafficLight(Agent):
-    def _install(self):
-        '''
-        This method is designed to be called after the vehicle exists in the simulator. It installs
-        the attaching objects (including sensors, the decision model and controller).
-        '''
-        # install sensors
-        for name, sensor in self.sensors.items():
-            sensor.install(self)
+    DEFAULT_PARAMS = dict(
+        agent_type = "TrafficLight",
+    )
+    
+class TrafficLightList(AgentList):
+    def __add__(self, another_tls_list):
+        if not isinstance(another_tls_list, TrafficLightList):
+            raise TypeError('TrafficLightList object can only be added to another TrafficLightList')
+        tls_list = copy(self)
+        keys = self.keys()
+        for tls in another_tls_list:
+            if tls.id in keys:
+                print(f'WARNING: traffic light with same id {tls.id} is added and overwrote the traffic light list')
+            tls_list[tls.id] = tls
+        return tls_list
 
-        # install decision model
-        if not isinstance(self.decision_model, AgentDecisionModel):
-            raise ValueError("Installing non-decision_model instance as decision_model!")
-        self.decision_model.vehicle = self
-        self.decision_model.install()
+    def add_trafficlight(self, tlslist):
+        """Add vehicles to the traffic light list.
 
-        # install controller
-        self.controller._install(self)
+        Args:
+            vlist (list(Vehicle)): List of TrafficLight object or a single TrafficLight object.
+        """
+        if not isinstance(tlslist, list):
+            tlslist = [tlslist]
 
-        # apply params
-        self.simulator.set_vehicle_color(self.id, self.params.properties.color)
-
-    def _uninstall(self):
-        # uninstall sensors
-        for name, sensor in self.sensors.items():
-            sensor._agent = None # remove back-reference
+        for tls in tlslist:
+            if tls.id in self.keys():
+                print(f'WARNING: traffic light with same id {tls.id} exists and this traffic light is dumped and not overriding the traffic light with same id in the original list')
+                continue
+            self[tls.id] = tls    

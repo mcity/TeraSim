@@ -2,7 +2,7 @@ from pathlib import Path
 from terasim.simulator import Simulator
 from terasim.envs.template import EnvTemplate
 from terasim.logger.infoextractor import InfoExtractor
-from terasim.vehicle.factories.dummy_vehicle_factory import DummyVehicleFactory
+from terasim.vehicle.factories.vehicle_factory import VehicleFactory
 from terasim.vehicle.sensors.ego import EgoSensor
 from terasim.vehicle.sensors.local import LocalSensor
 from terasim.vehicle.controllers.high_efficiency_controller import HighEfficiencyController
@@ -12,7 +12,7 @@ from terasim.vehicle.decision_models.idm_model import IDMModel
 current_path = Path(__file__).parent
 maps_path = current_path / 'maps' / '3LaneHighway'
 
-class ExampleVehicleFactory(DummyVehicleFactory):
+class ExampleVehicleFactory(VehicleFactory):
 
     def create_vehicle(self, veh_id, simulator):
         """Generate a vehicle with the given vehicle id in the simulator, composed of a decision model, a controller, and a list of sensors, which should be defined or customized by the user.

@@ -141,6 +141,10 @@ sim.run()
 
 In the script, we build the environment, the simulator, and bind them together. Then we run the simulator, the sumo interface will show up. After clicking the "run" button in the sumo-gui, the simulation will run with one autonomous vehicle(CAV) and multiple background vehicles(BVs).
 
+# Specific Tutorials
+For the detailed tutorials, please refer to the following:
+- [Traffic light simulation](docs/tutorials/traffic_light_simulation.md)
+
 <!-- CONTRIBUTING -->
 # Contributing
 
