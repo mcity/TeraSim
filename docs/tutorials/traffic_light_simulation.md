@@ -1,7 +1,9 @@
 # Tutorial for creating agents and environment for the traffic light simulation
 This tutorial will guide you through the process of creating agents and environment for the traffic light simulation. The traffic light simulation is a typical multi-agent system, which includes vehicles and traffic lights. In this tutorial, we will show you how to create the decision model, controller, and sensor for the agents, and how to define the environment for the simulation. The detailed code is shown [here](../../examples/example_traffic_light.py). Let's break the code down:
 
-## 1. Import necessary packages and data
+## 1. Code explanation
+
+### 1.1. Import necessary packages and data
 ```python
 from pathlib import Path
 from terasim.simulator import Simulator
@@ -28,10 +30,10 @@ from terasim.traffic_light.sensors.ego_state_sensor import EgoStateSensor
 from terasim.traffic_light.factories.traffic_light_factory import TrafficLightFactory
 ```
 
-## 2. Define control logic of the agents, including vehicles and traffic lights
+### 1.2. Define control logic of the agents, including vehicles and traffic lights
 In the simulation, there are two kinds of agents: `Vehicle` and `TrafficLight`. For each `Agent`, we need to define the decision model, controller, and sensor. Here is an example of traffic light decision model.
 
-### 2.1 Example of traffic light decision model
+#### 1.2.1. Example of traffic light decision model
 Please note that any customized decision model should inherit the `AgentDecisionModel` class and implement the `derive_control_command_from_observation` function. The specific `derive_control_command_from_observation` fucntion is used to derive the control command from the observation. The observation is a dictionary containing the information of the agent. Here is an example of traffic light decision model, which creates a 120 seconds traffic control cycle with 8 phases. 
 
 ```python
@@ -63,7 +65,7 @@ class ExampleStateDecisionModel(AgentDecisionModel):
             return "rryrrryyr"
 ```
 
-### 2.2 Example of vehicle factory
+### 1.2.2. Example of vehicle factory
 Please note that any customized vehicle factory should inherit the `VehicleFactory` class and implement the `create_vehicle` function. The specific `create_vehicle` fucntion is used to insert vehicles, which are composed of a decision model, a controller, and a list of sensors. Here is an example of vehicle factory, which generates SUMO-controlled vehicles in the simulation. 
 ```python
 # Example of vehicle factory
@@ -87,7 +89,7 @@ class ExampleVehicleFactory(VehicleFactory):
                        decision_model=decision_model, controller=controller)
 ```
 
-### 2.3 Example of traffic light factory
+### 1.2.3. Example of traffic light factory
 Please note that any customized traffic light factory should inherit the `TrafficLightFactory` class and implement the `create_traffic_light` function. The specific `create_traffic_light` fucntion is used to insert traffic lights, which are composed of a decision model, a controller, and a list of sensors. Here is an example of traffic light factory, which generates user-controlled traffic lights in the simulation. In the following example, the traffic light with id "NODE_17" is controlled by the `ExampleStateDecisionModel` shown before, and the other traffic lights are controlled by the `DummyStateDecisionModel` which uses the all green logic.
 ```python
 # Example of traffic light factory
@@ -118,7 +120,7 @@ class ExampleTrafficLightFactory(TrafficLightFactory):
                         decision_model=decision_model, controller=controller)
 ```
 
-## 3. Create the simulated environment
+## 1.3. Create the simulated environment
 In the simulation, the environment is defined by the `EnvTrafficLightTemplate` class. It is composed of `ExampleVehicleFactory`, `ExampleTrafficLightFactory`, and `InfoExtractor`. The first two components are defined before and `InfoExtractor` is used to log useful data.
 ```python
 # Example of environment
@@ -128,7 +130,7 @@ env = EnvTrafficLightTemplate(
     info_extractor=InfoExtractor
 )
 ```
-## 4. Create the simulator and run the simulation
+## 1.4. Create the simulator and run the simulation
 Then, you need to create the `Simulator`, and define the `sumo_net_file_path` and `sumo_config_file_path` (you can replace the path with your own path). You can decide whether it will display **sumo-gui** interface with `gui_flag`. Then, use `bind_env(env)` function to bind the environment to the simulation, and `run()` funtion to start the simulation.
 ```python
 sim = Simulator(
@@ -144,5 +146,10 @@ sim.bind_env(env)
 sim.run()
 ```
 
-## 5. Demo
+## 2. Usage
+```sh
+python examples/example_traffic_light.py
+```
+
+## 3. Demo
 ![](../videos/demo_traffic_light_simulation.gif)
