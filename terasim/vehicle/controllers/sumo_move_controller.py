@@ -8,23 +8,24 @@ class SumoMoveCommandSchema(BaseModel):
     velocity: float
     angle: float
     keepRoute: int = 2
+    speedmode: int = 32
     type: str = "SetSumoTransform"
 
 
 class SUMOMOVEController(AgentController):
 
     def execute_control_command(self, veh_id, control_command, obs_dict):
-        keepRoute = control_command.get("keepRoute", 2)
         self.set_transform_sumo(
             veh_id,
             control_command["position"],
             control_command["velocity"],
             control_command["angle"],
-            keepRoute,
+            control_command["keepRoute"],
+            control_command["speedmode"],
         )
 
     def set_transform_sumo(
-        self, veh_id, position, velocity, angle, keepRoute, speedmode=0
+        self, veh_id, position, velocity, angle, keepRoute, speedmode
     ):
         """Apply the SUMO movePosition command to the vehicle.
 
