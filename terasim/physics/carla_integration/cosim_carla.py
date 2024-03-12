@@ -75,10 +75,13 @@ class SimulationSynchronization(object):
         BridgeHelper.blueprint_library = self.carla.world.get_blueprint_library()
         BridgeHelper.offset = [2.0, 159.0, 34.5]
         
-        # redis server for communication
-        self.redis_server = redis.Redis(host='localhost', port=6379, db=0)
-        self.redis_server.flushall()
-        print("Redis server connected, flush all")
+        # redis client
+        redis_host = os.environ.get("TERASIM_REDIS_HOST", 'localhost')
+        redis_port = os.environ.get("TERASIM_REDIS_PORT", 6379)
+        redis_password = os.environ.get("TERASIM_REDIS_PASSWORD", "")
+
+        self.redis_client = redis.Redis(host=redis_host, port=redis_port, db=0, password=redis_password)
+        print("Redis server connected")
 
         # Mapped actor ids.
         self.terasim_controlled_vehicle_ids = {}  # Contains only actors controlled by sumo.
@@ -138,7 +141,7 @@ class SimulationSynchronization(object):
         cosim_traffic_light_state['NODE_23'] = "OOOO"
         cosim_traffic_light_state['NODE_24'] = "OOOO"
 
-        self.redis_server.set("cosim_traffic_light_state", json.dumps(cosim_traffic_light_state))
+        self.redis_client.set("cosim_traffic_light_state", json.dumps(cosim_traffic_light_state))
 
     def sync_carla_vehicle_to_sumo(self):
         carla_actor_list = self.carla.world.get_actors()
@@ -171,11 +174,11 @@ class SimulationSynchronization(object):
             redis_key = "CARLA_" + str(vehicle_id)
             cosim_thirdpartysim_vehicle_info[redis_key] = vehicle
 
-        self.redis_server.set('cosim_thirdpartysim_vehicle_info', json.dumps(cosim_thirdpartysim_vehicle_info))
+        self.redis_client.set('cosim_thirdpartysim_vehicle_info', json.dumps(cosim_thirdpartysim_vehicle_info))
 
     def sync_sumo_vehicle_to_carla(self):
-        cosim_terasim_vehicle_info_json = self.redis_server.get('cosim_terasim_vehicle_info')
-        terasim_status = self.redis_server.get('terasim_status')
+        cosim_terasim_vehicle_info_json = self.redis_client.get('cosim_terasim_vehicle_info')
+        terasim_status = self.redis_client.get('terasim_status')
 
         if cosim_terasim_vehicle_info_json is None or terasim_status == b'0':
             for carla_actor_id in self.terasim_controlled_vehicle_ids.values():

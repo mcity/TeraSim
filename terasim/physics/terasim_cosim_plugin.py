@@ -24,7 +24,13 @@ class TeraSimCoSimPlugin(BaseEnv):
         super().__init__(vehicle_factory, info_extractor)
 
     def on_start(self, simulator: Simulator, ctx):
-        self.redis_client = redis.Redis(host='localhost', port=6379, db=0)
+        redis_host = os.environ.get("TERASIM_REDIS_HOST", 'localhost')
+        redis_port = os.environ.get("TERASIM_REDIS_PORT", 6379)
+        redis_password = os.environ.get("TERASIM_REDIS_PASSWORD", "")
+
+        self.redis_client = redis.Redis(host=redis_host, port=redis_port, db=0, password=redis_password)
+        print("Redis server connected")
+        
         self.net = self._get_sumo_net(self.simulator.sumo_config_file_path)
 
     def on_step(self, simulator: Simulator, ctx):
