@@ -1,0 +1,27 @@
+[tool.poetry]
+name = "terasim"
+version = "2.0.0"
+description = "A SUMO-based environment for AV testing and evaluation"
+authors = ["Haowei Sun <printfplus@outlook.com>"]
+license = "MIT"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+numpy = "^1.26.4"
+bidict = "^0.23.1"
+attrs = "^23.2.0"
+addict = "^2.4.0"
+scipy = "^1.11.4"
+eclipse-sumo = "^1.19.0"
+traci = "^1.19.0"
+libsumo = "^1.19.0"
+sumolib = "^1.19.0"
+redis = "^5.0.2"
+lxml = "^5.1.0"
+pydantic = "^2.6.3"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
