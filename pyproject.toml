@@ -2,7 +2,7 @@
 name = "terasim"
 version = "2.0.0"
 description = "A SUMO-based environment for AV testing and evaluation"
-authors = ["Haowei Sun <printfplus@outlook.com>"]
+authors = ["Haowei Sun <haoweis@umich.edu>", "Haojie Zhu <zhuhj@umich.edu>", "Shuo Feng <fshuo@umich.edu>"]
 license = "MIT"
 readme = "README.md"
 
