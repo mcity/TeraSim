@@ -4,7 +4,7 @@
 from abc import ABC
 from pydantic import BaseModel
 from typing import Optional, Dict, Any, Type
-from pydantic import BaseModel
+import json
 
 
 class AgentController(ABC):
@@ -32,7 +32,9 @@ class AgentController(ABC):
     def _is_command_legal(self, agent_id, control_command):
         if not isinstance(control_command, self.control_command_schema) and not (
             isinstance(control_command, dict)
-            and self.control_command_schema.model_validate_json(control_command)
+            and self.control_command_schema.model_validate_json(
+                json.dumps(control_command)
+            )
         ):
             return False
         return self.is_command_legal(agent_id, control_command)
