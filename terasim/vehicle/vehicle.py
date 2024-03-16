@@ -5,28 +5,34 @@ from terasim.agent.agent_sensor import AgentSensor
 from terasim.agent.agent import Agent, AgentList
 import addict
 
+
 class Vehicle(Agent):
-    COLOR_RED    = (255, 0,   0)
+    COLOR_RED = (255, 0, 0)
     COLOR_YELLOW = (255, 255, 0)
-    COLOR_BLUE   = (0,   0,   255)
-    COLOR_GREEN  = (0,   255, 0)
+    COLOR_BLUE = (0, 0, 255)
+    COLOR_GREEN = (0, 255, 0)
 
     DEFAULT_PARAMS = dict(
-        agent_type = "Vehicle",
-        properties = { "color": COLOR_YELLOW },
-        initial_info = {},
-        sync_range = 120, # agents within this range of this vehicle will be synchronized
+        agent_type="Vehicle",
+        properties={"color": COLOR_YELLOW},
+        initial_info={},
+        sync_range=120,  # agents within this range of this vehicle will be synchronized
     )
-    
+
+
 class VehicleList(AgentList):
     def __add__(self, another_vehicle_list):
         if not isinstance(another_vehicle_list, VehicleList):
-            raise TypeError('VehicleList object can only be added to another VehicleList')
+            raise TypeError(
+                "VehicleList object can only be added to another VehicleList"
+            )
         vehicle_list = copy(self)
         keys = self.keys()
         for v in another_vehicle_list:
             if v.id in keys:
-                print(f'WARNING: vehicle with same id {v.id} is added and overwrote the vehicle list')
+                print(
+                    f"WARNING: vehicle with same id {v.id} is added and overwrote the vehicle list"
+                )
             vehicle_list[v.id] = v
         return vehicle_list
 
@@ -41,6 +47,8 @@ class VehicleList(AgentList):
 
         for v in vlist:
             if v.id in self.keys():
-                print(f'WARNING: vehicle with same id {v.id} exists and this vehicle is dumped and not overriding the vehicle with same id in the original list')
+                print(
+                    f"WARNING: vehicle with same id {v.id} exists and this vehicle is dumped and not overriding the vehicle with same id in the original list"
+                )
                 continue
-            self[v.id] = v    
+            self[v.id] = v

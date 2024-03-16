@@ -26,6 +26,7 @@ class CarlaSimulation(object):
     """
     CarlaSimulation is responsible for the management of the carla simulation.
     """
+
     def __init__(self, host, port, step_length):
         self.client = carla.Client(host, port)
         self.client.set_timeout(2.0)
@@ -43,13 +44,15 @@ class CarlaSimulation(object):
         self._tls = {}  # {landmark_id: traffic_ligth_actor}
 
         tmp_map = self.world.get_map()
-        for landmark in tmp_map.get_all_landmarks_of_type('1000001'):
-            if landmark.id != '':
+        for landmark in tmp_map.get_all_landmarks_of_type("1000001"):
+            if landmark.id != "":
                 traffic_ligth = self.world.get_traffic_light(landmark)
                 if traffic_ligth is not None:
                     self._tls[landmark.id] = traffic_ligth
                 else:
-                    logging.warning('Landmark %s is not linked to any traffic light', landmark.id)
+                    logging.warning(
+                        "Landmark %s is not linked to any traffic light", landmark.id
+                    )
 
     def get_actor(self, actor_id):
         """
@@ -91,7 +94,7 @@ class CarlaSimulation(object):
         Switch off all traffic lights.
         """
         for actor in self.world.get_actors():
-            if actor.type_id == 'traffic.traffic_light':
+            if actor.type_id == "traffic.traffic_light":
                 actor.freeze(True)
                 # We set the traffic light to 'green' because 'off' state sets the traffic light to
                 # 'red'.
@@ -105,16 +108,19 @@ class CarlaSimulation(object):
             :param transform: transform where the actor will be spawned.
             :return: actor id if the actor is successfully spawned. Otherwise, INVALID_ACTOR_ID.
         """
-        transform = carla.Transform(transform.location + carla.Location(0, 0, SPAWN_OFFSET_Z),
-                                    transform.rotation)
+        transform = carla.Transform(
+            transform.location + carla.Location(0, 0, SPAWN_OFFSET_Z),
+            transform.rotation,
+        )
 
         batch = [
             carla.command.SpawnActor(blueprint, transform).then(
-                carla.command.SetSimulatePhysics(carla.command.FutureActor, False))
+                carla.command.SetSimulatePhysics(carla.command.FutureActor, False)
+            )
         ]
         response = self.client.apply_batch_sync(batch, False)[0]
         if response.error:
-            logging.error('Spawn carla actor failed. %s', response.error)
+            logging.error("Spawn carla actor failed. %s", response.error)
             return INVALID_ACTOR_ID
 
         return response.actor_id
@@ -155,7 +161,7 @@ class CarlaSimulation(object):
             :return: True if successfully updated. Otherwise, False.
         """
         if not landmark_id in self._tls:
-            logging.warning('Landmark %s not found in carla', landmark_id)
+            logging.warning("Landmark %s not found in carla", landmark_id)
             return False
 
         traffic_light = self._tls[landmark_id]
@@ -170,7 +176,8 @@ class CarlaSimulation(object):
 
         # Update data structures for the current frame.
         current_actors = set(
-            [vehicle.id for vehicle in self.world.get_actors().filter('vehicle.*')])
+            [vehicle.id for vehicle in self.world.get_actors().filter("vehicle.*")]
+        )
         self.spawned_actors = current_actors.difference(self._active_actors)
         self.destroyed_actors = self._active_actors.difference(current_actors)
         self._active_actors = current_actors
@@ -180,5 +187,5 @@ class CarlaSimulation(object):
         Closes carla client.
         """
         for actor in self.world.get_actors():
-            if actor.type_id == 'traffic.traffic_light':
+            if actor.type_id == "traffic.traffic_light":
                 actor.freeze(False)

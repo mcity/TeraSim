@@ -22,6 +22,7 @@ class RoadOption(Enum):
     RoadOption represents the possible topological configurations
     when moving from a segment of lane to other.
     """
+
     VOID = -1
     LEFT = 1
     RIGHT = 2
@@ -67,7 +68,9 @@ class LocalPlanner(object):
         self._vehicle_controller = None
         self._global_plan = None
         self._pid_controller = None
-        self.waypoints_queue = deque(maxlen=20000)  # queue with tuples of (waypoint, RoadOption)
+        self.waypoints_queue = deque(
+            maxlen=20000
+        )  # queue with tuples of (waypoint, RoadOption)
         self._buffer_size = 5
         self._waypoint_buffer = deque(maxlen=self._buffer_size)
 
@@ -98,25 +101,29 @@ class LocalPlanner(object):
         """
         # Default parameters
         self.args_lat_hw_dict = {
-            'K_P': 0.75,
-            'K_D': 0.02,
-            'K_I': 0.4,
-            'dt': 1.0 / self.FPS}
+            "K_P": 0.75,
+            "K_D": 0.02,
+            "K_I": 0.4,
+            "dt": 1.0 / self.FPS,
+        }
         self.args_lat_city_dict = {
-            'K_P': 0.58,
-            'K_D': 0.02,
-            'K_I': 0.5,
-            'dt': 1.0 / self.FPS}
+            "K_P": 0.58,
+            "K_D": 0.02,
+            "K_I": 0.5,
+            "dt": 1.0 / self.FPS,
+        }
         self.args_long_hw_dict = {
-            'K_P': 0.37,
-            'K_D': 0.024,
-            'K_I': 0.032,
-            'dt': 1.0 / self.FPS}
+            "K_P": 0.37,
+            "K_D": 0.024,
+            "K_I": 0.032,
+            "dt": 1.0 / self.FPS,
+        }
         self.args_long_city_dict = {
-            'K_P': 0.15,
-            'K_D': 0.05,
-            'K_I': 0.07,
-            'dt': 1.0 / self.FPS}
+            "K_P": 0.15,
+            "K_D": 0.05,
+            "K_I": 0.07,
+            "dt": 1.0 / self.FPS,
+        }
 
         self._current_waypoint = self._map.get_waypoint(self._vehicle.get_location())
 
@@ -148,8 +155,7 @@ class LocalPlanner(object):
             self._waypoint_buffer.clear()
             for _ in range(self._buffer_size):
                 if self.waypoints_queue:
-                    self._waypoint_buffer.append(
-                        self.waypoints_queue.popleft())
+                    self._waypoint_buffer.append(self.waypoints_queue.popleft())
                 else:
                     break
 
@@ -202,8 +208,7 @@ class LocalPlanner(object):
         if not self._waypoint_buffer:
             for i in range(self._buffer_size):
                 if self.waypoints_queue:
-                    self._waypoint_buffer.append(
-                        self.waypoints_queue.popleft())
+                    self._waypoint_buffer.append(self.waypoints_queue.popleft())
                 else:
                     break
 
@@ -220,25 +225,25 @@ class LocalPlanner(object):
             args_lat = self.args_lat_city_dict
             args_long = self.args_long_city_dict
 
-        self._pid_controller = VehiclePIDController(self._vehicle,
-                                                    args_lateral=args_lat,
-                                                    args_longitudinal=args_long)
+        self._pid_controller = VehiclePIDController(
+            self._vehicle, args_lateral=args_lat, args_longitudinal=args_long
+        )
 
-        control = self._pid_controller.run_step(self._target_speed, self.target_waypoint)
+        control = self._pid_controller.run_step(
+            self._target_speed, self.target_waypoint
+        )
 
         # Purge the queue of obsolete waypoints
         vehicle_transform = self._vehicle.get_transform()
         max_index = -1
 
         for i, (waypoint, _) in enumerate(self._waypoint_buffer):
-            if distance_vehicle(
-                    waypoint, vehicle_transform) < self._min_distance:
+            if distance_vehicle(waypoint, vehicle_transform) < self._min_distance:
                 max_index = i
         if max_index >= 0:
             for i in range(max_index + 1):
                 self._waypoint_buffer.popleft()
 
         if debug:
-            draw_waypoints(self._vehicle.get_world(),
-                           [self.target_waypoint], 1.0)
+            draw_waypoints(self._vehicle.get_world(), [self.target_waypoint], 1.0)
         return control

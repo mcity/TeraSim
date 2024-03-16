@@ -10,19 +10,28 @@ from terasim.logger.infoextractor import InfoExtractor
 from terasim.physics import CarlaPhysics
 from terasim.physics.carla.sensors import Camera
 from terasim.envs import EnvTemplate
-from terasim.vehicle.decision_models.dummy_setsumo_transform_decision_model import DummySetSUMOTranformDecisionModel
+from terasim.vehicle.decision_models.dummy_setsumo_transform_decision_model import (
+    DummySetSUMOTranformDecisionModel,
+)
 from terasim.vehicle.controllers.sumo_move_controller import SUMOMOVEController
 
 current_path = Path(__file__).parent
-maps_path = current_path / 'maps' / 'CarlaTown04'
+maps_path = current_path / "maps" / "CarlaTown04"
+
 
 class CarlaTestingFactory(VehicleFactory):
     def create_vehicle(self, veh_id, simulator):
         sensor_list = [Camera()] if int(veh_id) < 5 else []
         decision_model = DummySetSUMOTranformDecisionModel()
         controller = SUMOMOVEController(simulator)
-        return Vehicle(veh_id, simulator, sensors=sensor_list,
-                       decision_model=decision_model, controller=controller)
+        return Vehicle(
+            veh_id,
+            simulator,
+            sensors=sensor_list,
+            decision_model=decision_model,
+            controller=controller,
+        )
+
 
 class CarlaTestingEnv(EnvTemplate):
     def __init__(self, vehicle_factory, info_extractor):
@@ -56,23 +65,28 @@ class CarlaTestingEnv(EnvTemplate):
             print("Eliminated", veh_id)
 
         # check sensor
-        VIS_AGENT_ID = '0'
+        VIS_AGENT_ID = "0"
         if VIS_AGENT_ID in self.vehicle_list:
-            data = self.vehicle_list[VIS_AGENT_ID].sensors['camera'].observation
+            data = self.vehicle_list[VIS_AGENT_ID].sensors["camera"].observation
             if data is not None:
-                data_arr = np.ndarray(shape=(data.height, data.width, 4), dtype=np.uint8, buffer=data.raw_data)
-                img = Image.fromarray(data_arr[:, :, 2::-1]) # BGRA to RGB
-                img.save(current_path / "output" / '0' / 'save.jpg')
+                data_arr = np.ndarray(
+                    shape=(data.height, data.width, 4),
+                    dtype=np.uint8,
+                    buffer=data.raw_data,
+                )
+                img = Image.fromarray(data_arr[:, :, 2::-1])  # BGRA to RGB
+                img.save(current_path / "output" / "0" / "save.jpg")
                 print("Received image.")
 
         return super().on_step(ctx)
 
+
 sim = Simulator(
-    sumo_net_file_path = maps_path / 'Town04.net.xml',
-    sumo_config_file_path = maps_path / 'Town04.sumocfg',
+    sumo_net_file_path=maps_path / "Town04.net.xml",
+    sumo_config_file_path=maps_path / "Town04.sumocfg",
     num_tries=10,
     gui_flag=True,
-    output_path = current_path / "output" / '0',
+    output_path=current_path / "output" / "0",
     sumo_output_file_types=["fcd_all"],
 )
 sim.bind_env(CarlaTestingEnv(CarlaTestingFactory(), InfoExtractor))

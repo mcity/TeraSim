@@ -1,22 +1,24 @@
 from terasim.agent.agent_sensor import AgentSensor
 from terasim.overlay import traci
 
+
 class EgoSensor(AgentSensor):
-    ''' A sensor for reporting basic states (position, speed, heading, etc.) '''
+    """A sensor for reporting basic states (position, speed, heading, etc.)"""
 
     DEFAULT_PARAMS = dict(
-        fields = {
-            'velocity': traci.vehicle.getSpeed,
-            'position': traci.vehicle.getPosition,
-            'position3d': traci.vehicle.getPosition3D,
-            'heading': traci.vehicle.getAngle,
-            'edge_id': traci.vehicle.getRoadID,
+        fields={
+            "velocity": traci.vehicle.getSpeed,
+            "position": traci.vehicle.getPosition,
+            "position3d": traci.vehicle.getPosition3D,
+            "heading": traci.vehicle.getAngle,
+            "edge_id": traci.vehicle.getRoadID,
             "lane_id": traci.vehicle.getLaneID,
-            'lane_index': traci.vehicle.getLaneIndex,
-            'acceleration': traci.vehicle.getAcceleration,
+            "lane_index": traci.vehicle.getLaneIndex,
+            "acceleration": traci.vehicle.getAcceleration,
         }
     )
-    def __init__(self, name = "ego", **params):
+
+    def __init__(self, name="ego", **params):
         super().__init__(name, **params)
 
     def fetch(self) -> dict:

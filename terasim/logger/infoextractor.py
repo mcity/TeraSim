@@ -1,5 +1,6 @@
 from abc import ABC
 
+
 class InfoExtractor(ABC):
     def __init__(self, env):
         self.env = env
@@ -12,4 +13,3 @@ class InfoExtractor(ABC):
 
     def get_terminate_info(self, stop, reason, additional_info):
         pass
-

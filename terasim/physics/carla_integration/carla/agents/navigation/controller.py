@@ -12,15 +12,22 @@ import carla
 from agents.tools.misc import get_speed
 
 
-class VehiclePIDController():
+class VehiclePIDController:
     """
     VehiclePIDController is the combination of two PID controllers
     (lateral and longitudinal) to perform the
     low level control a vehicle from client side
     """
 
-
-    def __init__(self, vehicle, args_lateral, args_longitudinal, max_throttle=0.75, max_brake=0.3, max_steering=0.8):
+    def __init__(
+        self,
+        vehicle,
+        args_lateral,
+        args_longitudinal,
+        max_throttle=0.75,
+        max_brake=0.3,
+        max_steering=0.8,
+    ):
         """
         Constructor method.
 
@@ -44,7 +51,9 @@ class VehiclePIDController():
         self._vehicle = vehicle
         self._world = self._vehicle.get_world()
         self.past_steering = self._vehicle.get_control().steer
-        self._lon_controller = PIDLongitudinalController(self._vehicle, **args_longitudinal)
+        self._lon_controller = PIDLongitudinalController(
+            self._vehicle, **args_longitudinal
+        )
         self._lat_controller = PIDLateralController(self._vehicle, **args_lateral)
 
     def run_step(self, target_speed, waypoint):
@@ -88,11 +97,10 @@ class VehiclePIDController():
         return control
 
 
-class PIDLongitudinalController():
+class PIDLongitudinalController:
     """
     PIDLongitudinalController implements longitudinal control using a PID.
     """
-
 
     def __init__(self, vehicle, K_P=1.0, K_D=0.0, K_I=0.0, dt=0.03):
         """
@@ -122,7 +130,7 @@ class PIDLongitudinalController():
         current_speed = get_speed(self._vehicle)
 
         if debug:
-            print('Current speed = {}'.format(current_speed))
+            print("Current speed = {}".format(current_speed))
 
         return self._pid_control(target_speed, current_speed)
 
@@ -145,9 +153,12 @@ class PIDLongitudinalController():
             _de = 0.0
             _ie = 0.0
 
-        return np.clip((self._k_p * error) + (self._k_d * _de) + (self._k_i * _ie), -1.0, 1.0)
+        return np.clip(
+            (self._k_p * error) + (self._k_d * _de) + (self._k_i * _ie), -1.0, 1.0
+        )
 
-class PIDLateralController():
+
+class PIDLateralController:
     """
     PIDLateralController implements lateral control using a PID.
     """
@@ -190,15 +201,26 @@ class PIDLateralController():
             :return: steering control in the range [-1, 1]
         """
         v_begin = vehicle_transform.location
-        v_end = v_begin + carla.Location(x=math.cos(math.radians(vehicle_transform.rotation.yaw)),
-                                         y=math.sin(math.radians(vehicle_transform.rotation.yaw)))
+        v_end = v_begin + carla.Location(
+            x=math.cos(math.radians(vehicle_transform.rotation.yaw)),
+            y=math.sin(math.radians(vehicle_transform.rotation.yaw)),
+        )
 
         v_vec = np.array([v_end.x - v_begin.x, v_end.y - v_begin.y, 0.0])
-        w_vec = np.array([waypoint.transform.location.x -
-                          v_begin.x, waypoint.transform.location.y -
-                          v_begin.y, 0.0])
-        _dot = math.acos(np.clip(np.dot(w_vec, v_vec) /
-                                 (np.linalg.norm(w_vec) * np.linalg.norm(v_vec)), -1.0, 1.0))
+        w_vec = np.array(
+            [
+                waypoint.transform.location.x - v_begin.x,
+                waypoint.transform.location.y - v_begin.y,
+                0.0,
+            ]
+        )
+        _dot = math.acos(
+            np.clip(
+                np.dot(w_vec, v_vec) / (np.linalg.norm(w_vec) * np.linalg.norm(v_vec)),
+                -1.0,
+                1.0,
+            )
+        )
 
         _cross = np.cross(v_vec, w_vec)
 
@@ -213,4 +235,6 @@ class PIDLateralController():
             _de = 0.0
             _ie = 0.0
 
-        return np.clip((self._k_p * _dot) + (self._k_d * _de) + (self._k_i * _ie), -1.0, 1.0)
+        return np.clip(
+            (self._k_p * _dot) + (self._k_d * _de) + (self._k_i * _ie), -1.0, 1.0
+        )

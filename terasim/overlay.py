@@ -1,14 +1,15 @@
-'''
+"""
 This module re-export sumo and carla for the simulation platform
-'''
+"""
 
 import os, sys, logging, pathlib
 
 # ===== load sumo API, use libsumo by default =====
 has_libsumo = False
-if os.environ.get("USE_LIBSUMO", True) != '0':
+if os.environ.get("USE_LIBSUMO", True) != "0":
     try:
         import libsumo as traci
+
         has_libsumo = True
     except ImportError:
         logging.warn("Failed to find libsumo, try to traci instead.")

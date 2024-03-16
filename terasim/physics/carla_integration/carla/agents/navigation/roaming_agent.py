@@ -50,7 +50,7 @@ class RoamingAgent(Agent):
         vehicle_state, vehicle = self._is_vehicle_hazard(vehicle_list)
         if vehicle_state:
             if debug:
-                print('!!! VEHICLE BLOCKING AHEAD [{}])'.format(vehicle.id))
+                print("!!! VEHICLE BLOCKING AHEAD [{}])".format(vehicle.id))
 
             self._state = AgentState.BLOCKED_BY_VEHICLE
             hazard_detected = True
@@ -59,7 +59,7 @@ class RoamingAgent(Agent):
         light_state, traffic_light = self._is_light_red(lights_list)
         if light_state:
             if debug:
-                print('=== RED LIGHT AHEAD [{}])'.format(traffic_light.id))
+                print("=== RED LIGHT AHEAD [{}])".format(traffic_light.id))
 
             self._state = AgentState.BLOCKED_RED_LIGHT
             hazard_detected = True

@@ -24,7 +24,7 @@ class TeraSimCoSimPlugin(BaseEnv):
         super().__init__(vehicle_factory, info_extractor)
 
     def on_start(self, simulator: Simulator, ctx):
-        self.redis_client = redis.Redis(host='localhost', port=6379, db=0)
+        self.redis_client = redis.Redis(host="localhost", port=6379, db=0)
         self.net = self._get_sumo_net(self.simulator.sumo_config_file_path)
 
     def on_step(self, simulator: Simulator, ctx):
@@ -34,8 +34,10 @@ class TeraSimCoSimPlugin(BaseEnv):
         self.sync_carla_vehicle_to_sumo()
 
         # update sumo controlled vehicles to global context
-        self.ctx["terasim_controlled_vehicle_ids"] = list(self.terasim_controlled_vehicle_ids)
-        
+        self.ctx["terasim_controlled_vehicle_ids"] = list(
+            self.terasim_controlled_vehicle_ids
+        )
+
         return True
 
     def on_stop(self, simulator: Simulator, ctx):
@@ -54,14 +56,16 @@ class TeraSimCoSimPlugin(BaseEnv):
         if cosim_traffic_light_state is not None:
             signal_information = json.loads(cosim_traffic_light_state)
             for signal_id in signal_information:
-                traci.trafficlight.setRedYellowGreenState(signal_id, signal_information[signal_id])
+                traci.trafficlight.setRedYellowGreenState(
+                    signal_id, signal_information[signal_id]
+                )
 
     def sync_sumo_vehicle_to_carla(self):
-        ''' sync sumo controlled vehicle to carla '''   
+        """sync sumo controlled vehicle to carla"""
         veh_list = self.simulator.get_vehID_list()
 
         self.terasim_controlled_vehicle_ids = {
-            vehID for vehID in veh_list if 'BV' in vehID or 'CAV' in vehID
+            vehID for vehID in veh_list if "BV" in vehID or "CAV" in vehID
         }
         self.terasim_controlled_vehicle_ids = set(self.terasim_controlled_vehicle_ids)
 
@@ -73,57 +77,82 @@ class TeraSimCoSimPlugin(BaseEnv):
             angle = traci.vehicle.getAngle(vehID)
 
             actor = {
-                "location": { "x": pos[0], "y": pos[1], "z": pos[2]},
-                "rotation": { "x": slope, "y": angle, "z" : 0.0},
+                "location": {"x": pos[0], "y": pos[1], "z": pos[2]},
+                "rotation": {"x": slope, "y": angle, "z": 0.0},
                 "extent": {
                     "x": traci.vehicle.getLength(vehID) / 2.0,
                     "y": traci.vehicle.getWidth(vehID) / 2.0,
-                    "z": traci.vehicle.getHeight(vehID) / 2.0
+                    "z": traci.vehicle.getHeight(vehID) / 2.0,
                 },
                 "lights": traci.vehicle.getSignals(vehID),
-                "speed": traci.vehicle.getSpeed(vehID)
+                "speed": traci.vehicle.getSpeed(vehID),
             }
 
             cosim_terasim_vehicle_info[vehID] = actor
 
         cosim_terasim_vehicle_info_json = json.dumps(cosim_terasim_vehicle_info)
-        self.redis_client.set('cosim_terasim_vehicle_info', cosim_terasim_vehicle_info_json)
+        self.redis_client.set(
+            "cosim_terasim_vehicle_info", cosim_terasim_vehicle_info_json
+        )
 
     def sync_carla_vehicle_to_sumo(self):
-        ''' update carla controlled vehicle in sumo '''
-        cosim_thirdpartysim_vehicle_info = self.redis_client.get('cosim_thirdpartysim_vehicle_info')
+        """update carla controlled vehicle in sumo"""
+        cosim_thirdpartysim_vehicle_info = self.redis_client.get(
+            "cosim_thirdpartysim_vehicle_info"
+        )
         if cosim_thirdpartysim_vehicle_info is not None:
-            cosim_thirdpartysim_vehicle_info = json.loads(cosim_thirdpartysim_vehicle_info)
+            cosim_thirdpartysim_vehicle_info = json.loads(
+                cosim_thirdpartysim_vehicle_info
+            )
 
             for vehID in cosim_thirdpartysim_vehicle_info:
                 if vehID not in self.carla2sumo_ids:
                     try:
-                        vclass = traci.vehicletype.getVehicleClass('IDM_waymo_motion')
+                        vclass = traci.vehicletype.getVehicleClass("IDM_waymo_motion")
                         if vclass not in self._routes:
-                            print('Creating route for %s vehicle class', vclass)
-                            allowed_edges = [e for e in self.net.getEdges() if e.allows(vclass)]
+                            print("Creating route for %s vehicle class", vclass)
+                            allowed_edges = [
+                                e for e in self.net.getEdges() if e.allows(vclass)
+                            ]
                             if allowed_edges:
-                                traci.route.add("carla_route_{}".format(vclass), [allowed_edges[0].getID()])
+                                traci.route.add(
+                                    "carla_route_{}".format(vclass),
+                                    [allowed_edges[0].getID()],
+                                )
                                 self._routes.add(vclass)
                             else:
-                                print('Could not found a route for %s. No vehicle will be spawned in sumo', 'IDM_waymo_motion')
+                                print(
+                                    "Could not found a route for %s. No vehicle will be spawned in sumo",
+                                    "IDM_waymo_motion",
+                                )
 
-                        self.add_vehicle(vehID, 'carla_route_{}'.format(vclass), lane_id=None, speed=0)
+                        self.add_vehicle(
+                            vehID,
+                            "carla_route_{}".format(vclass),
+                            lane_id=None,
+                            speed=0,
+                        )
                         traci.vehicle.setColor(vehID, (150, 255, 255, 255))
                         self.carla2sumo_ids.add(vehID)
-                        print('Adding vehicle to sumo successful', vehID)
+                        print("Adding vehicle to sumo successful", vehID)
 
                     except traci.exceptions.TraCIException as error:
-                        print('Spawn sumo actor failed: %s', error)
+                        print("Spawn sumo actor failed: %s", error)
                 else:
-                    loc_x = cosim_thirdpartysim_vehicle_info[vehID]['location']['x']
-                    loc_y = cosim_thirdpartysim_vehicle_info[vehID]['location']['y']
-                    yaw = cosim_thirdpartysim_vehicle_info[vehID]['rotation']['z']
+                    loc_x = cosim_thirdpartysim_vehicle_info[vehID]["location"]["x"]
+                    loc_y = cosim_thirdpartysim_vehicle_info[vehID]["location"]["y"]
+                    yaw = cosim_thirdpartysim_vehicle_info[vehID]["rotation"]["z"]
 
-                    traci.vehicle.moveToXY(vehID, "", 0, loc_x, loc_y, angle=yaw, keepRoute=0)
+                    traci.vehicle.moveToXY(
+                        vehID, "", 0, loc_x, loc_y, angle=yaw, keepRoute=0
+                    )
 
             # remove vehicles that are not in cosim_thirdpartysim_vehicle_info
-            to_remove = [vehID for vehID in self.carla2sumo_ids if vehID not in cosim_thirdpartysim_vehicle_info]
+            to_remove = [
+                vehID
+                for vehID in self.carla2sumo_ids
+                if vehID not in cosim_thirdpartysim_vehicle_info
+            ]
             self._remove_vehicle_from_env(to_remove)
             self.carla2sumo_ids -= set(to_remove)
         else:
@@ -140,12 +169,12 @@ class TeraSimCoSimPlugin(BaseEnv):
         cfg_file = os.path.join(os.getcwd(), cfg_file)
 
         tree = ET.parse(cfg_file)
-        tag = tree.find('//net-file')
+        tag = tree.find("//net-file")
         if tag is None:
             return None
 
-        net_file = os.path.join(os.path.dirname(cfg_file), tag.get('value'))
-        print('Reading net file: %s', net_file)
+        net_file = os.path.join(os.path.dirname(cfg_file), tag.get("value"))
+        print("Reading net file: %s", net_file)
 
         sumo_net = sumolib.net.readNet(net_file)
         return sumo_net

@@ -18,6 +18,7 @@ class RoadOption(Enum):
     """
     RoadOption represents the possible topological configurations when moving from a segment of lane to other.
     """
+
     VOID = -1
     LEFT = 1
     RIGHT = 2
@@ -102,49 +103,49 @@ class LocalPlanner(object):
         self._max_brake = 0.3
         self._max_throt = 0.75
         self._max_steer = 0.8
-        args_lateral_dict = {
-            'K_P': 1.95,
-            'K_D': 0.2,
-            'K_I': 0.07,
-            'dt': self._dt}
-        args_longitudinal_dict = {
-            'K_P': 1.0,
-            'K_D': 0,
-            'K_I': 0.05,
-            'dt': self._dt}
+        args_lateral_dict = {"K_P": 1.95, "K_D": 0.2, "K_I": 0.07, "dt": self._dt}
+        args_longitudinal_dict = {"K_P": 1.0, "K_D": 0, "K_I": 0.05, "dt": self._dt}
 
         # parameters overload
         if opt_dict:
-            if 'dt' in opt_dict:
-                self._dt = opt_dict['dt']
-            if 'target_speed' in opt_dict:
-                self._target_speed = opt_dict['target_speed']
-            if 'sampling_radius' in opt_dict:
-                self._sampling_radius = self._target_speed * \
-                                        opt_dict['sampling_radius'] / 3.6
-            if 'lateral_control_dict' in opt_dict:
-                args_lateral_dict = opt_dict['lateral_control_dict']
-            if 'longitudinal_control_dict' in opt_dict:
-                args_longitudinal_dict = opt_dict['longitudinal_control_dict']
-            if 'max_throttle' in opt_dict:
-                self._max_throt = opt_dict['max_throttle']
-            if 'max_brake' in opt_dict:
-                self._max_brake = opt_dict['max_brake']
-            if 'max_steering' in opt_dict:
-                self._max_steer = opt_dict['max_steering']
+            if "dt" in opt_dict:
+                self._dt = opt_dict["dt"]
+            if "target_speed" in opt_dict:
+                self._target_speed = opt_dict["target_speed"]
+            if "sampling_radius" in opt_dict:
+                self._sampling_radius = (
+                    self._target_speed * opt_dict["sampling_radius"] / 3.6
+                )
+            if "lateral_control_dict" in opt_dict:
+                args_lateral_dict = opt_dict["lateral_control_dict"]
+            if "longitudinal_control_dict" in opt_dict:
+                args_longitudinal_dict = opt_dict["longitudinal_control_dict"]
+            if "max_throttle" in opt_dict:
+                self._max_throt = opt_dict["max_throttle"]
+            if "max_brake" in opt_dict:
+                self._max_brake = opt_dict["max_brake"]
+            if "max_steering" in opt_dict:
+                self._max_steer = opt_dict["max_steering"]
 
         self._current_waypoint = self._map.get_waypoint(self._vehicle.get_location())
-        self._vehicle_controller = VehiclePIDController(self._vehicle,
-                                                        args_lateral=args_lateral_dict,
-                                                        args_longitudinal=args_longitudinal_dict,
-                                                        max_throttle=self._max_throt,
-                                                        max_brake=self._max_brake,
-                                                        max_steering=self._max_steer,)
+        self._vehicle_controller = VehiclePIDController(
+            self._vehicle,
+            args_lateral=args_lateral_dict,
+            args_longitudinal=args_longitudinal_dict,
+            max_throttle=self._max_throt,
+            max_brake=self._max_brake,
+            max_steering=self._max_steer,
+        )
 
         self._global_plan = False
 
         # compute initial waypoints
-        self._waypoints_queue.append((self._current_waypoint.next(self._sampling_radius)[0], RoadOption.LANEFOLLOW))
+        self._waypoints_queue.append(
+            (
+                self._current_waypoint.next(self._sampling_radius)[0],
+                RoadOption.LANEFOLLOW,
+            )
+        )
 
         self._target_road_option = RoadOption.LANEFOLLOW
         # fill waypoint trajectory queue
@@ -182,11 +183,9 @@ class LocalPlanner(object):
                 road_option = RoadOption.LANEFOLLOW
             else:
                 # random choice between the possible options
-                road_options_list = _retrieve_options(
-                    next_waypoints, last_waypoint)
+                road_options_list = _retrieve_options(next_waypoints, last_waypoint)
                 road_option = random.choice(road_options_list)
-                next_waypoint = next_waypoints[road_options_list.index(
-                    road_option)]
+                next_waypoint = next_waypoints[road_options_list.index(road_option)]
 
             self._waypoints_queue.append((next_waypoint, road_option))
 
@@ -209,8 +208,7 @@ class LocalPlanner(object):
         self._waypoint_buffer.clear()
         for _ in range(self._buffer_size):
             if self._waypoints_queue:
-                self._waypoint_buffer.append(
-                    self._waypoints_queue.popleft())
+                self._waypoint_buffer.append(self._waypoints_queue.popleft())
             else:
                 break
 
@@ -226,7 +224,9 @@ class LocalPlanner(object):
         """
 
         # not enough waypoints in the horizon? => add more!
-        if not self._global_plan and len(self._waypoints_queue) < int(self._waypoints_queue.maxlen * 0.5):
+        if not self._global_plan and len(self._waypoints_queue) < int(
+            self._waypoints_queue.maxlen * 0.5
+        ):
             self._compute_next_waypoints(k=100)
 
         if len(self._waypoints_queue) == 0 and len(self._waypoint_buffer) == 0:
@@ -243,8 +243,7 @@ class LocalPlanner(object):
         if not self._waypoint_buffer:
             for _ in range(self._buffer_size):
                 if self._waypoints_queue:
-                    self._waypoint_buffer.append(
-                        self._waypoints_queue.popleft())
+                    self._waypoint_buffer.append(self._waypoints_queue.popleft())
                 else:
                     break
 
@@ -254,20 +253,29 @@ class LocalPlanner(object):
         # target waypoint
         self.target_waypoint, self._target_road_option = self._waypoint_buffer[0]
         # move using PID controllers
-        control = self._vehicle_controller.run_step(self._target_speed, self.target_waypoint)
+        control = self._vehicle_controller.run_step(
+            self._target_speed, self.target_waypoint
+        )
 
         # purge the queue of obsolete waypoints
         max_index = -1
 
         for i, (waypoint, _) in enumerate(self._waypoint_buffer):
-            if waypoint.transform.location.distance(vehicle_transform.location) < self._min_distance:
+            if (
+                waypoint.transform.location.distance(vehicle_transform.location)
+                < self._min_distance
+            ):
                 max_index = i
         if max_index >= 0:
             for i in range(max_index + 1):
                 self._waypoint_buffer.popleft()
 
         if debug:
-            draw_waypoints(self._vehicle.get_world(), [self.target_waypoint], self._vehicle.get_location().z + 1.0)
+            draw_waypoints(
+                self._vehicle.get_world(),
+                [self.target_waypoint],
+                self._vehicle.get_location().z + 1.0,
+            )
 
         return control
 
@@ -278,6 +286,7 @@ class LocalPlanner(object):
         :return: boolean
         """
         return len(self._waypoints_queue) == 0 and len(self._waypoint_buffer) == 0
+
 
 def _retrieve_options(list_waypoints, current_waypoint):
     """

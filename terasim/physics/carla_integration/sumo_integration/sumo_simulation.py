@@ -34,14 +34,15 @@ class SumoSignalState(object):
     """
     SumoSignalState contains the different traffic light states.
     """
-    RED = 'r'
-    YELLOW = 'y'
-    GREEN = 'G'
-    GREEN_WITHOUT_PRIORITY = 'g'
-    GREEN_RIGHT_TURN = 's'
-    RED_YELLOW = 'u'
-    OFF_BLINKING = 'o'
-    OFF = 'O'
+
+    RED = "r"
+    YELLOW = "y"
+    GREEN = "G"
+    GREEN_WITHOUT_PRIORITY = "g"
+    GREEN_RIGHT_TURN = "s"
+    RED_YELLOW = "u"
+    OFF_BLINKING = "o"
+    OFF = "O"
 
 
 # https://sumo.dlr.de/docs/TraCI/Vehicle_Signalling.html
@@ -49,6 +50,7 @@ class SumoVehSignal(object):
     """
     SumoVehSignal contains the different sumo vehicle signals.
     """
+
     BLINKER_RIGHT = 1 << 0
     BLINKER_LEFT = 1 << 1
     BLINKER_EMERGENCY = 1 << 2
@@ -70,6 +72,7 @@ class SumoActorClass(enum.Enum):
     """
     SumoActorClass enumerates the different sumo actor classes.
     """
+
     IGNORING = "ignoring"
     PRIVATE = "private"
     EMERGENCY = "emergency"
@@ -99,8 +102,12 @@ class SumoActorClass(enum.Enum):
     CUSTOM2 = "custom2"
 
 
-SumoActor = collections.namedtuple('SumoActor', 'type_id vclass transform signals extent color')
-SumoActorWithSpeed = collections.namedtuple('SumoActorWithSpeed', 'type_id vclass transform signals extent color speed')
+SumoActor = collections.namedtuple(
+    "SumoActor", "type_id vclass transform signals extent color"
+)
+SumoActorWithSpeed = collections.namedtuple(
+    "SumoActorWithSpeed", "type_id vclass transform signals extent color speed"
+)
 
 # ==================================================================================================
 # -- sumo traffic lights ---------------------------------------------------------------------------
@@ -111,6 +118,7 @@ class SumoTLLogic(object):
     """
     SumoTLLogic holds the data relative to a traffic light in sumo.
     """
+
     def __init__(self, tlid, states, parameters):
         self.tlid = tlid
         self.states = states
@@ -119,7 +127,7 @@ class SumoTLLogic(object):
         self._link2landmark = {}
         for link_index, landmark_id in parameters.items():
             # Link index information is added in the parameter as 'linkSignalID:x'
-            link_index = int(link_index.split(':')[1])
+            link_index = int(link_index.split(":")[1])
 
             if landmark_id not in self._landmark2link:
                 self._landmark2link[landmark_id] = []
@@ -160,6 +168,7 @@ class SumoTLManager(object):
     SumoTLManager is responsible for the management of the sumo traffic lights (i.e., keeps control
     of the current program, phase, ...)
     """
+
     def __init__(self):
         self._tls = {}  # {tlid: {program_id: SumoTLLogic}
         self._current_program = {}  # {tlid: program_id}
@@ -189,10 +198,13 @@ class SumoTLManager(object):
             * Current program.
             * Current phase.
         """
-        traci.trafficlight.subscribe(tlid, [
-            traci.constants.TL_CURRENT_PROGRAM,
-            traci.constants.TL_CURRENT_PHASE,
-        ])
+        traci.trafficlight.subscribe(
+            tlid,
+            [
+                traci.constants.TL_CURRENT_PROGRAM,
+                traci.constants.TL_CURRENT_PHASE,
+            ],
+        )
 
     @staticmethod
     def unsubscribe(tlid):
@@ -226,7 +238,9 @@ class SumoTLManager(object):
         """
         signals = set()
         for tlid, program_id in self._current_program.items():
-            signals.update(self._tls[tlid][program_id].get_associated_signals(landmark_id))
+            signals.update(
+                self._tls[tlid][program_id].get_associated_signals(landmark_id)
+            )
         return signals
 
     def get_state(self, landmark_id):
@@ -244,8 +258,10 @@ class SumoTLManager(object):
         if len(states) == 1:
             return states.pop()
         elif len(states) > 1:
-            logging.warning('Landmark %s is associated with signals with different states',
-                            landmark_id)
+            logging.warning(
+                "Landmark %s is associated with signals with different states",
+                landmark_id,
+            )
             return SumoSignalState.RED
         else:
             return None
@@ -276,7 +292,7 @@ class SumoTLManager(object):
                 current_program = results[traci.constants.TL_CURRENT_PROGRAM]
                 current_phase = results[traci.constants.TL_CURRENT_PHASE]
 
-                if current_program != 'online':
+                if current_program != "online":
                     self._current_program[tl_id] = current_program
                     self._current_phase[tl_id] = current_phase
 
@@ -284,6 +300,7 @@ class SumoTLManager(object):
 # ==================================================================================================
 # -- sumo simulation -------------------------------------------------------------------------------
 # ==================================================================================================
+
 
 def _get_sumo_net(cfg_file):
     """
@@ -295,40 +312,58 @@ def _get_sumo_net(cfg_file):
     cfg_file = os.path.join(os.getcwd(), cfg_file)
 
     tree = ET.parse(cfg_file)
-    tag = tree.find('//net-file')
+    tag = tree.find("//net-file")
     if tag is None:
         return None
 
-    net_file = os.path.join(os.path.dirname(cfg_file), tag.get('value'))
-    logging.debug('Reading net file: %s', net_file)
+    net_file = os.path.join(os.path.dirname(cfg_file), tag.get("value"))
+    logging.debug("Reading net file: %s", net_file)
 
     sumo_net = sumolib.net.readNet(net_file)
-    return sumo_net 
+    return sumo_net
+
 
 class SumoSimulation(object):
     """
     SumoSimulation is responsible for the management of the sumo simulation.
     """
-    def __init__(self, cfg_file, step_length, host=None, port=None, sumo_gui=False, client_order=1):
+
+    def __init__(
+        self,
+        cfg_file,
+        step_length,
+        host=None,
+        port=None,
+        sumo_gui=False,
+        client_order=1,
+    ):
         if sumo_gui is True:
-            sumo_binary = sumolib.checkBinary('sumo-gui')
+            sumo_binary = sumolib.checkBinary("sumo-gui")
         else:
-            sumo_binary = sumolib.checkBinary('sumo')
+            sumo_binary = sumolib.checkBinary("sumo")
 
         if host is None or port is None:
-            logging.info('Starting new sumo server...')
+            logging.info("Starting new sumo server...")
             if sumo_gui is True:
-                logging.info('Remember to press the play button to start the simulation')
+                logging.info(
+                    "Remember to press the play button to start the simulation"
+                )
 
-            traci.start([sumo_binary,
-                '--configuration-file', cfg_file,
-                '--step-length', str(step_length),
-                '--lateral-resolution', '0.25',
-                '--collision.check-junctions'
-            ])
+            traci.start(
+                [
+                    sumo_binary,
+                    "--configuration-file",
+                    cfg_file,
+                    "--step-length",
+                    str(step_length),
+                    "--lateral-resolution",
+                    "0.25",
+                    "--collision.check-junctions",
+                ]
+            )
 
         else:
-            logging.info('Connection to sumo server. Host: %s Port: %s', host, port)
+            logging.info("Connection to sumo server. Host: %s Port: %s", host, port)
             traci.init(host=host, port=port)
 
         traci.setOrder(client_order)
@@ -368,12 +403,23 @@ class SumoSimulation(object):
             * Lateral speed.
             * Signals.
         """
-        traci.vehicle.subscribe(actor_id, [
-            traci.constants.VAR_TYPE, traci.constants.VAR_VEHICLECLASS, traci.constants.VAR_COLOR,
-            traci.constants.VAR_LENGTH, traci.constants.VAR_WIDTH, traci.constants.VAR_HEIGHT,
-            traci.constants.VAR_POSITION3D, traci.constants.VAR_ANGLE, traci.constants.VAR_SLOPE,
-            traci.constants.VAR_SPEED, traci.constants.VAR_SPEED_LAT, traci.constants.VAR_SIGNALS
-        ])
+        traci.vehicle.subscribe(
+            actor_id,
+            [
+                traci.constants.VAR_TYPE,
+                traci.constants.VAR_VEHICLECLASS,
+                traci.constants.VAR_COLOR,
+                traci.constants.VAR_LENGTH,
+                traci.constants.VAR_WIDTH,
+                traci.constants.VAR_HEIGHT,
+                traci.constants.VAR_POSITION3D,
+                traci.constants.VAR_ANGLE,
+                traci.constants.VAR_SLOPE,
+                traci.constants.VAR_SPEED,
+                traci.constants.VAR_SPEED_LAT,
+                traci.constants.VAR_SIGNALS,
+            ],
+        )
 
     @staticmethod
     def unsubscribe(actor_id):
@@ -406,15 +452,21 @@ class SumoSimulation(object):
         height = results[traci.constants.VAR_HEIGHT]
 
         location = list(results[traci.constants.VAR_POSITION3D])
-        rotation = [results[traci.constants.VAR_SLOPE], results[traci.constants.VAR_ANGLE], 0.0]
-        transform = carla.Transform(carla.Location(location[0], location[1], location[2]),
-                                    carla.Rotation(rotation[0], rotation[1], rotation[2]))
+        rotation = [
+            results[traci.constants.VAR_SLOPE],
+            results[traci.constants.VAR_ANGLE],
+            0.0,
+        ]
+        transform = carla.Transform(
+            carla.Location(location[0], location[1], location[2]),
+            carla.Rotation(rotation[0], rotation[1], rotation[2]),
+        )
 
         signals = results[traci.constants.VAR_SIGNALS]
         extent = carla.Vector3D(length / 2.0, width / 2.0, height / 2.0)
 
         return SumoActor(type_id, vclass, transform, signals, extent, color)
-    
+
     @staticmethod
     def get_actor_with_speed(actor_id):
         """
@@ -431,17 +483,24 @@ class SumoSimulation(object):
         height = results[traci.constants.VAR_HEIGHT]
 
         location = list(results[traci.constants.VAR_POSITION3D])
-        rotation = [results[traci.constants.VAR_SLOPE], results[traci.constants.VAR_ANGLE], 0.0]
-        transform = carla.Transform(carla.Location(location[0], location[1], location[2]),
-                                    carla.Rotation(rotation[0], rotation[1], rotation[2]))
+        rotation = [
+            results[traci.constants.VAR_SLOPE],
+            results[traci.constants.VAR_ANGLE],
+            0.0,
+        ]
+        transform = carla.Transform(
+            carla.Location(location[0], location[1], location[2]),
+            carla.Rotation(rotation[0], rotation[1], rotation[2]),
+        )
 
         signals = results[traci.constants.VAR_SIGNALS]
         extent = carla.Vector3D(length / 2.0, width / 2.0, height / 2.0)
 
         speed = results[traci.constants.VAR_SPEED]
 
-        return SumoActorWithSpeed(type_id, vclass, transform, signals, extent, color, speed)
-
+        return SumoActorWithSpeed(
+            type_id, vclass, transform, signals, extent, color, speed
+        )
 
     def spawn_actor(self, type_id, color=None):
         """
@@ -451,28 +510,31 @@ class SumoSimulation(object):
             :param color: color attribute for this specific actor.
             :return: actor id if the actor is successfully spawned. Otherwise, INVALID_ACTOR_ID.
         """
-        actor_id = 'carla' + str(self._sequential_id)
+        actor_id = "carla" + str(self._sequential_id)
         try:
             vclass = traci.vehicletype.getVehicleClass(type_id)
             if vclass not in self._routes:
-                logging.debug('Creating route for %s vehicle class', vclass)
+                logging.debug("Creating route for %s vehicle class", vclass)
                 allowed_edges = [e for e in self.net.getEdges() if e.allows(vclass)]
                 if allowed_edges:
-                    traci.route.add("carla_route_{}".format(vclass), [allowed_edges[0].getID()])
+                    traci.route.add(
+                        "carla_route_{}".format(vclass), [allowed_edges[0].getID()]
+                    )
                     self._routes.add(vclass)
                 else:
                     logging.error(
-                        'Could not found a route for %s. No vehicle will be spawned in sumo',
-                        type_id)
+                        "Could not found a route for %s. No vehicle will be spawned in sumo",
+                        type_id,
+                    )
                     return INVALID_ACTOR_ID
 
-            traci.vehicle.add(actor_id, 'carla_route_{}'.format(vclass), typeID=type_id)
+            traci.vehicle.add(actor_id, "carla_route_{}".format(vclass), typeID=type_id)
         except traci.exceptions.TraCIException as error:
-            logging.error('Spawn sumo actor failed: %s', error)
+            logging.error("Spawn sumo actor failed: %s", error)
             return INVALID_ACTOR_ID
 
         if color is not None:
-            color = color.split(',')
+            color = color.split(",")
             traci.vehicle.setColor(actor_id, color)
 
         self._sequential_id += 1
