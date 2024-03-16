@@ -67,6 +67,14 @@ class BaseEnv(ABC):
         # setup the attached sensors, controllers, etc
         vehicle._install()
 
+    @property
+    def sumo_net(self):
+        if self.simulator is None:
+            raise Exception("Simulator is not connected yet.")
+        if not hasattr(self.simulator, "sumo_net"):
+            raise Exception("sumo_net is not initialized yet.")
+        return self.simulator.sumo_net
+
     def remove_vehicle(self, veh_id):
         vehicle = self.vehicle_list[veh_id]
         vehicle._uninstall()
