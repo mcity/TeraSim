@@ -6,7 +6,7 @@ setup(
     author='Haowei Sun, Haojie Zhu, Shuo Feng, Yuanxin Zhong',
     author_email='haoweis@umich.edu, zhuhj@umich.edu, fshuo@umich.edu, zyxin@umich.edu',
     packages=[
-        "terasim", "terasim.agent", "terasim.envs", "terasim.logger", "terasim.measure", "terasim.network", "terasim.physics",
+        "terasim", "terasim.agent", "terasim.envs", "terasim.logger", "terasim.measure", "terasim.network",
         "terasim.vehicle", "terasim.vehicle.controllers", "terasim.vehicle.decision_models", "terasim.vehicle.factories", "terasim.vehicle.sensors",
         "terasim.traffic_light", "terasim.traffic_light.controllers", "terasim.traffic_light.decision_models", "terasim.traffic_light.factories", "terasim.traffic_light.sensors",
     ],
