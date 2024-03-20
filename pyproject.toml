@@ -20,7 +20,8 @@ sumolib = "^1.19.0"
 redis = "^5.0.2"
 lxml = "^5.1.0"
 pydantic = "^2.6.3"
-
+pyproj = "^3.6.1"
+rtree = "^1.0.1"
 
 [build-system]
 requires = ["poetry-core"]

@@ -4,6 +4,7 @@ from terasim.agent.agent import AgentInitialInfo, AgentDepartureInfo
 from abc import ABC, abstractmethod
 import terasim.utils as utils
 from typing import Union
+from terasim.overlay import traci
 
 
 class BaseEnv(ABC):
@@ -43,20 +44,27 @@ class BaseEnv(ABC):
     def add_vehicle(
         self,
         veh_id,
-        route,
+        route_id,
+        route=None,
         lane=None,
-        lane_id="",
+        lane_id=None,
         position=0,
         speed=-1,
         type_id="DEFAULT_VEHTYPE",
     ):
+        assert (
+            type(route) == list or route is None
+        ), "route should be a list or None, route_id is now used for route id assignment"
         # create the vehicle object from the vehicle factory and add the vehicle to the vehicle list
         vehicle = self._add_vehicle_to_env(veh_id)
+
+        if route_id not in traci.route.getIDList() and route is not None:
+            traci.route.add(route_id, route)
         # add the vehicle to the simulators
         self.simulator._add_vehicle_to_sim(
             vehicle,
             AgentInitialInfo(
-                route=route,
+                route=route_id,
                 type=type_id,
                 depart=AgentDepartureInfo(
                     position=position, speed=speed, lane=lane, lane_id=lane_id
