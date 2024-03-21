@@ -32,5 +32,5 @@ jobs:
     - name: Upload Wheel to Artifacts
       uses: actions/upload-artifact@v2
       with:
-        name: wheels
+        name: terasim
         path: dist/*.whl
