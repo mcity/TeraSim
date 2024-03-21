@@ -27,7 +27,7 @@ class ExampleVehicleFactory(VehicleFactory):
         Returns:
             Vehicle: the contructed vehicle object
         """
-        sensor_list = [EgoSensor(), LocalSensor()]
+        sensor_list = [EgoSensor(), LocalSensor(obs_range=40)]
         # decision_model = DummyDecisionModel(mode="random")  # mode="random" "constant"
         decision_model = IDMModel(MOBIL_lc_flag=False, stochastic_acc_flag=True)
         control_params = {
@@ -51,7 +51,7 @@ sim = Simulator(
     sumo_net_file_path=maps_path / "3LaneHighway.net.xml",
     sumo_config_file_path=maps_path / "3LaneHighway.sumocfg",
     num_tries=10,
-    gui_flag=False,
+    gui_flag=True,
     output_path=current_path / "output" / "0",
     sumo_output_file_types=["fcd_all"],
 )

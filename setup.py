@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="terasim",
-    version="2.0",
+    version="0.0.1",
     author="Haowei Sun, Haojie Zhu, Shuo Feng, Yuanxin Zhong",
     author_email="haoweis@umich.edu, zhuhj@umich.edu, fshuo@umich.edu, zyxin@umich.edu",
     packages=[
