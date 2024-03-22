@@ -44,5 +44,6 @@ setup(
         "pydantic",
         "rtree",
         "pyproj",
+        "loguru",
     ],
 )

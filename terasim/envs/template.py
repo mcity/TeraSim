@@ -1,4 +1,5 @@
 from terasim.envs.base import BaseEnv
+from loguru import logger
 
 
 class EnvTemplate(BaseEnv):

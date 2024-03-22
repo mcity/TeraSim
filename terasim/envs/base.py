@@ -5,6 +5,7 @@ from abc import ABC, abstractmethod
 import terasim.utils as utils
 from typing import Union
 from terasim.overlay import traci
+from loguru import logger
 
 
 class BaseEnv(ABC):
@@ -127,11 +128,15 @@ class BaseEnv(ABC):
         """Maintain the vehicle list based on the departed vehicle list and arrived vehicle list."""
 
         if "terasim_controlled_vehicle_ids" in ctx:
+            logger.debug("Using the controlled vehicle list from ctx")
             realtime_vehID_set = set(ctx["terasim_controlled_vehicle_ids"])
         else:
             realtime_vehID_set = set(self.simulator.get_vehID_list())
 
         vehID_set = set(self.vehicle_list.keys())
+        # log the difference between the two sets
+        logger.debug(f"Realtime vehID set: {realtime_vehID_set}")
+        logger.debug(f"Current vehID set: {vehID_set}")
         if vehID_set != realtime_vehID_set:
             for vehID in realtime_vehID_set:
                 if vehID not in vehID_set:
