@@ -42,5 +42,7 @@ setup(
         "redis",
         "lxml",
         "pydantic",
+        "rtree",
+        "pyproj",
     ],
 )
