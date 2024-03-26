@@ -21,6 +21,18 @@ class EgoSensor(AgentSensor):
     def __init__(self, name="ego", **params):
         super().__init__(name, **params)
 
+    @property
+    def length(self):
+        return traci.vehicle.getLength(self._agent.id)
+
+    @property
+    def width(self):
+        return traci.vehicle.getWidth(self._agent.id)
+
+    @property
+    def height(self):
+        return traci.vehicle.getHeight(self._agent.id)
+
     def fetch(self) -> dict:
         veh_id = self._agent.id
         data = {"veh_id": veh_id}
