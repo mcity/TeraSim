@@ -42,6 +42,26 @@ class BaseEnv(ABC):
 
     ########## Utility methods that can be called by custom env ##########
 
+    def add_vehicle_type(
+        self,
+        type_id: str,
+        length: float = 5.0,
+        width: float = 2.0,
+        height: float = 1.5,
+        veh_class: str = "passenger",
+        **kwargs,
+    ):
+        if type_id in traci.vehicletype.getIDList():
+            logger.warning(
+                f"Cannot add new vehicle type: Vehicle type {type_id} already exists."
+            )
+        else:
+            traci.vehicletype.copy("DEFAULT_VEHTYPE", type_id)
+            traci.vehicletype.setLength(type_id, length)
+            traci.vehicletype.setWidth(type_id, width)
+            traci.vehicletype.setHeight(type_id, height)
+            traci.vehicletype.setVehicleClass(type_id, veh_class)
+
     def add_vehicle(
         self,
         veh_id,
@@ -52,10 +72,13 @@ class BaseEnv(ABC):
         position=0,
         speed=-1,
         type_id="DEFAULT_VEHTYPE",
+        **kwargs,
     ):
         assert (
             type(route) == list or route is None
         ), "route should be a list or None, route_id is now used for route id assignment"
+        if type_id not in traci.vehicletype.getIDList():
+            self.add_vehicle_type(type_id, **kwargs)
         # create the vehicle object from the vehicle factory and add the vehicle to the vehicle list
         vehicle = self._add_vehicle_to_env(veh_id)
 
