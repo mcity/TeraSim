@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "terasim"
-version = "0.0.1"
+version = "0.1.0"
 description = "A SUMO-based environment for AV testing and evaluation"
 authors = ["Haowei Sun <haoweis@umich.edu>", "Haojie Zhu <zhuhj@umich.edu>", "Shuo Feng <fshuo@umich.edu>"]
 license = "MIT"
