@@ -159,7 +159,8 @@ class Simulator(object):
                     "--tripinfo-output.write-unfinished",
                 ]
         # log file
-        sumo_cmd += ["-l", str(self.output_path / "run.log")]
+        if self.output_path is not None:
+            sumo_cmd += ["-l", str(self.output_path / "run.log")]
         sumo_cmd += (
             self.additional_sumo_args if self.additional_sumo_args is not None else []
         )
