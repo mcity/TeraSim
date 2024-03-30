@@ -71,6 +71,7 @@ class Simulator(object):
             self.output_path = Path(output_path)
             self.output_path.mkdir(parents=True, exist_ok=True)
         else:
+            self.output_path = None
             print("Warning: output_path is not specified. No output will be generated.")
         self.sumo_output_file_types = (
             sumo_output_file_types if sumo_output_file_types is not None else []
