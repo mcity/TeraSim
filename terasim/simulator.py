@@ -55,7 +55,7 @@ class Simulator(object):
         self.running = False
         self.num_tries = num_tries
         self.sublane_flag = False
-        self.step_length = step_length or 0.1
+        self.step_length = step_length
         self.realtime_flag = realtime_flag
         assert (
             isinstance(additional_sumo_args, list)
@@ -125,9 +125,10 @@ class Simulator(object):
             self.sumo_binary,
             "-c",
             str(self.sumo_config_file_path),
-            "--step-length",
-            str(self.step_length),
         ]
+        if self.step_length is not None:
+            sumo_cmd += ["--step-length", str(self.step_length)]
+
         if self.sumo_output_file_types is not None:
             if "traj" in self.sumo_output_file_types:
                 filename = str(self.output_path / "traj.xml")
@@ -456,7 +457,7 @@ class Simulator(object):
             # Adjacent lane does not exist.
             return False
         new_lane_id = edge_id + "_" + str(new_lane_index)
-        veh_class = Simulator.get_vehicle_class(vehID)
+        veh_class = traci.vehicle.getVehicleClass(vehID)
         disallowed = Simulator.get_lane_disallowed(new_lane_id)
         return not veh_class in disallowed
 
@@ -608,18 +609,6 @@ class Simulator(object):
             vehID (str): Vehicle ID.
         """
         traci.vehicle.unsubscribe(vehID)
-
-    @staticmethod
-    def get_vehicle_class(vehID):
-        """Get vehicle class.
-
-        Args:
-            vehID (str): Vehicle ID.
-
-        Returns:
-            str: Abstract vehicle class, such as "passenger".
-        """
-        return traci.vehicle.getVehicleClass(vehID)
 
     def get_vehicle_context_subscription_results(self, vehID):
         """Get subscription results of the context information.
