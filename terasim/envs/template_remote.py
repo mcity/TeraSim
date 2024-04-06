@@ -4,6 +4,7 @@ from terasim_redis_connector.redis_client import redis_client
 import terasim.utils as utils
 from terasim.overlay import traci
 import json
+import time
 
 
 class EnvRemoteTemplate(EnvTemplate):
@@ -17,13 +18,18 @@ class EnvRemoteTemplate(EnvTemplate):
         self.redis_client = redis_client
 
     def on_start(self, ctx):
-        # register use algorithm to the simulator
-        self.user_get_func = get_user_function_from_redis(
-            self.redis_client, redis_key="get_function"
-        )
-        self.user_set_func = get_user_function_from_redis(
-            self.redis_client, redis_key="set_function"
-        )
+        redis_client.flushall()
+        self.user_time_resolution = traci.simulation.getDeltaT()
+        while True:
+            # register use algorithm to the simulator
+            self.user_get_func = get_user_function_from_redis(
+                self.redis_client, redis_key="get_function"
+            )
+            self.user_set_func = get_user_function_from_redis(
+                self.redis_client, redis_key="set_function"
+            )
+            if self.user_get_func and self.user_set_func:
+                break
         self.user_should_continue_simulation = get_user_function_from_redis(
             self.redis_client, redis_key="should_continue_simulation_function"
         )
@@ -36,7 +42,9 @@ class EnvRemoteTemplate(EnvTemplate):
     def on_step(self, ctx):
         input = self.user_get_func(traci)
         input = {
-            "timestamp": utils.get_time(),
+            "sumo_time": utils.get_time(),
+            "sumo_step": int(utils.get_time() / traci.simulation.getDeltaT()),
+            "timestamp": time.time(),
             "info": input,
         }
         self.redis_client.set("input", json.dumps(input))
@@ -45,9 +53,10 @@ class EnvRemoteTemplate(EnvTemplate):
             if not binary_output:
                 continue
             output = json.loads(binary_output)
-            if output["timestamp"] == input["timestamp"]:
+            if output["sumo_step"] == input["sumo_step"]:
                 break
-        self.user_set_func(traci, output["info"])
+        if output.get("info") is not None:
+            self.user_set_func(traci, output["info"])
         # Simulation stop check
         return self.should_continue_simulation()
 
