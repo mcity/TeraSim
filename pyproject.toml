@@ -1,13 +1,21 @@
+[build-system]
+requires = [ "poetry-core",]
+build-backend = "poetry.core.masonry.api"
+
 [tool.poetry]
 name = "terasim"
-version = "0.1.0"
+version = "2024.05.03.1030"
 description = "A SUMO-based environment for AV testing and evaluation"
-authors = ["Haowei Sun <haoweis@umich.edu>", "Haojie Zhu <zhuhj@umich.edu>", "Shuo Feng <fshuo@umich.edu>"]
-license = "MIT"
+authors = [ "Haowei Sun <haoweis@umich.edu>", "Haojie Zhu <zhuhj@umich.edu>", "Shuo Feng <fshuo@umich.edu>",]
+license = "CC BY-NC 4.0"
 readme = "README.md"
+[[tool.poetry.source]]
+name = "sdpi"
+url = "http://18.218.85.44:8080/"
+priority = "primary"
 
 [tool.poetry.dependencies]
-python = "^3.12"
+python = "^3.10"
 numpy = "^1.26.4"
 bidict = "^0.23.1"
 attrs = "^23.2.0"
@@ -23,7 +31,3 @@ pydantic = "^2.6.3"
 pyproj = "^3.6.1"
 rtree = "^1.0.1"
 loguru = "^0.7.2"
-
-[build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"

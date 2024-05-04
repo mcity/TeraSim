@@ -43,16 +43,16 @@ The project is developed and tested on Ubuntu 22.04 LTS. Therefore, we recommend
 ## Prerequisites
 
 Recommended environment:
-- Python 3.8
-- SUMO 1.16
+- Python 3.10
+- SUMO 1.19
 
 Minimum versioned environment:
-- Python 3.8
-- SUMO 1.8
+- Python 3.10
+- SUMO 1.19
 
 We recoomend using Conda to create a virtual environment and install the terasim.
 ```
-conda create -n $env_name$ python=3.8
+conda create -n $env_name$ python=3.10
 conda activate $env_name$
 ```
 
