@@ -4,6 +4,7 @@ class PipelineElement:
         self.executable = executable
         self.priority = priority
 
+
 class Pipeline(list):
     def __init__(self, name, elements):
         self.name = name
@@ -18,6 +19,7 @@ class Pipeline(list):
             # The pipeline will report False if one of the pipeline element returned False during execution.
             if output == False:
                 success = False
+                return success
         return success
 
     def hook(self, name, executable, priority=None):

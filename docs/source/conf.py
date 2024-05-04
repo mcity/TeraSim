@@ -12,20 +12,20 @@
 #
 import os
 import sys
-sys.path.insert(0, os.path.abspath('../../core'))
-sys.path.insert(0, os.path.abspath('../..'))
-print(sys.path)
 
+sys.path.insert(0, os.path.abspath("../../core"))
+sys.path.insert(0, os.path.abspath("../.."))
+print(sys.path)
 
 
 # -- Project information -----------------------------------------------------
 
-project = 'Michigan Traffic Lab Simulation Platform'
-copyright = '2021, Haowei Sun, Haojie Zhu, Shuo Feng, Henry Liu'
-author = 'Haowei Sun, Haojie Zhu, Shuo Feng, Henry Liu'
+project = "Michigan Traffic Lab Simulation Platform"
+copyright = "2021, Haowei Sun, Haojie Zhu, Shuo Feng, Henry Liu"
+author = "Haowei Sun, Haojie Zhu, Shuo Feng, Henry Liu"
 
 # The full version, including alpha/beta/rc tags
-release = '1.0'
+release = "1.0"
 
 
 # -- General configuration ---------------------------------------------------
@@ -34,19 +34,19 @@ release = '1.0'
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
-    'sphinx.ext.autodoc',
-    'sphinx.ext.doctest',
-    'sphinx.ext.intersphinx',
-    'sphinx.ext.todo',
-    'sphinx.ext.coverage',
-    'sphinx.ext.mathjax',
-    'sphinx_automodapi.automodapi',
-    'sphinxcontrib.video',
-    'sphinx.ext.napoleon'
+    "sphinx.ext.autodoc",
+    "sphinx.ext.doctest",
+    "sphinx.ext.intersphinx",
+    "sphinx.ext.todo",
+    "sphinx.ext.coverage",
+    "sphinx.ext.mathjax",
+    "sphinx_automodapi.automodapi",
+    "sphinxcontrib.video",
+    "sphinx.ext.napoleon",
 ]
 
 # Add any paths that contain templates here, relative to this directory.
-templates_path = ['_templates']
+templates_path = ["_templates"]
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
@@ -64,4 +64,4 @@ html_theme = "sphinx_book_theme"
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-html_static_path = ['_static']
+html_static_path = ["_static"]

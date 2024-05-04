@@ -1,6 +1,7 @@
 from terasim.physics import DummyPhysics
 import pytest
 
+
 def test_dummy():
     dummy_model = "model"
     sim = DummyPhysics(step_length=0.2)
@@ -19,7 +20,7 @@ def test_dummy():
     with pytest.raises(AssertionError):
         sim.destroy_actors(["car_a", "car_b"])
     sim.destroy_actors(["car_b", "car_c"])
-    
+
     with pytest.raises(AssertionError):
         # sensor should be removed when its parent is removed
         sim.remove_agent("sensor_a")

@@ -2,9 +2,10 @@ from terasim.agent.agent_controller import AgentController
 from terasim.simulator import traci
 import terasim.utils as utils
 
+
 class StateController(AgentController):
-    params = { }
-    
+    params = {}
+
     def __init__(self, simulator, params=None):
         super().__init__(simulator, params)
         self.is_busy = False
@@ -13,7 +14,7 @@ class StateController(AgentController):
 
     def set_traffic_light(self, tlsID, state):
         traci.trafficlight.setRedYellowGreenState(tlsID, state)
-    
+
     def execute_control_command(self, tls_id, control_command, obs_dict):
         # signal control
         self.set_traffic_light(tls_id, control_command)

@@ -1,29 +1,37 @@
-'''This module defines the interface for agent sensors
-'''
-from __future__ import annotations
+"""This module defines the interface for agent sensors
+"""
 
+from __future__ import annotations
+from collections import namedtuple, defaultdict
 import addict
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING
+from terasim.overlay import traci
 
 if TYPE_CHECKING:
     from terasim.simulator import Simulator
 
-class AgentSensor(ABC):
-    DEFAULT_PARAMS = {}
 
-    def __init__(self, name = "base", **params):
+class AgentSensor(ABC):
+    DEFAULT_PARAMS = {
+        "cache": True,
+    }
+
+    def __init__(self, name="base", **params):
         """base sensor initialization
 
         Args:
             params (dict): all sensor paramters
             name (str, optional): define the name of the sensor. Defaults to "base".
         """
-        self._agent = None # to be assigned from outside
+        self._agent = None  # to be assigned from outside
         self._name = name
         self._params = addict.Dict(self.DEFAULT_PARAMS)
         self._params.update(params)
-    
+        if self._params.cache:
+            self._updated_observation = None
+            self._updated_time = None
+
     def __str__(self) -> str:
         """string method
 
@@ -46,23 +54,24 @@ class AgentSensor(ABC):
 
     @property
     def _simulator(self) -> Simulator:
-        assert self.is_installed, "Sensor not installed, you should install sensor before accessing the simulator."
+        assert (
+            self.is_installed
+        ), "Sensor not installed, you should install sensor before accessing the simulator."
         return self._agent._simulator
 
     @property
     def observation(self):
-        assert self.is_installed, "Sensor not installed, you should install sensor before fetching observations."
-        return self._simulator.state_manager.retrieve_variable(self._agent.id, self._name)
-
-    def subscribe(self):
-        """Install the subscriber for the sensor into the simulator.
-        """
-        pass
-
-    def unsubscribe(self):
-        """Remove the subscriber for the sensor from the simulator.
-        """
-        pass
+        assert (
+            self.is_installed
+        ), "Sensor not installed, you should install sensor before fetching observations."
+        if self._params.cache:
+            current_time = traci.simulation.getTime()
+            if self._updated_time is None or self._updated_time < current_time:
+                self._updated_observation = addict.Dict(self.fetch())
+                self._updated_time = current_time
+            return self._updated_observation
+        else:
+            return addict.Dict(self.fetch())
 
     @abstractmethod
     def fetch(self):
@@ -79,12 +88,10 @@ class AgentSensor(ABC):
         For SUMO sensors, it will be no-op.
         """
         self._agent = agent
-        self.subscribe()
 
     def _uninstall(self):
         """Uninstall the sensor from the simulator.
 
         For SUMO sensors, it will be no-op.
         """
-        self.unsubscribe()
-        self._agent = None
+        pass

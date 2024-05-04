@@ -3,7 +3,7 @@ from terasim.simulator import Simulator
 from terasim.logger.infoextractor import InfoExtractor
 
 current_path = Path(__file__).parent
-maps_path = current_path / 'maps' / 'Mcity'
+maps_path = current_path / "maps" / "Mcity"
 
 from terasim.simulator import traci
 from terasim.envs.template_traffic_light import EnvTrafficLightTemplate
@@ -14,13 +14,18 @@ from terasim.agent.agent_controller import AgentController
 from terasim.vehicle.factories.vehicle_factory import VehicleFactory
 from terasim.vehicle.sensors.ego import EgoSensor
 from terasim.vehicle.vehicle import Vehicle
-from terasim.vehicle.decision_models.dummy_setsumo_transform_decision_model import DummySetSUMOTranformDecisionModel
+from terasim.vehicle.decision_models.dummy_setsumo_transform_decision_model import (
+    DummySetSUMOTranformDecisionModel,
+)
 
 from terasim.traffic_light.traffic_light import TrafficLight
 from terasim.traffic_light.controllers.state_controller import StateController
-from terasim.traffic_light.decision_models.dummy_state_decision_model import DummyStateDecisionModel
+from terasim.traffic_light.decision_models.dummy_state_decision_model import (
+    DummyStateDecisionModel,
+)
 from terasim.traffic_light.sensors.ego_state_sensor import EgoStateSensor
 from terasim.traffic_light.factories.traffic_light_factory import TrafficLightFactory
+
 
 # Example of traffic light decision model
 class ExampleStateDecisionModel(AgentDecisionModel):
@@ -31,7 +36,7 @@ class ExampleStateDecisionModel(AgentDecisionModel):
     def get_decision(self):
         # set the traffic light with 120s cycle and 18s green, 3s yellow, 32s green, 3s yellow, 30s green, 3s yellow, 30s green, 3s yellow
         sim_step = traci.simulation.getCurrentTime()
-        cicle_time = sim_step/1000 % 120
+        cicle_time = sim_step / 1000 % 120
         if cicle_time <= 18:
             return "rGrrrGrrr"
         elif cicle_time <= 21:
@@ -48,6 +53,7 @@ class ExampleStateDecisionModel(AgentDecisionModel):
             return "rrGrrrGGr"
         else:
             return "rryrrryyr"
+
 
 # Example of vehicle factory
 class ExampleVehicleFactory(VehicleFactory):
@@ -66,14 +72,19 @@ class ExampleVehicleFactory(VehicleFactory):
         # decision_model = DummyDecisionModel(mode="random")  # mode="random" "constant"
         decision_model = DummySetSUMOTranformDecisionModel()
         controller = AgentController(simulator)
-        return Vehicle(veh_id, simulator, sensors=sensor_list,
-                       decision_model=decision_model, controller=controller)
+        return Vehicle(
+            veh_id,
+            simulator,
+            sensors=sensor_list,
+            decision_model=decision_model,
+            controller=controller,
+        )
+
 
 # Example of traffic light factory
 class ExampleTrafficLightFactory(TrafficLightFactory):
 
     def create_traffic_light(self, tls_id, simulator):
-        
         """Generate a traffic light with the given tls id in the simulator, composed of a decision model, a controller, and a list of sensors, which should be defined or customized by the user.
 
         Args:
@@ -87,28 +98,39 @@ class ExampleTrafficLightFactory(TrafficLightFactory):
             sensor_list = [EgoStateSensor()]
             decision_model = ExampleStateDecisionModel()
             controller = StateController(simulator)
-            return TrafficLight(tls_id, simulator, sensors=sensor_list,
-                        decision_model=decision_model, controller=controller)
+            return TrafficLight(
+                tls_id,
+                simulator,
+                sensors=sensor_list,
+                decision_model=decision_model,
+                controller=controller,
+            )
         else:
             sensor_list = [EgoStateSensor()]
             decision_model = DummyStateDecisionModel()
             controller = StateController(simulator)
-            return TrafficLight(tls_id, simulator, sensors=sensor_list,
-                        decision_model=decision_model, controller=controller)
-        
+            return TrafficLight(
+                tls_id,
+                simulator,
+                sensors=sensor_list,
+                decision_model=decision_model,
+                controller=controller,
+            )
+
+
 # Example of environment
 env = EnvTrafficLightTemplate(
-    vehicle_factory = ExampleVehicleFactory(),
-    tls_factory = ExampleTrafficLightFactory(),
-    info_extractor=InfoExtractor
+    vehicle_factory=ExampleVehicleFactory(),
+    tls_factory=ExampleTrafficLightFactory(),
+    info_extractor=InfoExtractor,
 )
 
 sim = Simulator(
-    sumo_net_file_path = maps_path / 'Mcity.net.xml',
-    sumo_config_file_path = maps_path / 'example_tls_Mcity.sumocfg',
+    sumo_net_file_path=maps_path / "Mcity.net.xml",
+    sumo_config_file_path=maps_path / "example_tls_Mcity.sumocfg",
     num_tries=10,
     gui_flag=True,
-    output_path = current_path / "output" / "0",
+    output_path=current_path / "output" / "0",
     sumo_output_file_types=["fcd_all"],
 )
 
