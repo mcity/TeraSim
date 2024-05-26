@@ -151,8 +151,9 @@ class BaseEnv(ABC):
         """Maintain the vehicle list based on the departed vehicle list and arrived vehicle list."""
 
         if "terasim_controlled_vehicle_ids" in ctx:
+            terasim_controlled_vehicle_ids = ctx["terasim_controlled_vehicle_ids"] if isinstance(ctx["terasim_controlled_vehicle_ids"], list) else [ctx["terasim_controlled_vehicle_ids"]]
             logger.trace("Using the controlled vehicle list from ctx")
-            realtime_vehID_set = set(ctx["terasim_controlled_vehicle_ids"]) & set(
+            realtime_vehID_set = set(terasim_controlled_vehicle_ids) & set(
                 self.simulator.get_vehID_list()
             )
         else:
