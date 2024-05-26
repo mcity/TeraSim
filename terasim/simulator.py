@@ -167,6 +167,7 @@ class Simulator(object):
         sumo_cmd += (
             self.additional_sumo_args if self.additional_sumo_args is not None else []
         )
+        self.sumo_cmd = sumo_cmd
         if has_libsumo:
             traci.start(sumo_cmd)
         else:

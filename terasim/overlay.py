@@ -19,3 +19,27 @@ if not has_libsumo:
     except ImportError:
         logging.error("Unable to find traci!")
         raise
+
+
+import os
+
+should_profile = os.getenv("ENABLE_PROFILING", "False").lower() in ("true", "1")
+
+if should_profile:
+    from line_profiler import LineProfiler
+
+    def profile(func):
+        def wrapper(*args, **kwargs):
+            profiler = LineProfiler()
+            profiler.add_function(func)
+            profiler.enable_by_count()
+            result = func(*args, **kwargs)
+            profiler.print_stats()
+            return result
+
+        return wrapper
+
+else:
+
+    def profile(func):
+        return func
