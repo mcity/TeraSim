@@ -13,6 +13,7 @@ import terasim.utils as utils
 from .overlay import traci, has_libsumo
 from .pipeline import Pipeline, PipelineElement
 from pathlib import Path
+from loguru import logger
 
 
 class Context:
@@ -228,6 +229,8 @@ class Simulator(object):
             sim_step_size = utils.get_step_size()
             if step_time < sim_step_size:
                 time.sleep(sim_step_size - step_time)
+            else:
+                logger.critical(step_time)
 
     def run(self):
         """Run the specific episode.
