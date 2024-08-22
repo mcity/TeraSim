@@ -9,10 +9,6 @@ description = "A SUMO-based environment for AV testing and evaluation"
 authors = [ "Haowei Sun <haoweis@umich.edu>", "Haojie Zhu <zhuhj@umich.edu>", "Shuo Feng <fshuo@umich.edu>",]
 license = "CC BY-NC 4.0"
 readme = "README.md"
-[[tool.poetry.source]]
-name = "sdpi"
-url = "http://18.218.85.44:8080/"
-priority = "primary"
 
 [tool.poetry.dependencies]
 python = "^3.10"

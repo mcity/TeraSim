@@ -14,6 +14,8 @@ class SumoMoveCommandSchema(BaseModel):
 
 
 class SUMOMOVEController(AgentController):
+    def __init__(self, simulator):
+        super().__init__(simulator, control_command_schema=SumoMoveCommandSchema)
 
     def execute_control_command(self, veh_id, control_command, obs_dict):
         self.set_transform_sumo(
