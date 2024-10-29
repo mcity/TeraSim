@@ -87,41 +87,54 @@ files = [
 
 [[package]]
 name = "eclipse-sumo"
-version = "1.21.0"
+version = "1.19.0"
 description = "A microscopic, multi-modal traffic simulation package"
 optional = false
 python-versions = "*"
 files = [
-    {file = "eclipse_sumo-1.21.0-py2.py3-none-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:919ce16c4ec1a14f85af80b87a02f49cfc153372ef23009fd96027dccb2557e2"},
-    {file = "eclipse_sumo-1.21.0-py2.py3-none-win_amd64.whl", hash = "sha256:8f2942912e8edb906d76d73ec722606a7e949dadef9607ac3d1a02f3fc37f819"},
+    {file = "eclipse_sumo-1.19.0-py2.py3-none-macosx_12_0_x86_64.whl", hash = "sha256:431210f6b7147bd8b83878cc80a7fcffdf54620e8681d6ec662b08b471035468"},
+    {file = "eclipse_sumo-1.19.0-py2.py3-none-macosx_14_0_arm64.whl", hash = "sha256:a92378a4f5a1309eb461a330bbe59c84819ff83f5e8bb0cf810f1f1f188ec80e"},
+    {file = "eclipse_sumo-1.19.0-py2.py3-none-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:1ae19f908a62b5d42604f34152a8d6cd892787de23e04265cd4690bd96f17e05"},
+    {file = "eclipse_sumo-1.19.0-py2.py3-none-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:3ead5b777520d72639b81c81344f0d8a13888cfc4f667ca5a2a46f1cfb650378"},
+    {file = "eclipse_sumo-1.19.0-py2.py3-none-win_amd64.whl", hash = "sha256:ad74c3f02e14d293a58bae8f233137dd4886151df1ef6971f9be118944145623"},
 ]
 
 [[package]]
 name = "libsumo"
-version = "1.21.0"
+version = "1.19.0"
 description = "The python version of the libsumo API to communicate with the traffic simulation Eclipse SUMO"
 optional = false
 python-versions = "*"
 files = [
-    {file = "libsumo-1.21.0-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:7e11a636691af34335ad690df6b8b45836685c535132f5d527444362fb01331b"},
-    {file = "libsumo-1.21.0-cp310-cp310-win_amd64.whl", hash = "sha256:a9b3788eb34d5a560d13190aa4e6403c7f457b925443934bb4a74a3e509b71bf"},
-    {file = "libsumo-1.21.0-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:2e6d73742d73f40ad3ece6b125af926b1019093585b88aaee05cab245f5b061e"},
-    {file = "libsumo-1.21.0-cp311-cp311-win_amd64.whl", hash = "sha256:e8035b9a18ae7f59e2741de30bba0094c039c01adda5b883ac4ebb6ea4a02cb9"},
-    {file = "libsumo-1.21.0-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:1b8b4a6e6093d64b8f3d036b4511018d99cdeda2d2ca445783f0bc352742b43f"},
-    {file = "libsumo-1.21.0-cp312-cp312-win_amd64.whl", hash = "sha256:db0821c008dc5e4cfffb93a54551fcf7644838d39af302914885b4e03d4f7f58"},
-    {file = "libsumo-1.21.0-cp313-cp313-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:9cfa983e8fc43b2e247362fcdcfcf13ec580e63a3ba1689ca553566ac21b3b80"},
-    {file = "libsumo-1.21.0-cp313-cp313t-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:42c2dbeb500a2c7885268575c3a09a2a4c0cf094d9ba9e96ebd2c95afb96b0d4"},
-    {file = "libsumo-1.21.0-cp37-cp37m-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:a24f52e391387139483bbb9aeeef82e84446f3b45b259a06d35d0c0532ac8172"},
-    {file = "libsumo-1.21.0-cp37-cp37m-win_amd64.whl", hash = "sha256:a6ccfc00665cae56b0f3ad147cb63e7bf22f1c24c9ccead31734d7dd50c16919"},
-    {file = "libsumo-1.21.0-cp38-cp38-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:3bd9471b204fe83dfbf3cd02afd680cbc75ab619776978e3bdf0d8eee8edf9cf"},
-    {file = "libsumo-1.21.0-cp38-cp38-win_amd64.whl", hash = "sha256:01ed0c1d1fc0cc0168fe408b78158fc9dc4850cd3324ef995f04c176299e1781"},
-    {file = "libsumo-1.21.0-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:60e644aeb01fa275dbd41a0825efdc939acd41793b372edec36f03aee84f45d2"},
-    {file = "libsumo-1.21.0-cp39-cp39-win_amd64.whl", hash = "sha256:f1ba3940796358a5311f4444eb84617041c198c7a6f5801558210a859c1dd5dc"},
+    {file = "libsumo-1.19.0-cp310-cp310-macosx_12_0_x86_64.whl", hash = "sha256:9d9d53fd3198e6c8e6b4fef25697210475a2cd6a5077bdd6b85e0a5246129f61"},
+    {file = "libsumo-1.19.0-cp310-cp310-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:d0cae2d8e5613663e3b505f5fadcfb2d38dbd7e11eea0c59b1b10a1429b35ec2"},
+    {file = "libsumo-1.19.0-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:beaab180d88700e8a1d62547d095dbba22375d9410ce171babdc0c2e40d1d27b"},
+    {file = "libsumo-1.19.0-cp310-cp310-win_amd64.whl", hash = "sha256:52e3c97de0017efe35ab91c0a450ffa87ea99bac00e33f789a83e4f7b934b7d9"},
+    {file = "libsumo-1.19.0-cp311-cp311-macosx_12_0_universal2.whl", hash = "sha256:6117c67747c735f9c65b945d61e8f1647b548f873ff030a8c0cbe2f7f38bd648"},
+    {file = "libsumo-1.19.0-cp311-cp311-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:2475e023759c28bba7011bbfbba724470bb94e035bd19453f35296dc2e155580"},
+    {file = "libsumo-1.19.0-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:e7509683e0ff19ba7264e0dd8ad75a5e670e116216e865b62da7a40a2c416578"},
+    {file = "libsumo-1.19.0-cp311-cp311-win_amd64.whl", hash = "sha256:0eb44ea581805052d741a325c4615681990c642766c49a3fc462a274cd53b729"},
+    {file = "libsumo-1.19.0-cp312-cp312-macosx_12_0_universal2.whl", hash = "sha256:a68eecadee35d85042021ca6185820296eedfa741ba63d0647a903725eec57f1"},
+    {file = "libsumo-1.19.0-cp312-cp312-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:6bda4d684e34fb628b80702bbfa3c6445808e3c9e7e998ba9fcd4ecb307c8bd7"},
+    {file = "libsumo-1.19.0-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:65802ebd431d2879d10c9ea90c4d8108ea93c2d46e7add0ebc3b518dcb62d4d6"},
+    {file = "libsumo-1.19.0-cp312-cp312-win_amd64.whl", hash = "sha256:94ae5b76daf5ed8b0a927a183263a22b1300356774e3c5ebe5f09bde3a97c720"},
+    {file = "libsumo-1.19.0-cp37-cp37m-macosx_12_0_x86_64.whl", hash = "sha256:661fe9cbdd1ccee85e05788e2976ae1270662c5e5e1cc6ce6b2fe0a88a5243d0"},
+    {file = "libsumo-1.19.0-cp37-cp37m-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:f6817a2a26a1631a754372867c7e9640cb6ac226e4824a1958ffaff0a393513c"},
+    {file = "libsumo-1.19.0-cp37-cp37m-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:d9a89ade96fe39af2f3989f459e1dde7f9d0f2c6b305e5ade1e24c0805fcd391"},
+    {file = "libsumo-1.19.0-cp37-cp37m-win_amd64.whl", hash = "sha256:560d91727f2f51babd5d7779099a91aa0f89aa3700896c1311be4f4dfe7aa56e"},
+    {file = "libsumo-1.19.0-cp38-cp38-macosx_12_0_x86_64.whl", hash = "sha256:b541068c359f1e64e9bfb6c54714092e06a93a905db582ed7677b6d528f63997"},
+    {file = "libsumo-1.19.0-cp38-cp38-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:3425c004dcaf59b8442633aeb8a28df31ed274b852ad1bb7ab9cddd34134704a"},
+    {file = "libsumo-1.19.0-cp38-cp38-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:4c8777251ac5f0abd1c9e6d013fda3e6f495a673340d4ed82cbe1c5cfda662b9"},
+    {file = "libsumo-1.19.0-cp38-cp38-win_amd64.whl", hash = "sha256:4902a6a08d20ffa5f974025448811de536d5e2d0329dda24a5b1d55bf3a6b52b"},
+    {file = "libsumo-1.19.0-cp39-cp39-macosx_12_0_x86_64.whl", hash = "sha256:2fd7ac6bd979fe1dcab0372bd88057ef5acefe2b2ddc5a5427cf25d3976ea004"},
+    {file = "libsumo-1.19.0-cp39-cp39-macosx_14_0_arm64.whl", hash = "sha256:1de97a32b8665475979de59958b988ba3c08685fab6dc789f07076044e5abe25"},
+    {file = "libsumo-1.19.0-cp39-cp39-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:91e22caf431cd503f07215527796b9292fb1e9bd0a2d01e9f51d4acfaec6ccd0"},
+    {file = "libsumo-1.19.0-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:ebd53aa9b90fc92616adf62f756b2104e176cd0d033066414cb740327140fd0b"},
+    {file = "libsumo-1.19.0-cp39-cp39-win_amd64.whl", hash = "sha256:47ab9455cbefca9a6a7a1c3e2aa3cc9f09d78043781b9b1ab4b60f753417dfd2"},
 ]
 
 [package.dependencies]
-eclipse-sumo = ">=1.21.0"
-traci = ">=1.21.0"
+traci = ">=1.19.0"
 
 [[package]]
 name = "loguru"
@@ -590,13 +603,13 @@ test = ["Cython", "array-api-strict (>=2.0)", "asv", "gmpy2", "hypothesis (>=6.3
 
 [[package]]
 name = "sumolib"
-version = "1.21.0"
+version = "1.19.0"
 description = "Python helper modules to read networks, parse output data and do other useful stuff related to the traffic simulation Eclipse SUMO"
 optional = false
 python-versions = "*"
 files = [
-    {file = "sumolib-1.21.0-py3-none-any.whl", hash = "sha256:039ab9498ab63ea788dcfeed966ef744d7756fdacd53668ef7868ccf9aa216e1"},
-    {file = "sumolib-1.21.0.tar.gz", hash = "sha256:a7e4ccf880a26ee2536b2b20daaa26b466376909dcb113e23c65d09d4a6de7aa"},
+    {file = "sumolib-1.19.0-py3-none-any.whl", hash = "sha256:e374a1b756c25b740081f470e4133c754e5d7238359a09880e3547599d2e8aa5"},
+    {file = "sumolib-1.19.0.tar.gz", hash = "sha256:c093fc430415d97d43462e60e9d13653b4f58207e6ee9e9bc110222811948568"},
 ]
 
 [package.extras]
@@ -604,17 +617,17 @@ visualization = ["matplotlib"]
 
 [[package]]
 name = "traci"
-version = "1.21.0"
+version = "1.19.0"
 description = "The pure python version of the TraCI API to communicate with the traffic simulation Eclipse SUMO"
 optional = false
 python-versions = "*"
 files = [
-    {file = "traci-1.21.0-py3-none-any.whl", hash = "sha256:d6b5a57518b1d7a52d9eb955d0afc16b43d994674797e930cd0cafcb6920b43c"},
-    {file = "traci-1.21.0.tar.gz", hash = "sha256:8b0765d08fc8bc7e7fa1647c7cb0ace9964b15d8980de979a5e10a206c417311"},
+    {file = "traci-1.19.0-py3-none-any.whl", hash = "sha256:42d8c851b8f440dfa5823f51fb35b1dd3a1089ec3204a32002a1a3541deb75cc"},
+    {file = "traci-1.19.0.tar.gz", hash = "sha256:917da841437d158c32073d67794f4757f555c72fcb44e78a5dad2429d2b41aae"},
 ]
 
 [package.dependencies]
-sumolib = ">=1.21.0"
+sumolib = ">=1.19.0"
 
 [[package]]
 name = "typing-extensions"
@@ -644,4 +657,4 @@ dev = ["black (>=19.3b0)", "pytest (>=4.6.2)"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "48aca2b793bc57a7826a62ff2cf3480978691bf48d83ea21888b3c28f5a8e11c"
+content-hash = "1e2c66f89f37b02c669b59d0f22b5f957bf387bc48f820d2de1764e7275e60ce"
