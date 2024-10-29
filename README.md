@@ -44,16 +44,16 @@ The project is developed and tested on Ubuntu 22.04 LTS. Therefore, we recommend
 
 Recommended environment:
 - Python 3.10
-- SUMO 1.19
+- SUMO 1.19.0
 
 Minimum versioned environment:
 - Python 3.10
-- SUMO 1.19
+- SUMO 1.19.0
 
-We recoomend using Conda to create a virtual environment and install the terasim.
-```
-conda create -n $env_name$ python=3.10
-conda activate $env_name$
+We recommend using Poetry to manage dependencies and create a virtual environment for terasim.
+```bash
+# Install Poetry if you haven't already
+curl -sSL https://install.python-poetry.org | python3 -
 ```
 
 The simulation requires map files in SUMO format (.net.xml). Please refer to '/examples' for detailed guidelines.
@@ -61,11 +61,13 @@ The simulation requires map files in SUMO format (.net.xml). Please refer to '/e
 ## Download terasim
 - Download from Github: `git clone https://github.com/michigan-traffic-lab/TeraSim.git`
 
-## Install terasim
+## Install TeraSim
 Navigate to the directory of the project (`cd TeraSim`), and then
 
-- Normal install: `pip install .`
-- Development install: `pip install -e .`
+```bash
+# Install dependencies and create virtual environment
+poetry install
+```
 
 ## Commonly Seen Errors
 
@@ -85,16 +87,21 @@ conda install -c conda-forge libstdcxx-ng
 The package consists of multiple classes, including simulator, environment, vehicle and controller. for basic usage, we only need the Simulator class and the Environment class. For example, to build a simulation with one dummy AV running in a 3lane highway, we neeed the following script:
 
 ```python
+from pathlib import Path
 from terasim.simulator import Simulator
-from terasim.envs.env import BaseEnv
+from terasim.envs.template import EnvTemplate
 from terasim.logger.infoextractor import InfoExtractor
-import terasim.vehicle
-from terasim.vehicle.factories.vehicle_facotory import VehicleFactory
-from terasim.vehicle.sensors.local_sensor import LocalSensor
-from terasim.vehicle.controllers.high_efficiency_controller import HighEfficiencyController
+from terasim.vehicle.factories.vehicle_factory import VehicleFactory
+from terasim.vehicle.sensors.ego import EgoSensor
+from terasim.vehicle.sensors.local import LocalSensor
+from terasim.vehicle.controllers.high_efficiency_controller import (
+    HighEfficiencyController,
+)
 from terasim.vehicle.vehicle import Vehicle
-from terasim.vehicle.decision_models.dummy_decision_model import DummyDecisionModel
 from terasim.vehicle.decision_models.idm_model import IDMModel
+
+current_path = Path(__file__).parent
+maps_path = current_path / "maps" / "3LaneHighway"
 
 
 class ExampleVehicleFactory(VehicleFactory):
@@ -109,9 +116,9 @@ class ExampleVehicleFactory(VehicleFactory):
         Returns:
             Vehicle: the contructed vehicle object
         """
-        sensor_list = [LocalSensor(simulator)]
+        sensor_list = [EgoSensor(), LocalSensor(obs_range=40)]
         # decision_model = DummyDecisionModel(mode="random")  # mode="random" "constant"
-        decision_model = IDMModel() # Use IDM model to control the vehicles
+        decision_model = IDMModel(MOBIL_lc_flag=False, stochastic_acc_flag=True)
         control_params = {
             "v_high": 40,
             "v_low": 20,
@@ -119,19 +126,22 @@ class ExampleVehicleFactory(VehicleFactory):
             "lc_duration": 1,  # the lane change duration will be 1 second
         }
         controller = HighEfficiencyController(simulator, control_params)
-        return Vehicle(veh_id, simulator, sensors=sensor_list,
-                       decision_model=decision_model, controller=controller)
+        return Vehicle(
+            veh_id,
+            simulator,
+            sensors=sensor_list,
+            decision_model=decision_model,
+            controller=controller,
+        )
 
-env = BaseEnv(
-    vehicle_factory = ExampleVehicleFactory(),
-    info_extractor=InfoExtractor
-)
+
+env = EnvTemplate(vehicle_factory=ExampleVehicleFactory(), info_extractor=InfoExtractor)
 sim = Simulator(
-    sumo_net_file_path = 'examples/maps/3LaneHighway/3LaneHighway.net.xml',
-    sumo_config_file_path = 'examples/maps/3LaneHighway/3LaneHighway.sumocfg',
+    sumo_net_file_path=maps_path / "3LaneHighway.net.xml",
+    sumo_config_file_path=maps_path / "3LaneHighway.sumocfg",
     num_tries=10,
-    gui_flag=False,
-    output_path="./output/0",
+    gui_flag=True,
+    output_path=current_path / "output" / "0",
     sumo_output_file_types=["fcd_all"],
 )
 sim.bind_env(env)
