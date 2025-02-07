@@ -1242,3 +1242,11 @@ class Simulator(object):
             newlogic (Logic): New traffic light logic.
         """
         traci.trafficlight.setProgramLogic(tlsID, newlogic)
+
+    def get_vruID_list(self):
+        """Get a list of VRU ID.
+
+        Returns:
+            list(str): List of all VRU in the network.
+        """
+        return traci.person.getIDList()
