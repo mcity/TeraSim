@@ -5,13 +5,13 @@ build-backend = "poetry.core.masonry.api"
 [tool.poetry]
 name = "terasim"
 version = "2024.05.03.1030"
-description = "A SUMO-based environment for AV testing and evaluation"
+description = "Generative AV testing environment for unknown unsafe events discovery"
 authors = [ "Haowei Sun <haoweis@umich.edu>", "Haojie Zhu <zhuhj@umich.edu>", "Shuo Feng <fshuo@umich.edu>",]
 license = "CC BY-NC 4.0"
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = "^3.10"
+python = ">=3.9,<3.13"
 numpy = "^1.26.4"
 bidict = "^0.23.1"
 attrs = "^23.2.0"

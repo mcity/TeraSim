@@ -3,8 +3,8 @@
 <configuration>
 
     <input>
-        <net-file value="Mcity.net.xml"/>
-        <route-files value="example_tls_Mcity.rou.xml"/>
+        <net-file value="map.net.xml"/>
+        <route-files value="demand.route.xml"/>
         <step-length value = "0.1"/>
     </input>
 
