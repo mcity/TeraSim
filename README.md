@@ -1,30 +1,19 @@
-<!-- PROJECT LOGO -->
-<p align="center">
-  <h3 align="center">TeraSim</h3>
-  <p align="center">
-    An autonomous vehicle testing and training platform based on SUMO
-    <br />
-    <a href="https://github.com/michigan-traffic-lab/TeraSim">View Demo</a>
-    ·
-    <a href="https://github.com/michigan-traffic-lab/TeraSim/issues">Report Bug</a>
-    ·
-    <a href="https://github.com/michigan-traffic-lab/TeraSim/issues">Request Feature</a>
-  </p>
-</p>
-
-
 <!-- ABOUT THE PROJECT -->
 # Introduction
 
-### **🚀 TeraSim: Next-Generation Autonomous Vehicle Testing**  
+### **🚀 TeraSim: Generative Autonomous Vehicle Testing Environment for Unknown Unsafe Events Discovery**  
 
 TeraSim is an **open-source traffic simulation platform** designed for **naturalistic and adversarial testing** of autonomous vehicles (AVs). It enables **high-speed, AI-driven testing environmetn generation** to expose AVs to both routine and **rare, high-risk driving conditions**.  
 
-Developed with **researchers, OEMs, and regulators** in mind, TeraSim supports **ISO 21448 (SOTIF) and ISO 34502 compliance**, providing a **scalable, automated, and unbiased AV evaluation framework**.
+Developed with **researchers, AV developers, and regulators** in mind, TeraSim is designed to better support **ISO 21448 (SOTIF) and ISO 34502 compliance**, providing a **scalable, automated, and unbiased AV evaluation framework**.
 
 ---
 
 ## **🌟 Key Features**  
+✅ **Generative Driving Environment Testing**  
+→ **Adaptive and interactive** environments replace static, manually designed scenarios.  
+→ **Automatically uncovers unknown unsafe events**, enhancing AV safety validation.  
+→ **Scalable and efficient**, reducing manual effort while expanding test coverage.
 
 ✅ **Naturalistic & Adversarial Driving Environments (NADE)**  
 → Real-world traffic behavior modeling based on **large-scale naturalistic driving data**.  
@@ -35,15 +24,15 @@ Developed with **researchers, OEMs, and regulators** in mind, TeraSim supports *
 → Dynamically adapts test cases to **urban, highway, and mixed-traffic conditions**.  
 
 ✅ **Seamless Integration with Third-Party Simulators**  
-→ Works with **CARLA, Autoware, NVIDIA Cosmos**, and more.  
-→ API-driven design enables **plug-and-play simulation** for existing AV stacks.  
+→ Works with **CARLA, Autoware**, and more.  
+→ API-driven design enables **plug-and-play simulation** for integration with third-party simulators.  
 
 ✅ **City-Scale AV Testing with TeraSim-Macro**  
 → Extends simulations from **single intersections to entire cities**, supporting **policy-level AV impact analysis**.  
 
 ✅ **Multimodal Inputs & AI-Assisted Environment Creation**  
 → TeraSim-GPT enables **language-driven environment customization**.  
-→ Define test cases in natural language: *“Create a left-turn collision scenario at a busy intersection.”*  
+→ Define test cases in natural language: *"Create a left-turn driving environment at a busy intersection."*  
 
 ---
 
@@ -52,15 +41,17 @@ Developed with **researchers, OEMs, and regulators** in mind, TeraSim supports *
 TeraSim is modular, allowing users to **customize and extend** simulations easily. 
 
 ![Architecture](docs/figure/TeraSim_architecture.svg)
+
+
 📌 **Core Components:**  
 - **TeraSim:** Base simulation engine for generating AV test environments.  
-- **TeraSim-NADE:** Realistic & adversarial driving environments for safety evaluation.  
+- **TeraSim-NDE-NADE:** Realistic & adversarial driving environments for safety evaluation.  
   - **Vehicle Adversities** (e.g., aggressive cut-ins, emergency braking).  
   - **VRU Adversities** (e.g., jaywalking pedestrians, erratic cyclists).  
 - **TeraSim-Macro:** Enables **mesoscopic city-scale AV testing**.  
 - **TeraSim-Service:** Middleware for integrating **third-party simulators (CARLA, AWSim, etc.)**.  
 - **TeraSim-Data-Zoo:** Repository for **real-world driving data (Waymo, NuScenes, NuPlan)**.  
-- **TeraSim-GPT:** AI-powered **multimodal user input handling** for scenario customization.  
+- **TeraSim-GPT:** AI-powered **multimodal user input handling** for environment customization.  
 
 📌 **Plug-and-Play Compatibility:**  
 ✅ SUMO-based microsimulation  
@@ -82,7 +73,7 @@ For a more detailed installation guide, refer to the **[Installation Section](#i
 ## **🚀 Why TeraSim?**  
 
 🔍 **Uncover Hidden AV Risks**  
-→ Dynamically generates realistic and adversarial traffic environments, identifying **edge cases**.  
+→ Dynamically generates realistic and adversarial traffic environments, identifying **corner cases**.  
 
 ⚡ **Automated & Scalable**  
 → Uses AI to generate simulations across cities, with **1000x faster testing efficiency** than real-world methods.  
