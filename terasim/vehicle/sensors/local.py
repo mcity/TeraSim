@@ -59,12 +59,8 @@ class LocalSensor(AgentSensor):
             lane_id=traci.vehicle.getLaneID(veh_id),
             lane_index=traci.vehicle.getLaneIndex(veh_id),
             acceleration=traci.vehicle.getAcceleration(veh_id),
-            could_drive_adjacent_lane_left=Simulator.get_vehicle_lane_adjacent(
-                veh_id, 1
-            ),
-            could_drive_adjacent_lane_right=Simulator.get_vehicle_lane_adjacent(
-                veh_id, -1
-            ),
+            could_drive_adjacent_lane_left=Simulator.get_vehicle_lane_adjacent(veh_id, 1),
+            could_drive_adjacent_lane_right=Simulator.get_vehicle_lane_adjacent(veh_id, -1),
             distance=distance,
             lateral_speed=traci.vehicle.getLateralSpeed(veh_id),
             lateral_offset=traci.vehicle.getLateralLanePosition(veh_id),

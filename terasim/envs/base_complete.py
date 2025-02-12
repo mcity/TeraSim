@@ -38,14 +38,17 @@ class BaseEnvComplete(BaseEnv):
         else:
             raise TypeError("The output of a step should be a boolean or a dictionary")
 
-
     ########## Other private utility functions that should not be directly called by custom env
 
     def _maintain_all_vulnerable_road_users(self, ctx):
         """Maintain the vulnerable road user list based on the departed vehicle list and arrived vehicle list."""
 
         if "terasim_controlled_vulnerable_road_user_ids" in ctx:
-            terasim_controlled_vulnerable_road_user_ids = ctx["terasim_controlled_vulnerable_road_user_ids"] if isinstance(ctx["terasim_controlled_vulnerable_road_user_ids"], list) else [ctx["terasim_controlled_vulnerable_road_user_ids"]]
+            terasim_controlled_vulnerable_road_user_ids = (
+                ctx["terasim_controlled_vulnerable_road_user_ids"]
+                if isinstance(ctx["terasim_controlled_vulnerable_road_user_ids"], list)
+                else [ctx["terasim_controlled_vulnerable_road_user_ids"]]
+            )
             logger.trace("Using the controlled vulnerable road user list from ctx")
             realtime_vruID_set = set(terasim_controlled_vulnerable_road_user_ids) & set(
                 self.simulator.get_vruID_list()
@@ -81,7 +84,9 @@ class BaseEnvComplete(BaseEnv):
 
         output = []
         for vru_id in vru_id_list:
-            vru = self.vulnerable_road_user_factory.create_vulnerable_road_user(vru_id, self.simulator)
+            vru = self.vulnerable_road_user_factory.create_vulnerable_road_user(
+                vru_id, self.simulator
+            )
             self.vulnerable_road_user_list.add_vulnerable_road_users(vru)
             output.append(vru)
         return output[0] if single_input else output

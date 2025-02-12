@@ -11,9 +11,7 @@ class TrafficLight(Agent):
 class TrafficLightList(AgentList):
     def __add__(self, another_tls_list):
         if not isinstance(another_tls_list, TrafficLightList):
-            raise TypeError(
-                "TrafficLightList object can only be added to another TrafficLightList"
-            )
+            raise TypeError("TrafficLightList object can only be added to another TrafficLightList")
         tls_list = copy(self)
         keys = self.keys()
         for tls in another_tls_list:

@@ -23,9 +23,7 @@ class Vehicle(Agent):
 class VehicleList(AgentList):
     def __add__(self, another_vehicle_list):
         if not isinstance(another_vehicle_list, VehicleList):
-            raise TypeError(
-                "VehicleList object can only be added to another VehicleList"
-            )
+            raise TypeError("VehicleList object can only be added to another VehicleList")
         vehicle_list = copy(self)
         keys = self.keys()
         for v in another_vehicle_list:

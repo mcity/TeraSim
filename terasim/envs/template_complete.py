@@ -10,6 +10,7 @@ class EnvTemplateComplete(BaseEnvComplete):
 
     Env developers can derived from this class or build their own implementations directly on BaseEnv
     """
+
     def on_step(self, ctx):
         # Make decisions and execute commands
         control_cmds, infos = self.make_decisions(ctx)

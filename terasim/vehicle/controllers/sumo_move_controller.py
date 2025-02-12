@@ -27,9 +27,7 @@ class SUMOMOVEController(AgentController):
             control_command["speedmode"],
         )
 
-    def set_transform_sumo(
-        self, veh_id, position, velocity, angle, keepRoute, speedmode
-    ):
+    def set_transform_sumo(self, veh_id, position, velocity, angle, keepRoute, speedmode):
         """Apply the SUMO movePosition command to the vehicle.
 
         Args:

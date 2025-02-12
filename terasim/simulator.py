@@ -44,12 +44,8 @@ class Simulator(object):
         self.sumo_net_file_path = Path(sumo_net_file_path)
         self.sumo_config_file_path = Path(sumo_config_file_path)
         assert self.sumo_net_file_path.exists(), "sumo_net_file_path does not exist"
-        assert (
-            self.sumo_config_file_path.exists()
-        ), "sumo_config_file_path does not exist"
-        self.sumo_net = sumolib.net.readNet(
-            str(self.sumo_net_file_path), withInternal=True
-        )
+        assert self.sumo_config_file_path.exists(), "sumo_config_file_path does not exist"
+        self.sumo_net = sumolib.net.readNet(str(self.sumo_net_file_path), withInternal=True)
 
         self.gui_flag = gui_flag
         self.sumo_binary = "sumo-gui" if gui_flag else "sumo"
@@ -164,9 +160,7 @@ class Simulator(object):
         # log file
         if self.output_path is not None:
             sumo_cmd += ["-l", str(self.output_path / "run.log")]
-        sumo_cmd += (
-            self.additional_sumo_args if self.additional_sumo_args is not None else []
-        )
+        sumo_cmd += self.additional_sumo_args if self.additional_sumo_args is not None else []
         self.sumo_cmd = sumo_cmd
         if has_libsumo:
             traci.start(sumo_cmd)
@@ -282,9 +276,7 @@ class Simulator(object):
                 personNumber=init_info.person_number,
             )
         if init_info.depart.lane_id is not None:
-            traci.vehicle.moveTo(
-                veh.id, init_info.depart.lane_id, init_info.depart.position
-            )
+            traci.vehicle.moveTo(veh.id, init_info.depart.lane_id, init_info.depart.position)
 
     def _delete_all_vehicles_in_sumo(self):
         """Delete all vehicles in the network."""
@@ -905,10 +897,7 @@ class Simulator(object):
             links = self.get_lane_links(front_laneID)
             if len(links) > 1:
                 print(
-                    "WARNING: Can't locate vehicles "
-                    + str(ego_vehID)
-                    + " and "
-                    + str(front_vehID)
+                    "WARNING: Can't locate vehicles " + str(ego_vehID) + " and " + str(front_vehID)
                 )
                 return 3
             front_laneID = links[0][0]
@@ -923,10 +912,7 @@ class Simulator(object):
             # print(links)
             if len(links) > 1:
                 print(
-                    "WARNING: Can't locate vehicles "
-                    + str(ego_vehID)
-                    + " and "
-                    + str(front_vehID)
+                    "WARNING: Can't locate vehicles " + str(ego_vehID) + " and " + str(front_vehID)
                 )
                 return 3
             else:
@@ -1103,9 +1089,7 @@ class Simulator(object):
                 target_lane_width = traci.lane.getWidth(target_lane_id)
             except:
                 raise ValueError(
-                    "Unknown lane id: "
-                    + target_lane_id
-                    + " in the lane change maneuver."
+                    "Unknown lane id: " + target_lane_id + " in the lane change maneuver."
                 )
             latdist = (origin_lane_width + target_lane_width) / 2
         elif direction == "right":
@@ -1114,9 +1098,7 @@ class Simulator(object):
                 target_lane_width = traci.lane.getWidth(target_lane_id)
             except:
                 raise ValueError(
-                    "Unknown lane id: "
-                    + target_lane_id
-                    + " in the lane change maneuver."
+                    "Unknown lane id: " + target_lane_id + " in the lane change maneuver."
                 )
             latdist = -(origin_lane_width + target_lane_width) / 2
         else:

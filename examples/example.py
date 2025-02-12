@@ -17,7 +17,6 @@ maps_path = current_path / "maps" / "Mcity"
 
 
 class ExampleVehicleFactory(VehicleFactory):
-
     def create_vehicle(self, veh_id, simulator):
         """Generate a vehicle with the given vehicle id in the simulator, composed of a decision model, a controller, and a list of sensors, which should be defined or customized by the user.
 
