@@ -7,6 +7,8 @@ TeraSim is an **open-source traffic simulation platform** designed for **natural
 
 Developed with **researchers, AV developers, and regulators** in mind, TeraSim is designed to better support **ISO 21448 (SOTIF) and ISO 34502 compliance**, providing a **scalable, automated, and unbiased AV evaluation framework**.
 
+TeraSim Demo Video here
+
 ---
 
 ## **🌟 Key Features**  
@@ -44,14 +46,14 @@ TeraSim is modular, allowing users to **customize and extend** simulations easil
 
 
 📌 **Core Components:**  
-- **TeraSim:** Base simulation engine for generating AV test environments.  
-- **TeraSim-NDE-NADE:** Realistic & adversarial driving environments for safety evaluation.  
+- **[TeraSim](https://github.com/mcity/TeraSim):** Base simulation engine for generating AV test environments.  
+- **[TeraSim-NDE-NADE](https://github.com/mcity/TeraSim-NDE-NADE):** Realistic & adversarial driving environments for safety evaluation.  
   - **Vehicle Adversities** (e.g., aggressive cut-ins, emergency braking).  
   - **VRU Adversities** (e.g., jaywalking pedestrians, erratic cyclists).  
-- **TeraSim-Macro:** Enables **mesoscopic city-scale AV testing**.  
-- **TeraSim-Service:** Middleware for integrating **third-party simulators (CARLA, AWSim, etc.)**.  
-- **TeraSim-Data-Zoo:** Repository for **real-world driving data (Waymo, NuScenes, NuPlan)**.  
-- **TeraSim-GPT:** AI-powered **multimodal user input handling** for environment customization.  
+- **[TeraSim-Macro](https://github.com/mcity/TeraSim-Macro):** Enables **mesoscopic city-scale AV testing**.  
+- **[TeraSim-Service](https://github.com/mcity/TeraSim-Service):** Middleware for integrating **third-party simulators (CARLA, AWSim, etc.)**.  
+- **[TeraSim-Data-Zoo](https://github.com/mcity/TeraSim-Data-Zoo):** Repository for **real-world driving data (Waymo, NuScenes, NuPlan)**.  
+- **[TeraSim-GPT](https://github.com/mcity/TeraSim-GPT):** AI-powered **multimodal user input handling** for environment customization.  
 
 📌 **Plug-and-Play Compatibility:**  
 ✅ SUMO-based microsimulation  
