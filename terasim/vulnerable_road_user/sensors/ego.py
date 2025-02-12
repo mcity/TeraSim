@@ -18,22 +18,34 @@ class EgoSensor(AgentSensor):
 
     def __init__(self, name="ego", **params):
         super().__init__(name, **params)
+        self._length = None
+        self._width = None
+        self._height = None
 
     @property
     def length(self):
-        return traci.person.getLength(self._agent.id)
+        if self._length is None:
+            self._length = traci.person.getLength(self._agent.id)
+        return self._length
 
     @property
     def width(self):
-        return traci.person.getWidth(self._agent.id)
+        if self._width is None:
+            self._width = traci.person.getWidth(self._agent.id)
+        return self._width
 
     @property
     def height(self):
-        return traci.person.getHeight(self._agent.id)
+        if self._height is None:
+            self._height = traci.person.getHeight(self._agent.id)
+        return self._height
 
     def fetch(self) -> dict:
         vru_id = self._agent.id
         data = {"vru_id": vru_id}
         for field, getter in self.params.fields.items():
             data[field] = getter(vru_id)
+        data["length"] = self.length
+        data["width"] = self.width
+        data["height"] = self.height
         return data
