@@ -1,7 +1,7 @@
 <div align="center">
 <p align="center">
 
-<img src="docs/figure/logo.svg" height="100px">
+<img src="docs/figure/logo.png" height="100px">
 
 **Generative Autonomous Vehicle Testing Environment for Unknown Unsafe Events Discovery**
 
