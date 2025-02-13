@@ -9,9 +9,7 @@ class AgentDecisionModel(ABC):
 
     def __init__(self):
         self._agent = None  # to be assigned from outside
-        self.control_log = (
-            {}
-        )  # This will have the control log result for each controller
+        self.control_log = {}  # This will have the control log result for each controller
 
     def _reset(self):
         pass

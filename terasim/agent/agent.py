@@ -1,9 +1,11 @@
 """This module defines the interface for agents
 """
 
+from typing import Any, Dict, Iterable, NewType
+
 import addict
 from attrs import define
-from typing import NewType, Dict, Any, Iterable
+
 from terasim.agent.agent_decision_model import AgentDecisionModel
 from terasim.agent.agent_sensor import AgentSensor
 
@@ -21,19 +23,13 @@ class AgentType:
 
 @define
 class AgentDepartureInfo:
-    time: float = (
-        None  # Time step at which the vehicle should enter the network. Defaults to None.
-    )
-    lane: str = (
-        "first"  # Lane on which the vehicle should be inserted. Defaults to 'first'.
-    )
+    time: float = None  # Time step at which the vehicle should enter the network. Defaults to None.
+    lane: str = "first"  # Lane on which the vehicle should be inserted. Defaults to 'first'.
     lane_id: str = None  # specific lane id where vehicle should be inserted
     position: str = (
         "base"  # Position at which the vehicle should enter the net. Defaults to 'base'.
     )
-    speed: str = (
-        "0"  # Speed with which the vehicle should enter the network. Defaults to '0'.
-    )
+    speed: str = "0"  # Speed with which the vehicle should enter the network. Defaults to '0'.
 
 
 @define
@@ -62,13 +58,9 @@ class AgentInitialInfo:
     to_taz: str = (
         ""  # Traffic assignment zones where the vehicle should leave the network. Defaults to ''.
     )
-    line: str = (
-        ""  # A string specifying the id of a public transport line which can be used when specifying person rides. Defaults to ''.
-    )
+    line: str = ""  # A string specifying the id of a public transport line which can be used when specifying person rides. Defaults to ''.
     person_capacity: int = 0  # Number of all seats of the added vehicle. Defaults to 0.
-    person_number: int = (
-        0  # Number of occupied seats when the vehicle is inserted. Defaults to 0.
-    )
+    person_number: int = 0  # Number of occupied seats when the vehicle is inserted. Defaults to 0.
 
 
 class Agent:
@@ -101,9 +93,7 @@ class Agent:
             self.sensors[s.name] = s
 
         if not isinstance(decision_model, AgentDecisionModel):
-            raise ValueError(
-                "Installing non-decision_model instance as decision_model!"
-            )
+            raise ValueError("Installing non-decision_model instance as decision_model!")
         self.decision_model = decision_model
 
         self.controller = controller
@@ -141,9 +131,7 @@ class Agent:
 
         # install decision model
         if not isinstance(self.decision_model, AgentDecisionModel):
-            raise ValueError(
-                "Installing non-decision_model instance as decision_model!"
-            )
+            raise ValueError("Installing non-decision_model instance as decision_model!")
         self.decision_model._install(self)
 
         # install controller
@@ -173,9 +161,7 @@ class Agent:
                 self.apply_control(c)
         else:
             if self.controller._is_command_legal(self.id, control_command):
-                self.controller.execute_control_command(
-                    self.id, control_command, obs_dict
-                )
+                self.controller.execute_control_command(self.id, control_command, obs_dict)
             else:
                 # logging.warning(f"Control command {control_command} is not legal for Vehicle {id}")
                 pass
@@ -187,8 +173,8 @@ class Agent:
             control_command : dict
         """
         obs_dict = self._fetch_observation()
-        control_command, info = (
-            self.decision_model.derive_control_command_from_observation(obs_dict)
+        control_command, info = self.decision_model.derive_control_command_from_observation(
+            obs_dict
         )
         return control_command, info
 

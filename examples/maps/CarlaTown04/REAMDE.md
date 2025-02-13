@@ -1,1 +1,0 @@
-The files are from [the official carla repo](https://github.com/carla-simulator/carla/blob/master/Co-Simulation/Sumo/examples). The copyrights belong to the Carla developers.

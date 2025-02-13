@@ -1,8 +1,10 @@
-import uuid
-import numpy as np
-import math
-from terasim.overlay import traci
 import logging
+import math
+import uuid
+
+import numpy as np
+
+from terasim.overlay import traci
 
 
 def center_coordinate_to_sumo_coordinate(x, y, heading, length=5):
@@ -134,9 +136,7 @@ def get_vehicle_lateral_lane_position(vehID):
     return traci.vehicle.getLateralLanePosition(vehID)
 
 
-def cal_dis_with_start_end_speed(
-    v_start, v_end, acc, time_interval=1.0, v_low=20, v_high=40
-):
+def cal_dis_with_start_end_speed(v_start, v_end, acc, time_interval=1.0, v_low=20, v_high=40):
     """Calculate the travel distance with start and end speed and acceleration.
 
     Args:
@@ -221,9 +221,7 @@ def get_following_vehicle(vehID, obs_range):
     # first element: follower id
     # second element: distance from ego vehicle to following vehicle
     # (it does not include the minGap of the following vehicle)
-    follower_info = traci.vehicle.getFollower(
-        vehID, dist=obs_range
-    )  # empty follower: ('',-1)
+    follower_info = traci.vehicle.getFollower(vehID, dist=obs_range)  # empty follower: ('',-1)
     if follower_info[1] == -1:
         return None
     else:
@@ -264,9 +262,7 @@ def get_neighboring_leading_vehicle(vehID, obs_range, dir):
             leader_info_list[i][1] += traci.vehicle.getMinGap(vehID)
         sorted_leader = sorted(leader_info_list, key=lambda l: l[1])
         closest_leader = sorted_leader[0]
-        return get_ego_vehicle(
-            vehID=closest_leader[0], obs_range=obs_range, dist=closest_leader[1]
-        )
+        return get_ego_vehicle(vehID=closest_leader[0], obs_range=obs_range, dist=closest_leader[1])
 
 
 def get_neighboring_following_vehicle(vehID, obs_range, dir):
@@ -289,13 +285,9 @@ def get_neighboring_following_vehicle(vehID, obs_range, dir):
     # second element: distance from ego vehicle to following vehicle
     # (it does not include the minGap of the following vehicle)
     if dir == "left":
-        follower_info = traci.vehicle.getNeighbors(
-            vehID, 0
-        )  # empty leftfollower: len=0
+        follower_info = traci.vehicle.getNeighbors(vehID, 0)  # empty leftfollower: len=0
     elif dir == "right":
-        follower_info = traci.vehicle.getNeighbors(
-            vehID, 1
-        )  # empty rightfollower: len=0
+        follower_info = traci.vehicle.getNeighbors(vehID, 1)  # empty rightfollower: len=0
     else:
         raise ValueError("NotKnownDirection when fetching adjacent vehicle information")
     if len(follower_info) == 0:
@@ -303,9 +295,7 @@ def get_neighboring_following_vehicle(vehID, obs_range, dir):
     else:
         follower_info_list = [list(item) for item in follower_info]
         for i in range(len(follower_info)):
-            follower_info_list[i][1] += traci.vehicle.getMinGap(
-                follower_info_list[i][0]
-            )
+            follower_info_list[i][1] += traci.vehicle.getMinGap(follower_info_list[i][0])
         sorted_follower = sorted(follower_info_list, key=lambda l: l[1])
         closest_follower = sorted_follower[0]
         return get_ego_vehicle(

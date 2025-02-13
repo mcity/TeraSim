@@ -1,5 +1,6 @@
-import toml
 from datetime import datetime
+
+import toml
 
 with open("pyproject.toml", "r") as f:
     config = toml.load(f)

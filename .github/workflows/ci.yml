@@ -1,0 +1,43 @@
+name: TeraSim CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:  # Allow manual trigger
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.10"]
+
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+        cache: 'pip'
+    
+    - name: Install Poetry
+      run: |
+        curl -sSL https://install.python-poetry.org | python3 -
+        poetry config virtualenvs.create true
+        poetry config virtualenvs.in-project true
+    
+    - name: Install dependencies
+      run: |
+        poetry install --no-interaction --with dev
+    
+    - name: Run code quality checks
+      run: |
+        poetry run black . --check
+        poetry run isort . --check-only
+
+    - name: Build the package
+      run: |
+        poetry build -f wheel

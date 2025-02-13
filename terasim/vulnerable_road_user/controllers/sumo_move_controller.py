@@ -1,7 +1,9 @@
+from typing import Tuple
+
+from pydantic import BaseModel
+
 from terasim.agent.agent_controller import AgentController
 from terasim.overlay import traci
-from typing import Tuple
-from pydantic import BaseModel
 
 
 class SumoMoveCommandSchema(BaseModel):
@@ -26,9 +28,7 @@ class SUMOMOVEController(AgentController):
             control_command["speedmode"],
         )
 
-    def set_transform_sumo(
-        self, vru_id, position, angle, keepRoute, velocity
-    ):
+    def set_transform_sumo(self, vru_id, position, angle, keepRoute, velocity):
         """Apply the SUMO movePosition command to the person.
 
         Args:

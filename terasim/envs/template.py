@@ -1,6 +1,7 @@
-from terasim.envs.base import BaseEnv
-from loguru import logger
 import addict
+from loguru import logger
+
+from terasim.envs.base import BaseEnv
 
 
 class EnvTemplate(BaseEnv):
@@ -38,9 +39,7 @@ class EnvTemplate(BaseEnv):
                 if veh.id in ctx["terasim_controlled_vehicle_ids"]
             }
         else:
-            control_command_and_info = {
-                veh.id: veh.make_decision() for veh in self.vehicle_list
-            }
+            control_command_and_info = {veh.id: veh.make_decision() for veh in self.vehicle_list}
         control_command_dict = addict.Dict(
             {
                 veh_id: command_and_info[0]

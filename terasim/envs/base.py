@@ -1,11 +1,13 @@
+from abc import ABC, abstractmethod
+from typing import Union
+
+from loguru import logger
+
+import terasim.utils as utils
+from terasim.agent.agent import AgentDepartureInfo, AgentInitialInfo
+from terasim.overlay import traci
 from terasim.simulator import Simulator
 from terasim.vehicle.vehicle import VehicleList
-from terasim.agent.agent import AgentInitialInfo, AgentDepartureInfo
-from abc import ABC, abstractmethod
-import terasim.utils as utils
-from typing import Union
-from terasim.overlay import traci
-from loguru import logger
 
 
 class BaseEnv(ABC):
@@ -52,9 +54,7 @@ class BaseEnv(ABC):
         **kwargs,
     ):
         if type_id in traci.vehicletype.getIDList():
-            logger.warning(
-                f"Cannot add new vehicle type: Vehicle type {type_id} already exists."
-            )
+            logger.warning(f"Cannot add new vehicle type: Vehicle type {type_id} already exists.")
         else:
             traci.vehicletype.copy("DEFAULT_VEHTYPE", type_id)
             traci.vehicletype.setLength(type_id, length)
@@ -151,7 +151,11 @@ class BaseEnv(ABC):
         """Maintain the vehicle list based on the departed vehicle list and arrived vehicle list."""
 
         if "terasim_controlled_vehicle_ids" in ctx:
-            terasim_controlled_vehicle_ids = ctx["terasim_controlled_vehicle_ids"] if isinstance(ctx["terasim_controlled_vehicle_ids"], list) else [ctx["terasim_controlled_vehicle_ids"]]
+            terasim_controlled_vehicle_ids = (
+                ctx["terasim_controlled_vehicle_ids"]
+                if isinstance(ctx["terasim_controlled_vehicle_ids"], list)
+                else [ctx["terasim_controlled_vehicle_ids"]]
+            )
             logger.trace("Using the controlled vehicle list from ctx")
             realtime_vehID_set = set(terasim_controlled_vehicle_ids) & set(
                 self.simulator.get_vehID_list()

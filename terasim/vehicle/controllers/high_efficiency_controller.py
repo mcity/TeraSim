@@ -1,9 +1,11 @@
-from terasim.agent.agent_controller import AgentController
 import logging
-import terasim.utils as utils
-from terasim.simulator import traci
-from pydantic import BaseModel
 from typing import Union
+
+from pydantic import BaseModel
+
+import terasim.utils as utils
+from terasim.agent.agent_controller import AgentController
+from terasim.simulator import traci
 
 
 class HighEfficiencyCommandSchema(BaseModel):
@@ -37,9 +39,7 @@ class HighEfficiencyController(AgentController):
             else:
                 self.controlled_duration -= 1
                 self.controlled_duration = max(self.controlled_duration, 0)
-            logging.info(
-                "Control command assigned while lane change maneuver not finished"
-            )
+            logging.info("Control command assigned while lane change maneuver not finished")
             return False
         else:
             if control_command[
@@ -73,9 +73,7 @@ class HighEfficiencyController(AgentController):
         # Lateral control
         if control_command["lateral"] == "SUMO":
             utils.set_vehicle_lanechangemode(veh_id)
-            self.simulator.change_vehicle_speed(
-                veh_id, controlled_acc, self.params["acc_duration"]
-            )
+            self.simulator.change_vehicle_speed(veh_id, controlled_acc, self.params["acc_duration"])
         else:
             utils.set_vehicle_lanechangemode(veh_id, 0)
             if control_command["lateral"] == "central":

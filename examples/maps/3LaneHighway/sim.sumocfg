@@ -3,8 +3,8 @@
 <configuration>
 
     <input>
-        <net-file value="3LaneHighway.net.xml"/>
-        <route-files value="3LaneHighway.rou.xml"/>
+        <net-file value="map.net.xml"/>
+        <route-files value="demand.rou.xml"/>
     </input>
 
     <time>

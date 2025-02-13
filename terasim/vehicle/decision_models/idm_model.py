@@ -1,14 +1,13 @@
 from __future__ import division, print_function
+
 import numpy as np
-from terasim.simulator import Simulator
-from terasim.vehicle.decision_models.highway_base_decision_model import (
-    HighwayBaseDecisionModel,
-)
 import scipy
 from scipy import stats
 
 # Longitudinal policy parameters
 from terasim.overlay import traci
+from terasim.simulator import Simulator
+from terasim.vehicle.decision_models.highway_base_decision_model import HighwayBaseDecisionModel
 
 # Lateral policy parameters
 POLITENESS = 0.0  # in [0, 1]
@@ -74,9 +73,7 @@ class IDMModel(HighwayBaseDecisionModel):
             else DISTANCE_WANTED
         )
         self.TIME_WANTED = (
-            IDM_parameters["TIME_WANTED"]
-            if "TIME_WANTED" in IDM_parameters
-            else TIME_WANTED
+            IDM_parameters["TIME_WANTED"] if "TIME_WANTED" in IDM_parameters else TIME_WANTED
         )
         self.DESIRED_VELOCITY = (
             IDM_parameters["DESIRED_VELOCITY"]
@@ -95,18 +92,12 @@ class IDMModel(HighwayBaseDecisionModel):
             else stochastic_IDM_prob_threshold
         )
         self.LENGTH = IDM_parameters["LENGTH"] if "LENGTH" in IDM_parameters else LENGTH
-        self.acc_low = (
-            IDM_parameters["acc_low"] if "acc_low" in IDM_parameters else acc_low
-        )
-        self.acc_high = (
-            IDM_parameters["acc_high"] if "acc_high" in IDM_parameters else acc_high
-        )
+        self.acc_low = IDM_parameters["acc_low"] if "acc_low" in IDM_parameters else acc_low
+        self.acc_high = IDM_parameters["acc_high"] if "acc_high" in IDM_parameters else acc_high
 
         MOBIL_parameters = MOBIL_parameters if MOBIL_parameters else {}
         self.POLITENESS = (
-            MOBIL_parameters["POLITENESS"]
-            if "POLITENESS" in MOBIL_parameters
-            else POLITENESS
+            MOBIL_parameters["POLITENESS"] if "POLITENESS" in MOBIL_parameters else POLITENESS
         )
         self.LANE_CHANGE_MIN_ACC_GAIN = (
             MOBIL_parameters["LANE_CHANGE_MIN_ACC_GAIN"]
@@ -147,7 +138,6 @@ class IDMModel(HighwayBaseDecisionModel):
         left_LC_flag, right_LC_flag = False, False
 
         if self.MOBIL_lc_flag:
-
             # see if the vehicle can change lane
             possible_lane_change = []
             (
@@ -218,15 +208,11 @@ class IDMModel(HighwayBaseDecisionModel):
         if front_vehicle is not None:
             r = front_vehicle["distance"] if distance is None else distance
             d = max(1e-5, r)
-            acceleration -= a0 * np.power(
-                self.desired_gap(ego_vehicle, front_vehicle) / d, 2
-            )
+            acceleration -= a0 * np.power(self.desired_gap(ego_vehicle, front_vehicle) / d, 2)
         return acceleration
 
     def stochastic_IDM_acceleration(self, ego_vehicle, front_vehicle):
-        tmp_acc = self.IDM_acceleration(
-            ego_vehicle=ego_vehicle, front_vehicle=front_vehicle
-        )
+        tmp_acc = self.IDM_acceleration(ego_vehicle=ego_vehicle, front_vehicle=front_vehicle)
         tmp_acc = np.clip(tmp_acc, self.acc_low, self.acc_high)
         stochastic_IDM_num = (
             int((self.acc_high - self.acc_low) / self.stochastic_IDM_resolution) + 1
@@ -235,14 +221,11 @@ class IDMModel(HighwayBaseDecisionModel):
         acc_possi_list = stats.norm.pdf(acc_list, tmp_acc, 1)
         # Delete possi if smaller than certain threshold
         acc_possi_list = [
-            val if val > self.stochastic_IDM_prob_threshold else 0
-            for val in acc_possi_list
+            val if val > self.stochastic_IDM_prob_threshold else 0 for val in acc_possi_list
         ]
         assert sum(acc_possi_list) > 0, "The sum of the probability is 0"
         acc_possi_list = acc_possi_list / (sum(acc_possi_list))
-        final_acc_idx = np.random.choice(
-            len(acc_list), 1, replace=False, p=acc_possi_list
-        ).item()
+        final_acc_idx = np.random.choice(len(acc_list), 1, replace=False, p=acc_possi_list).item()
         final_acc = acc_list[final_acc_idx]
         return final_acc
 
@@ -263,8 +246,7 @@ class IDMModel(HighwayBaseDecisionModel):
         dv = ego_vehicle["velocity"] - front_vehicle["velocity"]
         d_star = d0 + max(
             0,
-            ego_vehicle["velocity"] * tau
-            + ego_vehicle["velocity"] * dv / (2 * np.sqrt(ab)),
+            ego_vehicle["velocity"] * tau + ego_vehicle["velocity"] * dv / (2 * np.sqrt(ab)),
         )
         return d_star
 
@@ -307,10 +289,7 @@ class IDMModel(HighwayBaseDecisionModel):
             return False, gain
 
         new_following_distance = (
-            new_following["distance"]
-            + new_preceding["distance"]
-            + 2 * mingap
-            + self.LENGTH
+            new_following["distance"] + new_preceding["distance"] + 2 * mingap + self.LENGTH
             if (new_following and new_preceding)
             else 99999
         )
@@ -326,9 +305,7 @@ class IDMModel(HighwayBaseDecisionModel):
         )
 
         old_preceding, old_following = observation["Lead"], observation["Foll"]
-        self_pred_a = self.IDM_acceleration(
-            ego_vehicle=ego, front_vehicle=new_preceding
-        )
+        self_pred_a = self.IDM_acceleration(ego_vehicle=ego, front_vehicle=new_preceding)
 
         # The deceleration of the new following vehicle after the the LC should not be too big (negative)
         if new_following_pred_a < -self.LANE_CHANGE_MAX_BRAKING_IMPOSED:
@@ -342,10 +319,7 @@ class IDMModel(HighwayBaseDecisionModel):
             distance=old_following["distance"] if old_following else 99999,
         )
         old_following_pred_a_distance = (
-            old_following["distance"]
-            + old_preceding["distance"]
-            + 2 * mingap
-            + self.LENGTH
+            old_following["distance"] + old_preceding["distance"] + 2 * mingap + self.LENGTH
             if (old_following and old_preceding)
             else 99999
         )
@@ -358,12 +332,7 @@ class IDMModel(HighwayBaseDecisionModel):
             self_pred_a
             - self_a
             + self.POLITENESS
-            * (
-                new_following_pred_a
-                - new_following_a
-                + old_following_pred_a
-                - old_following_a
-            )
+            * (new_following_pred_a - new_following_a + old_following_pred_a - old_following_a)
         )
         if gain <= self.LANE_CHANGE_MIN_ACC_GAIN:
             gain = None

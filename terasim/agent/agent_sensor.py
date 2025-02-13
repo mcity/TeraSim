@@ -2,10 +2,13 @@
 """
 
 from __future__ import annotations
-from collections import namedtuple, defaultdict
-import addict
+
 from abc import ABC, abstractmethod
+from collections import defaultdict, namedtuple
 from typing import TYPE_CHECKING
+
+import addict
+
 from terasim.overlay import traci
 
 if TYPE_CHECKING:

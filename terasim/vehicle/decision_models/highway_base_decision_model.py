@@ -1,7 +1,8 @@
-from terasim.agent.agent_decision_model import AgentDecisionModel
-from bidict import bidict
 import numpy as np
+from bidict import bidict
+
 import terasim.utils as utils
+from terasim.agent.agent_decision_model import AgentDecisionModel
 
 
 class HighwayBaseDecisionModel(AgentDecisionModel):
@@ -139,9 +140,7 @@ class HighwayBaseDecisionModel(AgentDecisionModel):
                     )
                     r_1 = r + dis_change  # 1s
                     rr_1 = (
-                        rr
-                        + HighwayBaseDecisionModel.acc_low
-                        * HighwayBaseDecisionModel.ACTION_STEP
+                        rr + HighwayBaseDecisionModel.acc_low * HighwayBaseDecisionModel.ACTION_STEP
                     )
 
                     if r_1 <= safety_buffer or r <= safety_buffer:
@@ -153,9 +152,9 @@ class HighwayBaseDecisionModel(AgentDecisionModel):
                             (f_veh["velocity"] + HighwayBaseDecisionModel.acc_low),
                             HighwayBaseDecisionModel.v_low,
                         )
-                        dist_r = (
-                            self_v_2**2 - HighwayBaseDecisionModel.v_low**2
-                        ) / (2 * abs(HighwayBaseDecisionModel.acc_low))
+                        dist_r = (self_v_2**2 - HighwayBaseDecisionModel.v_low**2) / (
+                            2 * abs(HighwayBaseDecisionModel.acc_low)
+                        )
                         dist_f = (f_v_2**2 - HighwayBaseDecisionModel.v_low**2) / (
                             2 * abs(HighwayBaseDecisionModel.acc_low)
                         ) + HighwayBaseDecisionModel.v_low * (
@@ -176,8 +175,7 @@ class HighwayBaseDecisionModel(AgentDecisionModel):
                     r_1 = r + dis_change
                     rr_1 = (
                         rr
-                        - HighwayBaseDecisionModel.acc_high
-                        * HighwayBaseDecisionModel.ACTION_STEP
+                        - HighwayBaseDecisionModel.acc_high * HighwayBaseDecisionModel.ACTION_STEP
                     )
                     if r_1 <= safety_buffer or r <= safety_buffer:
                         pdf_array[lane_index] = 0
