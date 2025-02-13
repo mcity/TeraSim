@@ -1,5 +1,6 @@
-from terasim.physics import DummyPhysics
 import pytest
+
+from terasim.physics import DummyPhysics
 
 
 def test_dummy():

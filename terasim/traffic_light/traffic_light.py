@@ -1,4 +1,5 @@
 from copy import copy
+
 from terasim.agent.agent import Agent, AgentList
 
 

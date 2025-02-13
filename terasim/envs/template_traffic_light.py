@@ -1,9 +1,10 @@
+from abc import ABC, abstractmethod
+from typing import Union
+
+import terasim.utils as utils
+from terasim.envs.base import BaseEnv
 from terasim.simulator import Simulator
 from terasim.traffic_light.traffic_light import TrafficLightList
-from abc import ABC, abstractmethod
-import terasim.utils as utils
-from typing import Union
-from terasim.envs.base import BaseEnv
 
 
 class EnvTrafficLightTemplate(BaseEnv):

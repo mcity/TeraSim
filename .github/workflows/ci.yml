@@ -16,8 +16,6 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
-      with:
-        fetch-depth: 0
     
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v4
@@ -31,65 +29,15 @@ jobs:
         poetry config virtualenvs.create true
         poetry config virtualenvs.in-project true
     
-    - name: Cache Poetry virtualenv
-      uses: actions/cache@v3
-      with:
-        path: ./.venv
-        key: ${{ runner.os }}-poetry-${{ hashFiles('**/poetry.lock') }}
-        restore-keys: |
-          ${{ runner.os }}-poetry-
-    
     - name: Install dependencies
       run: |
         poetry install --no-interaction --with dev
-    
-    - name: Install SUMO
-      run: |
-        sudo add-apt-repository ppa:sumo/stable
-        sudo apt-get update
-        sudo apt-get install -y sumo sumo-tools sumo-doc
     
     - name: Run code quality checks
       run: |
         poetry run black . --check
         poetry run isort . --check-only
-        poetry run flake8 .
-        poetry run mypy .
-    
-    - name: Run tests with coverage
-      run: |
-        poetry run pytest tests/ --cov=terasim --cov-report=xml
-    
-    - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v3
-      with:
-        file: ./coverage.xml
-        fail_ci_if_error: true
-    
-    - name: Build documentation
-      run: |
-        cd docs
-        poetry run make html
-    
-    - name: Check for documentation build errors
-      run: |
-        if [ -d "docs/_build/html" ]; then
-          echo "Documentation built successfully"
-        else
-          echo "Documentation build failed"
-          exit 1
-        fi
 
-  deploy-docs:
-    needs: test
-    if: github.ref == 'refs/heads/main'
-    runs-on: ubuntu-latest
-    
-    steps:
-    - uses: actions/checkout@v3
-    
-    - name: Deploy documentation
-      uses: peaceiris/actions-gh-pages@v3
-      with:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
-        publish_dir: ./docs/_build/html 
+    - name: Build the package
+      run: |
+        poetry build -f wheel

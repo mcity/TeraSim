@@ -1,11 +1,13 @@
+from abc import ABC, abstractmethod
+from typing import Union
+
+from loguru import logger
+
+import terasim.utils as utils
+from terasim.agent.agent import AgentDepartureInfo, AgentInitialInfo
+from terasim.overlay import traci
 from terasim.simulator import Simulator
 from terasim.vehicle.vehicle import VehicleList
-from terasim.agent.agent import AgentInitialInfo, AgentDepartureInfo
-from abc import ABC, abstractmethod
-import terasim.utils as utils
-from typing import Union
-from terasim.overlay import traci
-from loguru import logger
 
 
 class BaseEnv(ABC):

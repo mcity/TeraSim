@@ -1,10 +1,11 @@
 """This module defines the interface for agent controllers
 """
 
-from abc import ABC
-from pydantic import BaseModel
-from typing import Optional, Dict, Any, Type
 import json
+from abc import ABC
+from typing import Any, Dict, Optional, Type
+
+from pydantic import BaseModel
 
 
 class AgentController(ABC):

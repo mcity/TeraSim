@@ -1,7 +1,8 @@
-from terasim.agent.agent_decision_model import AgentDecisionModel
-from bidict import bidict
 import numpy as np
+from bidict import bidict
+
 import terasim.utils as utils
+from terasim.agent.agent_decision_model import AgentDecisionModel
 
 
 class HighwayBaseDecisionModel(AgentDecisionModel):

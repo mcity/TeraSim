@@ -10,8 +10,8 @@
 <a href="https://mcity.github.io/TeraSim">Website</a> •
 <a href="https://mcity.github.io/TeraSim/docs">Docs</a> •
 <a href="https://colab.research.google.com/github/mcity/TeraSim-examples/blob/master/examples/quickstart.ipynb">Try it Now</a> •
-<a href="https://mcity.github.io/TeraSim/tutorials">Tutorials</a> •
-<a href="https://github.com/mcity/TeraSim-examples">Examples</a> •
+<!-- <a href="https://mcity.github.io/TeraSim/tutorials">Tutorials</a> • -->
+<a href="https://github.com/mcity/TeraSim/tree/main/examples">Examples</a> •
 <a href="https://github.com/mcity/TeraSim/discussions">Community</a>
 
 [![PyPI python](https://img.shields.io/pypi/pyversions/terasim)](https://pypi.org/project/terasim)

@@ -1,6 +1,6 @@
+import terasim.utils as utils
 from terasim.agent.agent_controller import AgentController
 from terasim.simulator import traci
-import terasim.utils as utils
 
 
 class StateController(AgentController):

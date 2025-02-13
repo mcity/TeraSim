@@ -2,7 +2,10 @@
 This module re-export sumo and carla for the simulation platform
 """
 
-import os, sys, logging, pathlib
+import logging
+import os
+import pathlib
+import sys
 
 # ===== load sumo API, use libsumo by default =====
 has_libsumo = False

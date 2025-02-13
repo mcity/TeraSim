@@ -1,9 +1,10 @@
-from addict import Dict
-from terasim.agent.agent_sensor import AgentSensor
-from terasim.simulator import Simulator
-from terasim.overlay import traci
-from terasim import utils
 import traci.constants as tc
+from addict import Dict
+
+from terasim import utils
+from terasim.agent.agent_sensor import AgentSensor
+from terasim.overlay import traci
+from terasim.simulator import Simulator
 
 
 class LocalSensor(AgentSensor):

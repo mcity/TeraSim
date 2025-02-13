@@ -1,7 +1,9 @@
+from typing import Tuple
+
+from pydantic import BaseModel
+
 from terasim.agent.agent_controller import AgentController
 from terasim.overlay import traci
-from typing import Tuple
-from pydantic import BaseModel
 
 
 class SumoMoveCommandSchema(BaseModel):

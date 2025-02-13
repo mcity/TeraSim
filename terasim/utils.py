@@ -1,8 +1,10 @@
-import uuid
-import numpy as np
-import math
-from terasim.overlay import traci
 import logging
+import math
+import uuid
+
+import numpy as np
+
+from terasim.overlay import traci
 
 
 def center_coordinate_to_sumo_coordinate(x, y, heading, length=5):

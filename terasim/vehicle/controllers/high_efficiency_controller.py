@@ -1,9 +1,11 @@
-from terasim.agent.agent_controller import AgentController
 import logging
-import terasim.utils as utils
-from terasim.simulator import traci
-from pydantic import BaseModel
 from typing import Union
+
+from pydantic import BaseModel
+
+import terasim.utils as utils
+from terasim.agent.agent_controller import AgentController
+from terasim.simulator import traci
 
 
 class HighEfficiencyCommandSchema(BaseModel):

@@ -1,9 +1,11 @@
 """This module defines the interface for agents
 """
 
+from typing import Any, Dict, Iterable, NewType
+
 import addict
 from attrs import define
-from typing import NewType, Dict, Any, Iterable
+
 from terasim.agent.agent_decision_model import AgentDecisionModel
 from terasim.agent.agent_sensor import AgentSensor
 

@@ -1,6 +1,7 @@
-from terasim.envs.base import BaseEnv
-from loguru import logger
 import addict
+from loguru import logger
+
+from terasim.envs.base import BaseEnv
 
 
 class EnvTemplate(BaseEnv):

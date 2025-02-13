@@ -1,14 +1,13 @@
 from __future__ import division, print_function
+
 import numpy as np
-from terasim.simulator import Simulator
-from terasim.vehicle.decision_models.highway_base_decision_model import (
-    HighwayBaseDecisionModel,
-)
 import scipy
 from scipy import stats
 
 # Longitudinal policy parameters
 from terasim.overlay import traci
+from terasim.simulator import Simulator
+from terasim.vehicle.decision_models.highway_base_decision_model import HighwayBaseDecisionModel
 
 # Lateral policy parameters
 POLITENESS = 0.0  # in [0, 1]

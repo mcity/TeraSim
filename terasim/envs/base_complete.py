@@ -1,12 +1,13 @@
 from abc import ABC, abstractmethod
 from typing import Union
+
 from loguru import logger
 
-from terasim.agent.agent import AgentInitialInfo, AgentDepartureInfo
+import terasim.utils as utils
+from terasim.agent.agent import AgentDepartureInfo, AgentInitialInfo
 from terasim.envs.base import BaseEnv
 from terasim.overlay import traci
 from terasim.simulator import Simulator
-import terasim.utils as utils
 from terasim.vehicle.vehicle import VehicleList
 from terasim.vulnerable_road_user.vulnerable_road_user import VulnerableRoadUserList
 
