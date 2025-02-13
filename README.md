@@ -1,11 +1,33 @@
-<!-- ABOUT THE PROJECT -->
-# Introduction
+<div align="center">
+<p align="center">
 
-### **🚀 TeraSim: Generative Autonomous Vehicle Testing Environment for Unknown Unsafe Events Discovery**  
+<img src="docs/figure/logo.svg" height="100px">
+
+**Generative Autonomous Vehicle Testing Environment for Unknown Unsafe Events Discovery**
+
+---
+
+<a href="https://mcity.github.io/TeraSim">Website</a> •
+<a href="https://mcity.github.io/TeraSim/docs">Docs</a> •
+<a href="https://colab.research.google.com/github/mcity/TeraSim-examples/blob/master/examples/quickstart.ipynb">Try it Now</a> •
+<a href="https://mcity.github.io/TeraSim/tutorials">Tutorials</a> •
+<a href="https://github.com/mcity/TeraSim-examples">Examples</a> •
+<a href="https://github.com/mcity/TeraSim/discussions">Community</a>
+
+[![PyPI python](https://img.shields.io/pypi/pyversions/terasim)](https://pypi.org/project/terasim)
+[![PyPI version](https://badge.fury.io/py/terasim.svg)](https://pypi.org/project/terasim)
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
+[![GitHub issues](https://img.shields.io/github/issues/mcity/TeraSim.svg)](https://github.com/mcity/TeraSim/issues)
+
+</p>
+</div>
+
+## About
 
 TeraSim is an **open-source traffic simulation platform** designed for **naturalistic and adversarial testing** of autonomous vehicles (AVs). It enables **high-speed, AI-driven testing environmetn generation** to expose AVs to both routine and **rare, high-risk driving conditions**.  
 
 Developed with **researchers, AV developers, and regulators** in mind, TeraSim is designed to better support **ISO 21448 (SOTIF) and ISO 34502 compliance**, providing a **scalable, automated, and unbiased AV evaluation framework**.
+
 
 <!-- ## **🎥 Demo Video**
 
