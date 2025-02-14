@@ -1,7 +1,6 @@
-import numpy as np
 from bidict import bidict
+import numpy as np
 
-import terasim.utils as utils
 from terasim.agent.agent_decision_model import AgentDecisionModel
 
 
@@ -32,15 +31,10 @@ class HighwayBaseDecisionModel(AgentDecisionModel):
     for m in range(num_acc):
         acc_to_idx_dic[list(np.linspace(acc_low, acc_high, num=num_acc))[m]] = m
 
-    def __init__(self):
-        super().__init__()
-
     def step(self):
-        """Store ego vehicle information."""
+        """Store ego vehicle information.
+        """
         self.ego_info = self.vehicle.observation.information["Ego"]
-
-    def install(self):
-        super().install()
 
     @staticmethod
     def _check_longitudinal_safety(obs, pdf_array, lateral_result=None, CAV_flag=False):

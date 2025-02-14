@@ -24,9 +24,20 @@ class LocalSensor(AgentSensor):
     """
 
     def __init__(self, name="local", **params):
+        """Initialize the local sensor for the vehicle.
+
+        Args:
+            name (str, optional): The name of the sensor. Defaults to "local".
+            params (dict, optional): The parameters of the sensor.
+        """
         super().__init__(name, **params)
 
     def fetch(self):
+        """Fetch the vehicle information.
+
+        Returns:
+            dict: The vehicle information.
+        """
         common = dict(vehID=self._agent.id, obs_range=self._params.obs_range)
 
         return Dict(

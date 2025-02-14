@@ -19,6 +19,12 @@ class EgoSensor(AgentSensor):
     )
 
     def __init__(self, name="ego", **params):
+        """Initialize the ego state sensor for the vehicle.
+
+        Args:
+            name (str, optional): The name of the sensor. Defaults to "ego".
+            params (dict, optional): The parameters of the sensor.
+        """
         super().__init__(name, **params)
         self._length = None
         self._width = None
@@ -26,23 +32,43 @@ class EgoSensor(AgentSensor):
 
     @property
     def length(self):
+        """Get the length of the vehicle.
+
+        Returns:
+            float: The length of the vehicle.
+        """
         if self._length is None:
             self._length = traci.vehicle.getLength(self._agent.id)
         return self._length
 
     @property
     def width(self):
+        """Get the width of the vehicle.
+
+        Returns:
+            float: The width of the vehicle.
+        """
         if self._width is None:
             self._width = traci.vehicle.getWidth(self._agent.id)
         return self._width
 
     @property
     def height(self):
+        """Get the height of the vehicle.
+
+        Returns:
+            float: The height of the vehicle.
+        """
         if self._height is None:
             self._height = traci.vehicle.getHeight(self._agent.id)
         return self._height
 
     def fetch(self) -> dict:
+        """Fetch the vehicle state.
+
+        Returns:
+            dict: The vehicle state.
+        """
         veh_id = self._agent.id
         data = {"veh_id": veh_id}
         for field, getter in self.params.fields.items():

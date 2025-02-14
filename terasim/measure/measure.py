@@ -3,13 +3,9 @@ from abc import ABC
 
 class Measure(ABC):
     def evaluate(self):
+        """Evaluate the measure.
+
+        Returns:
+            float: The value of the measure.
+        """
         pass
-
-
-class MprismMeasure(Measure):
-    def __init__(self):
-        # parameters heres
-        pass
-
-    def evaluate(self, snapshot_info):
-        return 1

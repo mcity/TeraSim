@@ -14,14 +14,27 @@ class EgoStateSensor(AgentSensor):
     )
 
     def __init__(self, name="ego", **params):
+        """Initialize the ego state sensor for the traffic light.
+
+        Args:
+            name (str, optional): The name of the sensor. Defaults to "ego".
+            params (dict, optional): The parameters of the sensor.
+        """
         super().__init__(name, **params)
 
     def subscribe(self) -> None:
+        """Subscribe to the traffic light state.
+        """
         tls_id = self._agent.id
         tls_ids = list(self.params.fields.values())
         traci.trafficlight.subscribe(tls_id, varIDs=tls_ids)
 
     def fetch(self) -> dict:
+        """Fetch the traffic light state.
+
+        Returns:
+            dict: The traffic light state.
+        """
         tls_id = self._agent.id
         sub = traci.trafficlight.getSubscriptionResults(tls_id)
         return {name: sub[id] for name, id in self.params.fields.items()}

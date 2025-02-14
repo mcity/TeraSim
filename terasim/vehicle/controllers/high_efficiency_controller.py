@@ -1,11 +1,9 @@
 import logging
 from typing import Union
-
 from pydantic import BaseModel
 
-import terasim.utils as utils
 from terasim.agent.agent_controller import AgentController
-from terasim.simulator import traci
+import terasim.utils as utils
 
 
 class HighEfficiencyCommandSchema(BaseModel):
@@ -23,6 +21,12 @@ class HighEfficiencyController(AgentController):
     }
 
     def __init__(self, simulator, params=None):
+        """Initialize the high efficiency controller.
+
+        Args:
+            simulator (Simulator): The simulator object.
+            params (dict, optional): The parameters of the high efficiency controller. Defaults to None.
+        """
         super().__init__(simulator, HighEfficiencyCommandSchema, params)
         self.is_busy = False
         self.controlled_duration = 0
@@ -30,7 +34,15 @@ class HighEfficiencyController(AgentController):
         self.lc_step_num = int(self.params["lc_duration"] / self.step_size)
 
     def is_command_legal(self, veh_id, control_command):
-        """Check if the control command is legal."""
+        """Check if the control command is legal.
+        
+        Args:
+            veh_id (str): The ID of the vehicle.
+            control_command (dict): The control command.
+        
+        Returns:
+            bool: True if the control command is legal.
+        """
         # if control command (dict) does not meet the HighEfficiencyCommand pydantic format, raise an error
         if self.is_busy:
             assert self.controlled_duration >= 0
@@ -58,7 +70,9 @@ class HighEfficiencyController(AgentController):
         """Vehicle acts based on the input action.
 
         Args:
-            action (dict): Lonitudinal and lateral actions. It should have the format: {'longitudinal': float, 'lateral': str}. The longitudinal action is the longitudinal acceleration, which should be a float. The lateral action should be the lane change direction. 'central' represents no lane change. 'left' represents left lane change, and 'right' represents right lane change.
+            veh_id (str): The ID of the vehicle.
+            control_command (dict): The control command.
+            obs_dict (dict): The observation dictionary.
         """
         # Remove all control limits from SUMO
         utils.set_vehicle_speedmode(veh_id, 0)

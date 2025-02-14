@@ -1,11 +1,6 @@
 from copy import copy
-from typing import Dict, Iterable
-
-import addict
 
 from terasim.agent.agent import Agent, AgentList
-from terasim.agent.agent_decision_model import AgentDecisionModel
-from terasim.agent.agent_sensor import AgentSensor
 
 
 class Vehicle(Agent):
@@ -24,6 +19,14 @@ class Vehicle(Agent):
 
 class VehicleList(AgentList):
     def __add__(self, another_vehicle_list):
+        """Add two VehicleList objects.
+
+        Args:
+            another_vehicle_list (VehicleList): Another VehicleList object.
+
+        Returns:
+            VehicleList: The combined VehicleList object.
+        """
         if not isinstance(another_vehicle_list, VehicleList):
             raise TypeError("VehicleList object can only be added to another VehicleList")
         vehicle_list = copy(self)

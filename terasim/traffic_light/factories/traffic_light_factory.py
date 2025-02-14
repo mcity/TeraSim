@@ -3,10 +3,10 @@ from abc import ABC, abstractmethod
 
 class TrafficLightFactory(ABC):
     """
-    Basic Vehicle factory class to help build a vehicle, each vehicle will contain three major components: sensors, controllers, and powertrains.
-    Each user who would like to build a customized vehicle should build a son-class and overwrite the vehicle creation method.
+    Basic traffic light factory class to help build a traffic light, each traffic light will contain three major components: sensors, controllers, and powertrains.
+    Each user who would like to build a customized traffic light should build a son-class and overwrite the traffic light creation method.
     """
 
     @abstractmethod
     def create_traffic_light(self, tls_id, simulator):
-        raise NotImplementedError("Create vehicle method not implemented!")
+        raise NotImplementedError("Create traffic light method not implemented!")
