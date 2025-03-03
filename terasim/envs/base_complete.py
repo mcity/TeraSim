@@ -1,24 +1,32 @@
-from abc import ABC, abstractmethod
-from typing import Union
-
 from loguru import logger
 
-import terasim.utils as utils
-from terasim.agent.agent import AgentDepartureInfo, AgentInitialInfo
 from terasim.envs.base import BaseEnv
-from terasim.overlay import traci
-from terasim.simulator import Simulator
-from terasim.vehicle.vehicle import VehicleList
 from terasim.vulnerable_road_user.vulnerable_road_user import VulnerableRoadUserList
 
 
 class BaseEnvComplete(BaseEnv):
     def __init__(self, vehicle_factory, vulnerable_road_user_factory, info_extractor):
+        """Initialize the complete and base testing environment.
+
+        Args:
+            vehicle_factory (VehicleFactory): The vehicle factory.
+            vulnerable_road_user_factory (VulnerableRoadUserFactory): The vulnerable road user factory.
+            info_extractor (InfoExtractor): The info extractor.
+        """
         super().__init__(vehicle_factory, info_extractor)
         self.vulnerable_road_user_list = VulnerableRoadUserList({})
         self.vulnerable_road_user_factory = vulnerable_road_user_factory
 
     def _step(self, simulator, ctx) -> bool:
+        """The main step function of the environment.
+
+        Args:
+            simulator (Simulator): The simulator object.
+            ctx (dict): The context dictionary.
+
+        Returns:
+            bool: True if the simulation should continue.
+        """
         # First synchronize the vehicle list
         self._maintain_all_vehicles(ctx)
         self._maintain_all_vulnerable_road_users(ctx)
@@ -42,8 +50,8 @@ class BaseEnvComplete(BaseEnv):
     ########## Other private utility functions that should not be directly called by custom env
 
     def _maintain_all_vulnerable_road_users(self, ctx):
-        """Maintain the vulnerable road user list based on the departed vehicle list and arrived vehicle list."""
-
+        """Maintain the vulnerable road user list based on the departed list and arrived list.
+        """
         if "terasim_controlled_vulnerable_road_user_ids" in ctx:
             terasim_controlled_vulnerable_road_user_ids = (
                 ctx["terasim_controlled_vulnerable_road_user_ids"]

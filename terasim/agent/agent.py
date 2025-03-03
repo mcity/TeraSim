@@ -1,10 +1,9 @@
 """This module defines the interface for agents
 """
 
-from typing import Any, Dict, Iterable, NewType
-
 import addict
 from attrs import define
+from typing import Any, Dict, Iterable, NewType
 
 from terasim.agent.agent_decision_model import AgentDecisionModel
 from terasim.agent.agent_sensor import AgentSensor
@@ -81,6 +80,16 @@ class Agent:
         controller=None,
         **params,
     ):
+        """Initialize the agent.
+
+        Args:
+            id (AgentId): The ID of the agent.
+            simulator (Any): The simulator object.
+            sensors (Iterable[AgentSensor], optional): The sensors of the agent. Defaults to [].
+            decision_model (AgentDecisionModel, optional): The decision model of the agent. Defaults to None.
+            controller (AgentController, optional): The controller of the agent. Defaults to None.
+            params (dict, optional): The parameters of the agent. Defaults to {}.
+        """
         self._id = id
         self._simulator = simulator
         self._params = addict.Dict(self.DEFAULT_PARAMS)
@@ -141,19 +150,26 @@ class Agent:
         # self.simulator.set_vehicle_color(self.id, self.params.properties.color)
 
     def _fetch_observation(self):
+        """Fetch the observation from all sensors.
+
+        Returns:
+            dict: The observation dictionary.
+        """
         obs_dict = {name: self.sensors[name].observation for name in self.sensors}
         return obs_dict
 
     def _uninstall(self):
+        """This method is designed to be called before the vehicle is removed from the simulator. It uninstalls the attaching sensors.
+        """
         # uninstall sensors
         for name, sensor in self.sensors.items():
             sensor._uninstall()
 
     def apply_control(self, control_command):
-        """apply the control command of given agent
+        """Apply the control command of given agent.
 
         Args:
-            control_command (dict): the given control command of a specific decision_maker
+            control_command (dict): The given control command of a specific decision maker.
         """
         obs_dict = self._fetch_observation()
         if type(control_command) == list:
@@ -167,10 +183,11 @@ class Agent:
                 pass
 
     def make_decision(self):
-        """make decision of control command for a traffic light
+        """Make decision of control command for the agent.
 
         Returns:
-            control_command : dict
+            dict: The control command.
+            dict: The information of the decision.
         """
         obs_dict = self._fetch_observation()
         control_command, info = self.decision_model.derive_control_command_from_observation(
@@ -181,7 +198,8 @@ class Agent:
 
 class AgentList(dict):
     def __init__(self, d):
-        """An agent list that store agents. It derives from a dictionary so that one can call a certain vehicle in O(1) time. Rewrote the iter method so it can iterate as a list."""
+        """An agent list that store agents. It derives from a dictionary so that one can call a certain vehicle in O(1) time. Rewrote the iter method so it can iterate as a list.
+        """
         super().__init__(d)
 
     def __iter__(self):

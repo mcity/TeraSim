@@ -4,12 +4,11 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from collections import defaultdict, namedtuple
+import addict
 from typing import TYPE_CHECKING
 
-import addict
-
 from terasim.overlay import traci
+
 
 if TYPE_CHECKING:
     from terasim.simulator import Simulator

@@ -3,15 +3,21 @@ from typing import Union
 
 from loguru import logger
 
-import terasim.utils as utils
 from terasim.agent.agent import AgentDepartureInfo, AgentInitialInfo
 from terasim.overlay import traci
 from terasim.simulator import Simulator
+import terasim.utils as utils
 from terasim.vehicle.vehicle import VehicleList
 
 
 class BaseEnv(ABC):
     def __init__(self, vehicle_factory, info_extractor):
+        """Initialize the base testing environment.
+
+        Args:
+            vehicle_factory (VehicleFactory): The vehicle factory.
+            info_extractor (InfoExtractor): The info extractor.
+        """
         self.episode_info = {"start_time": None, "end_time": None}
         self.vehicle_list = VehicleList({})
         self.vehicle_factory = vehicle_factory
@@ -22,12 +28,13 @@ class BaseEnv(ABC):
 
     @abstractmethod
     def on_start(self, ctx) -> bool:
-        """Return False if the start stage failed."""
+        """Functions to be called when the simulation starts.
+        """
         pass
 
     @abstractmethod
     def on_step(self, ctx) -> Union[bool, dict]:
-        """
+        """Functions to be called in each simulation step.
         If returned value is boolean, then:
             - True means the simulation shall continue
             - False means the simulation is finished normally.
@@ -39,7 +46,8 @@ class BaseEnv(ABC):
 
     @abstractmethod
     def on_stop(self, ctx) -> bool:
-        """Return False if the stop stage failed"""
+        """Functions to be called when the simulation stops.
+        """
         pass
 
     ########## Utility methods that can be called by custom env ##########
@@ -53,6 +61,15 @@ class BaseEnv(ABC):
         veh_class: str = "passenger",
         **kwargs,
     ):
+        """Add a new vehicle type to the simulation.
+
+        Args:
+            type_id (str): The ID of the vehicle type.
+            length (float, optional): The length of the vehicle. Defaults to 5.0.
+            width (float, optional): The width of the vehicle. Defaults to 2.0.
+            height (float, optional): The height of the vehicle. Defaults to 1.5.
+            veh_class (str, optional): The class of the vehicle. Defaults to "passenger".
+        """
         if type_id in traci.vehicletype.getIDList():
             logger.warning(f"Cannot add new vehicle type: Vehicle type {type_id} already exists.")
         else:
@@ -74,6 +91,18 @@ class BaseEnv(ABC):
         type_id="DEFAULT_VEHTYPE",
         **kwargs,
     ):
+        """Add a new vehicle to the simulation.
+
+        Args:
+            veh_id (str): The ID of the vehicle.
+            route_id (str): The ID of the route.
+            route (list, optional): The route of the vehicle. Defaults to None.
+            lane (int, optional): The lane of the vehicle. Defaults to None.
+            lane_id (str, optional): The ID of the lane. Defaults to None.
+            position (int, optional): The position of the vehicle. Defaults to 0.
+            speed (int, optional): The speed of the vehicle. Defaults to -1.
+            type_id (str, optional): The ID of the vehicle type. Defaults to "DEFAULT_VEHTYPE".
+        """
         assert (
             type(route) == list or route is None
         ), "route should be a list or None, route_id is now used for route id assignment"
@@ -101,6 +130,15 @@ class BaseEnv(ABC):
 
     @property
     def sumo_net(self):
+        """Return the sumo network object.
+
+        Raises:
+            Exception: If the simulator is not connected yet.
+            Exception: If the sumo_net is not initialized yet.
+
+        Returns:
+            Net: The sumo network object.
+        """
         if self.simulator is None:
             raise Exception("Simulator is not connected yet.")
         if not hasattr(self.simulator, "sumo_net"):
@@ -108,6 +146,11 @@ class BaseEnv(ABC):
         return self.simulator.sumo_net
 
     def remove_vehicle(self, veh_id):
+        """Remove a vehicle from the simulation.
+
+        Args:
+            veh_id (str): The ID of the vehicle.
+        """
         vehicle = self.vehicle_list[veh_id]
         vehicle._uninstall()
         self.simulator._remove_vehicle_from_sim(vehicle)
@@ -117,12 +160,30 @@ class BaseEnv(ABC):
 
     # TODO: remove the simulator arguments in these hooks
     def _start(self, simulator, ctx) -> bool:
+        """Start the simulation.
+
+        Args:
+            simulator (Simulator): The simulator object.
+            ctx (dict): The context.    
+
+        Returns:
+            bool: True if the simulation starts successfully.
+        """
         # Log down initialization information
         self.episode_info = {"start_time": utils.get_time(), "end_time": None}
 
         return self.on_start(ctx)
 
     def _step(self, simulator, ctx) -> bool:
+        """Run a simulation step.
+
+        Args:
+            simulator (Simulator): The simulator object.
+            ctx (dict): The context information.
+
+        Returns:
+            bool: True if the simulation should continue.
+        """
         # First synchronize the vehicle list
         self._maintain_all_vehicles(ctx)
 
@@ -143,12 +204,19 @@ class BaseEnv(ABC):
             raise TypeError("The output of a step should be a boolean or a dictionary")
 
     def _stop(self, simulator, ctx):
+        """Stop the simulation.
+
+        Args:
+            simulator (Simulator): The simulator object.
+            ctx (dict): The context information.
+        """
         self.on_stop(ctx)
 
     ########## Other private utility functions that should not be directly called by custom env
 
     def _maintain_all_vehicles(self, ctx):
-        """Maintain the vehicle list based on the departed vehicle list and arrived vehicle list."""
+        """Maintain the vehicle list based on the departed vehicle list and arrived vehicle list.
+        """
 
         if "terasim_controlled_vehicle_ids" in ctx:
             terasim_controlled_vehicle_ids = (
@@ -212,6 +280,12 @@ class BaseEnv(ABC):
                 self.vehicle_list.pop(veh_id)._uninstall()
 
     def _request_termination(self, reason, info):
+        """Request the termination of the simulation.
+
+        Args:
+            reason (str): The reason of the termination.
+            info (dict): The information of the termination.
+        """
         self.episode_info["end_time"] = utils.get_time() - utils.get_step_size()
         self.info_extractor.get_terminate_info(True, reason, info)
         self.simulator.running = False

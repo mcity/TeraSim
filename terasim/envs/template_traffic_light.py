@@ -1,23 +1,33 @@
-from abc import ABC, abstractmethod
 from typing import Union
 
-import terasim.utils as utils
 from terasim.envs.base import BaseEnv
-from terasim.simulator import Simulator
 from terasim.traffic_light.traffic_light import TrafficLightList
 
 
 class EnvTrafficLightTemplate(BaseEnv):
     def __init__(self, vehicle_factory, tls_factory, info_extractor):
+        """Initialize the base testing environment with control of traffic lights.
+
+        Args:
+            vehicle_factory (VehicleFactory): The vehicle factory.
+            tls_factory (TrafficLightFactory): The traffic light factory.
+            info_extractor (InfoExtractor): The info extractor.
+        """
         self.tls_list = TrafficLightList({})
         self.tls_factory = tls_factory
         super().__init__(vehicle_factory, info_extractor)
 
     def on_start(self, ctx) -> bool:
-        """Return False if the start stage failed."""
+        """Function to be called when the simulation starts.
+        """
         pass
 
     def on_step(self, ctx) -> Union[bool, dict]:
+        """Function to be called at each simulation step.
+
+        Args:
+            ctx (dict): The context information.
+        """
         # Make decisions and execute commands
         control_cmds, infos = self.make_decisions()
         self.execute_control_commands(control_cmds)
@@ -26,11 +36,13 @@ class EnvTrafficLightTemplate(BaseEnv):
         return self.should_continue_simulation()
 
     def on_stop(self, ctx) -> bool:
-        """Return False if the stop stage failed"""
+        """Function to be called when the simulation stops.
+        """
         pass
 
     def make_decisions(self):
-        """Make decisions for all vehicles."""
+        """Make decisions for all vehicles and traffic lights.
+        """
         # You can also make decisions for specific vehicles, e.g., only let vehicles near the AV make decisions
         # Cooperative decision making is also possible, e.g., let the AV and the BV make decisions together
 
@@ -59,15 +71,18 @@ class EnvTrafficLightTemplate(BaseEnv):
         return control_command_dict, info_dict
 
     def execute_control_commands(self, control_commands: dict):
-        """Execute the control commands of all vehicles."""
+        """Execute the control commands of all vehicles and traffic lights.
+        """
         for veh_id, command in control_commands["veh"].items():
             self.vehicle_list[veh_id].apply_control(command)
         for tls_id, command in control_commands["tls"].items():
             self.tls_list[tls_id].apply_control(command)
 
     def should_continue_simulation(self):
-        """
-        Check whether the simulation has ends, return False or Dict (including reason and info) to stop the simulation. Or return True to continue the simulation
+        """Check whether the simulation should end, return False or Dict (including reason and info) to stop the simulation. Or return True to continue the simulation.
+
+        Returns:
+            bool: True if the simulation should continue.
         """
         # By default, the simulation will stop when all vehicles leave the network
         if self.simulator.get_vehicle_min_expected_number() == 0:
@@ -86,6 +101,15 @@ class EnvTrafficLightTemplate(BaseEnv):
 
     # TODO: remove the simulator arguments in these hooks
     def _step(self, simulator, ctx) -> bool:
+        """The step function that will be called by the simulator.
+
+        Args:
+            simulator (Simulator): The simulator object.
+            ctx (dict): The context information.
+
+        Returns:
+            bool: True if the simulation should continue.
+        """
         self._maintain_all_vehicles(ctx)
         self._maintain_all_tls(ctx)
         # Then call custom env defined step
@@ -107,7 +131,11 @@ class EnvTrafficLightTemplate(BaseEnv):
     ########## Other private utility functions that should not be directly called by custom env
 
     def _maintain_all_tls(self, ctx):
-        """Maintain the traffic light list."""
+        """Maintain the traffic light list.
+        
+        Args:
+            ctx (dict): The context information.
+        """
         if "terasim_controlled_traffic_light_ids" in ctx:
             realtime_tlsID_set = set(ctx["terasim_controlled_traffic_light_ids"])
         else:
@@ -124,13 +152,13 @@ class EnvTrafficLightTemplate(BaseEnv):
                     self._remove_tls_from_env(tlsID)
 
     def _add_tls_to_env(self, tls_id_list):
-        """Add vehicles from veh_id_list.
+        """Add traffic lights from tls_id_list.
 
         Args:
-            veh_id_list (list(str)): List of vehicle IDs needed to be inserted.
+            tls_id_list (list(str)): List of traffic lights IDs needed to be inserted.
 
-        Raises:
-            ValueError: If one vehicle is neither "BV" nor "AV", it should not enter the network.
+        Returns:
+            TrafficLight: The traffic light object.
         """
         single_input = not isinstance(tls_id_list, list)
         if single_input:
@@ -144,13 +172,10 @@ class EnvTrafficLightTemplate(BaseEnv):
         return output[0] if single_input else output
 
     def _remove_tls_from_env(self, tls_id_list):
-        """Delete vehicles in veh_id_list.
+        """Delete traffic lights in tls_id_list.
 
         Args:
-            veh_id_list (list(str)): List of vehicle IDs needed to be deleted.
-
-        Raises:
-            ValueError: If the vehicle is neither "BV" nor "AV", it shouldn't enter the network.
+            tls_id_list (list(str)): List of traffic light IDs needed to be deleted.
         """
         if not isinstance(tls_id_list, list):
             tls_id_list = [tls_id_list]
