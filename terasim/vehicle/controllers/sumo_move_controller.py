@@ -1,5 +1,4 @@
 from typing import Tuple
-
 from pydantic import BaseModel
 
 from terasim.agent.agent_controller import AgentController
@@ -17,9 +16,21 @@ class SumoMoveCommandSchema(BaseModel):
 
 class SUMOMOVEController(AgentController):
     def __init__(self, simulator):
+        """Initialize the SUMO move controller.
+
+        Args:
+            simulator (Simulator): The simulator object.
+        """
         super().__init__(simulator, control_command_schema=SumoMoveCommandSchema)
 
     def execute_control_command(self, veh_id, control_command, obs_dict):
+        """Execute the control command.
+
+        Args:
+            veh_id (str): The ID of the vehicle.
+            control_command (dict): The control command.
+            obs_dict (dict): The observation dictionary.
+        """
         self.set_transform_sumo(
             veh_id,
             control_command["position"],
@@ -37,6 +48,8 @@ class SUMOMOVEController(AgentController):
             position (tuple): Position of the vehicle.
             velocity (float): Velocity of the vehicle.
             angle (float): Angle of the vehicle.
+            keepRoute (int): Mode of keeping route for the vehicle.
+            speedmode (int): Mode of setting speed for the vehicle.
         """
         # Move vehicle to specific position, speed, and angle without specifying the lane and the edge
         traci.vehicle.setSpeedMode(veh_id, speedmode)

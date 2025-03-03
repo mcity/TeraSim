@@ -9,4 +9,13 @@ class VehicleFactory(ABC):
 
     @abstractmethod
     def create_vehicle(self, veh_id, simulator):
+        """Create a vehicle with the given id and simulator.
+
+        Args:
+            veh_id (str): The vehicle id.
+            simulator (Simulator): The simulator object.
+
+        Returns:
+            Vehicle: The vehicle object.
+        """
         raise NotImplementedError("Create vehicle method not implemented!")

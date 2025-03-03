@@ -11,6 +11,14 @@ class TrafficLight(Agent):
 
 class TrafficLightList(AgentList):
     def __add__(self, another_tls_list):
+        """Add two TrafficLightList objects.
+
+        Args:
+            another_tls_list (TrafficLightList): Another TrafficLightList object.
+
+        Returns:
+            TrafficLightList: The combined TrafficLightList object.
+        """
         if not isinstance(another_tls_list, TrafficLightList):
             raise TypeError("TrafficLightList object can only be added to another TrafficLightList")
         tls_list = copy(self)
@@ -24,10 +32,10 @@ class TrafficLightList(AgentList):
         return tls_list
 
     def add_trafficlight(self, tlslist):
-        """Add vehicles to the traffic light list.
+        """Add traffic light to the traffic light list.
 
         Args:
-            vlist (list(Vehicle)): List of TrafficLight object or a single TrafficLight object.
+            tlslist (TrafficLightList): List of TrafficLight object or a single TrafficLight object.
         """
         if not isinstance(tlslist, list):
             tlslist = [tlslist]

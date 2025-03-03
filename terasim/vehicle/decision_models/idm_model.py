@@ -1,12 +1,10 @@
 from __future__ import division, print_function
 
 import numpy as np
-import scipy
 from scipy import stats
 
 # Longitudinal policy parameters
 from terasim.overlay import traci
-from terasim.simulator import Simulator
 from terasim.vehicle.decision_models.highway_base_decision_model import HighwayBaseDecisionModel
 
 # Lateral policy parameters
@@ -55,6 +53,12 @@ class IDMModel(HighwayBaseDecisionModel):
         self.load_parameters(IDM_parameters, MOBIL_parameters)
 
     def load_parameters(self, IDM_parameters, MOBIL_parameters):
+        """Load the IDM and MOBIL parameters.
+
+        Args:
+            IDM_parameters (dict, optional): IDM parameters. Defaults to None.
+            MOBIL_parameters (dict, optional): MOBIL parameters. Defaults to None.
+        """
         IDM_parameters = IDM_parameters if IDM_parameters else {}
 
         self.COMFORT_ACC_MAX = (
@@ -111,13 +115,18 @@ class IDMModel(HighwayBaseDecisionModel):
         )
 
     def derive_control_command_from_observation(self, obs_dict):
+        """Derive control command from observation.
+
+        Args:
+            obs_dict (dict): The observation dictionary.
+
+        Returns:
+            dict: The control command.
+        """
         if "local" not in obs_dict:
             raise ValueError("No local observation")
         control_command, mode = self.decision(obs_dict["local"])
         return control_command, None
-
-    def install(self):
-        super().install()
 
     def decision(self, observation):
         """Vehicle decides next action based on IDM model.
@@ -126,7 +135,7 @@ class IDMModel(HighwayBaseDecisionModel):
             observation (dict): Observation of the vehicle.
 
         Returns:
-            float: Action index. 0 represents left turn and 1 represents right turn. If the output is larger than 2, it is equal to the longitudinal acceleration plus 6.
+            dict, str: The control command. The mode of the decision.
         """
         action = None
         mode = None
@@ -212,6 +221,18 @@ class IDMModel(HighwayBaseDecisionModel):
         return acceleration
 
     def stochastic_IDM_acceleration(self, ego_vehicle, front_vehicle):
+        """Compute an acceleration command with the Intelligent Driver Model. The acceleration is chosen so as to:
+            - reach a target velocity;
+            - maintain a minimum safety distance (and safety time) w.r.t the front vehicle.
+            The acceleration is stochastic and randomly sampled.
+
+        Args:
+            ego_vehicle (dict): Information of the vehicle whose desired acceleration is to be computed.
+            front_vehicle (dict): Information of the vehicle preceding the ego-vehicle.
+
+        Returns:
+            float: Acceleration command for the ego-vehicle in m/s^2.
+        """
         tmp_acc = self.IDM_acceleration(ego_vehicle=ego_vehicle, front_vehicle=front_vehicle)
         tmp_acc = np.clip(tmp_acc, self.acc_low, self.acc_high)
         stochastic_IDM_num = (
@@ -235,7 +256,6 @@ class IDMModel(HighwayBaseDecisionModel):
         Args:
             ego_vehicle (dict): Information of the controlled vehicle.
             front_vehicle (dict, optional): Information of the leading vehicle. Defaults to None.
-            mode (str, optional): Difference IDM parameters for BV and CAV. Defaults to None.
 
         Returns:
             float: Desired distance between the two vehicles in m.
