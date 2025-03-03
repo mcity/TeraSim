@@ -28,6 +28,8 @@ TeraSim is an **open-source traffic simulation platform** designed for **natural
 
 Developed with **researchers, AV developers, and regulators** in mind, TeraSim is designed to better support **ISO 21448 (SOTIF) and ISO 34502 compliance**, providing a **scalable, automated, and unbiased AV evaluation framework**.
 
+Built upon the open-source traffic simulation software [SUMO (Simulation of Urban MObility)](https://www.eclipse.org/sumo/), TeraSim extends its capabilities to provide specialized features for autonomous vehicle testing.
+
 
 <!-- ## **🎥 Demo Video**
 
