@@ -1,6 +1,5 @@
-from typing import Tuple
-
 from pydantic import BaseModel
+from typing import Tuple
 
 from terasim.agent.agent_controller import AgentController
 from terasim.overlay import traci
@@ -16,9 +15,21 @@ class SumoMoveCommandSchema(BaseModel):
 
 class SUMOMOVEController(AgentController):
     def __init__(self, simulator):
+        """Initialize the SUMO move controller for VRU.
+
+        Args:
+            simulator (Simulator): The simulator object.
+        """
         super().__init__(simulator, control_command_schema=SumoMoveCommandSchema)
 
     def execute_control_command(self, vru_id, control_command, obs_dict):
+        """Execute the control command.
+
+        Args:
+            vru_id (str): The ID of the VRU.
+            control_command (dict): The control command.
+            obs_dict (dict): The observation dictionary.
+        """
         self.set_transform_sumo(
             vru_id,
             control_command["position"],
@@ -29,7 +40,7 @@ class SUMOMOVEController(AgentController):
         )
 
     def set_transform_sumo(self, vru_id, position, angle, keepRoute, velocity):
-        """Apply the SUMO movePosition command to the person.
+        """Apply the SUMO movePosition command to the VRU.
 
         Args:
             vru_id (str): ID of the person.

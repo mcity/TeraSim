@@ -1,11 +1,6 @@
 from copy import copy
-from typing import Dict, Iterable
-
-import addict
 
 from terasim.agent.agent import Agent, AgentList
-from terasim.agent.agent_decision_model import AgentDecisionModel
-from terasim.agent.agent_sensor import AgentSensor
 
 
 class VulnerableRoadUser(Agent):
@@ -24,6 +19,14 @@ class VulnerableRoadUser(Agent):
 
 class VulnerableRoadUserList(AgentList):
     def __add__(self, another_vru_list):
+        """Add two VulnerableRoadUserList objects.
+
+        Args:
+            another_vru_list (VulnerableRoadUserList): Another VulnerableRoadUserList object.
+        
+        Returns:
+            VulnerableRoadUserList: The combined VulnerableRoadUserList object.
+        """
         if not isinstance(another_vru_list, VulnerableRoadUserList):
             raise TypeError(
                 "VulnerableRoadUserList object can only be added to another VulnerableRoadUserList"

@@ -9,4 +9,13 @@ class TrafficLightFactory(ABC):
 
     @abstractmethod
     def create_traffic_light(self, tls_id, simulator):
+        """Create a traffic light with the given id and simulator.
+
+        Args:
+            tls_id (str): The traffic light id.
+            simulator (Simulator): The simulator object.
+
+        Returns:
+            TrafficLight: The traffic light object.
+        """
         raise NotImplementedError("Create traffic light method not implemented!")

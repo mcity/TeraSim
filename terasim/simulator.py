@@ -12,7 +12,7 @@ from traci import constants as tc
 
 import terasim
 import terasim.utils as utils
-from terasim.agent.agent import Agent, AgentId, AgentInitialInfo
+from terasim.agent.agent import Agent, AgentInitialInfo
 
 from .overlay import has_libsumo, traci
 from .pipeline import Pipeline, PipelineElement
@@ -41,7 +41,17 @@ class Simulator(object):
         additional_sumo_args: str or list = None,
     ):
         """Initialize the simulator.
-        TODO: add more description on parameters
+        
+        Args:
+            sumo_config_file_path (str or Path): SUMO configuration file path.
+            sumo_net_file_path (str or Path): SUMO network file path.
+            num_tries (int, optional): Number of tries. Defaults to 10.
+            gui_flag (bool, optional): GUI flag. Defaults to False.
+            output_path (str or Path, optional): Output path. Defaults to None.
+            sumo_output_file_types (list, optional): SUMO output file types. Defaults to None.
+            step_length (float, optional): Step length. Defaults to None.
+            realtime_flag (bool, optional): Realtime flag. Defaults to False.
+            additional_sumo_args (str or list, optional): Additional SUMO arguments. Defaults to None.
         """
         self.sumo_net_file_path = Path(sumo_net_file_path)
         self.sumo_config_file_path = Path(sumo_config_file_path)
@@ -110,7 +120,7 @@ class Simulator(object):
         """Combine the environment with the simulator
 
         Args:
-            env (Environment): Simulation environment
+            env (BaseEnv): Simulation environment
         """
         self.env = env
         self.env.simulator = self
@@ -119,7 +129,8 @@ class Simulator(object):
         self.stop_pipeline.hook("env_stop", env._stop, priority=0)
 
     def start(self):
-        """Start SUMO simulation or initialize environment."""
+        """Start SUMO simulation or initialize environment.
+        """
         sumo_cmd = [
             self.sumo_binary,
             "-c",
@@ -174,8 +185,10 @@ class Simulator(object):
 
     def get_vehicle_route_lanes(self, vehID: str):
         """Get list of lanes in the route of the vehicle.
+
         Args:
             vehID (str): Vehicle ID.
+
         Returns:
             list(str): A list of list(sumo lane).
         """
@@ -197,14 +210,24 @@ class Simulator(object):
 
     @property
     def plugins(self):
+        """Get the plugin list.
+
+        Returns:
+            list: List of plugins.
+        """
         return self._plugin_list
 
     def step(self):
-        """Make a simulation step."""
+        """Make a simulation step.
+        """
         self.step_pipeline(self, self.ctx)
 
     def get_all_vehicle_information(self, simulator, ctx):
         """Fetch all vehicle information.
+
+        Args:
+            simulator (Simulator): Simulator object.
+            ctx (dict): Context information.
 
         Returns:
             dict: Vehicle information dictionary.
@@ -212,15 +235,30 @@ class Simulator(object):
         raise NotImplementedError()
 
     def sumo_step(self, simulator, ctx):
-        """Make a simulation step."""
+        """Make a simulation step.
+        
+        Args:
+            simulator (Simulator): Simulator object.
+            ctx (dict): Context information.
+        """
         traci.simulationStep()
 
     def record_step_start_time(self, simulator, ctx):
-        """Record the starting time of the step."""
+        """Record the starting time of the step.
+        
+        Args:
+            simulator (Simulator): Simulator object.
+            ctx (dict): Context information.
+        """
         self.step_start_time = time.time()
 
     def compensate_step_end_time(self, simulator, ctx):
-        """Compensate for real world time."""
+        """Compensate for real world time.
+        
+        Args:
+            simulator (Simulator): Simulator object.
+            ctx (dict): Context information.
+        """
         if self.realtime_flag:
             step_time = time.time() - self.step_start_time
             sim_step_size = utils.get_step_size()
@@ -231,9 +269,6 @@ class Simulator(object):
 
     def run(self):
         """Run the specific episode.
-
-        Args:
-            episode (int): Episode number.
         """
         self.start()
         while True:
@@ -243,12 +278,18 @@ class Simulator(object):
         self.stop()
 
     def stop(self):
-        """Close SUMO simulation."""
+        """Close SUMO simulation.
+        """
         self.stop_pipeline(self, self.ctx)
         traci.close()
 
     def _add_vehicle_to_sumo(self, veh: Agent, init_info: Optional[AgentInitialInfo]):
-        """Generate a vehicle in SUMO network."""
+        """Generate a vehicle in SUMO network.
+        
+        Args:
+            veh (Agent): Vehicle object.
+            init_info (AgentInitialInfo, optional): Initial information of the vehicle. Defaults to None.
+        """
         if init_info is None:
             return
 
@@ -281,7 +322,8 @@ class Simulator(object):
             traci.vehicle.moveTo(veh.id, init_info.depart.lane_id, init_info.depart.position)
 
     def _delete_all_vehicles_in_sumo(self):
-        """Delete all vehicles in the network."""
+        """Delete all vehicles in the network.
+        """
         for vehID in traci.vehicle.getIDList():
             traci.vehicle.remove(vehID)
 
@@ -305,6 +347,12 @@ class Simulator(object):
         return traci.vehicle.getRoadID(vehID)
 
     def changeTarget(self, vehID, edgeID):
+        """Change the target edge of the vehicle.
+
+        Args:
+            vehID (str): Vehicle ID.
+            edgeID (str): Edge ID.
+        """
         traci.vehicle.changeTarget(vehID, edgeID)
 
     def detected_crash(self):
@@ -343,7 +391,10 @@ class Simulator(object):
         return lanes_id
 
     def get_available_lanes(self, edge_id=None):
-        """Get the available lanes in the sumo network
+        """Get the available lanes in the sumo network.
+
+        Args:
+            edge_id (str, optional): Edge ID. Defaults to None.
 
         Returns:
             list(sumo lane object): Possible lanes to insert vehicles
@@ -507,6 +558,12 @@ class Simulator(object):
         traci.vehicle.remove(vehID)
 
     def set_vehicle_emegency_deceleration(self, vehID, decel):
+        """Set the emergency deceleration of the vehicle.
+
+        Args:
+            vehID (str): Vehicle ID.
+            decel (float): Deceleration value.
+        """
         traci.vehicle.setEmergencyDecel(vehID, decel)
 
     @staticmethod
@@ -817,6 +874,16 @@ class Simulator(object):
         return self.get_lane_width(laneID)
 
     def get_vehicle_distance_to_edge(self, veh_id, edge_id, edge_position):
+        """Get distance from the vehicle to the edge.
+
+        Args:
+            veh_id (str): Vehicle ID.
+            edge_id (str): Edge ID.
+            edge_position (float): Edge position.
+
+        Returns:
+            float: Distance between vehicle and edge.
+        """
         second_edge_id = self.get_vehicle_roadID(veh_id)
         first_edge_id = edge_id
         second_lane_position = min(
@@ -938,6 +1005,14 @@ class Simulator(object):
         return traci.simulation.getDepartedIDList()
 
     def get_vehicle_type_id(self, veh_id):
+        """Get the type ID of the vehicle.
+
+        Args:
+            veh_id (str): Vehicle ID.
+
+        Returns:
+            str: Type ID.
+        """
         return traci.vehicle.getTypeID(veh_id)
 
     def get_arrived_vehID_list(self):
@@ -996,7 +1071,7 @@ class Simulator(object):
             vehID (str): Vehicle ID.
 
         Returns:
-            interger: Number of lanes.
+            int: Number of lanes.
         """
         return traci.edge.getLaneNumber(traci.vehicle.getRoadID(vehID))
 
@@ -1074,7 +1149,6 @@ class Simulator(object):
             direction (str): Direction, i.e. "left" and "right".
 
         Raises:
-            ValueError: Unknown lane id.
             ValueError: Unknown lane id.
             ValueError: Unknown direction.
 

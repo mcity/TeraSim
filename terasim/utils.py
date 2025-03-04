@@ -1,15 +1,20 @@
-import logging
 import math
 import uuid
-
-import numpy as np
 
 from terasim.overlay import traci
 
 
 def center_coordinate_to_sumo_coordinate(x, y, heading, length=5):
-    """
-    Convert the center coordinate to the SUMO coordinate. the input will be a list of {x, y, heading, vx}.
+    """Convert the center coordinate to the SUMO coordinate. the input will be a list of {x, y, heading, length}.
+    
+    Args:
+        x (float): x coordinate.
+        y (float): y coordinate.
+        heading (float): heading.
+        length (int, optional): length. Defaults to 5.
+
+    Returns:
+        tuple: x and y coordinates.
     """
     x = x + math.cos(heading) * 0.5 * length
     y = y + math.sin(heading) * 0.5 * length
@@ -17,8 +22,16 @@ def center_coordinate_to_sumo_coordinate(x, y, heading, length=5):
 
 
 def sumo_coordinate_to_center_coordinate(x, y, heading, length=5):
-    """
-    Convert the SUMO coordinate to the center coordinate. the input will be a list of {x, y, heading, vx}.
+    """Convert the SUMO coordinate to the center coordinate. the input will be a list of {x, y, heading, length}.
+    
+    Args:
+        x (float): x coordinate.
+        y (float): y coordinate.
+        heading (float): heading.
+        length (int, optional): length. Defaults to 5.
+
+    Returns:
+        tuple: x and y coordinates.
     """
     x = x - math.cos(heading) * 0.5 * length
     y = y - math.sin(heading) * 0.5 * length
@@ -26,16 +39,26 @@ def sumo_coordinate_to_center_coordinate(x, y, heading, length=5):
 
 
 def sumo_heading_to_orientation(sumo_heading):
-    """
-    Convert the SUMO heading to orientation.
+    """Convert the SUMO heading to orientation.
+
+    Args:
+        sumo_heading (float): SUMO heading.
+
+    Returns:
+        float: Orientation.
     """
     radians = math.radians(90 - sumo_heading)
     return math.atan2(math.sin(radians), math.cos(radians))
 
 
 def orientation_to_sumo_heading(orientation):
-    """
-    Convert the orientation to SUMO heading.
+    """Convert the orientation to SUMO heading.
+
+    Args:
+        orientation (float): Orientation.
+
+    Returns:
+        float: SUMO heading.
     """
     degrees = math.degrees(orientation)
     degrees = (degrees + 360) % 360
@@ -44,13 +67,20 @@ def orientation_to_sumo_heading(orientation):
 
 
 def getLoadedIDList():
+    """Get the list of loaded vehicle IDs.
+
+    Returns:
+        list(str): A list of vehicle IDs.
+    """
     return traci.simulation.getLoadedIDList()
 
 
 def get_vehicle_route(vehID):
     """Get route of the vehicle.
+
     Args:
         vehID (str): Vehicle ID.
+
     Returns:
         list(str): A list of edge ID.
     """
@@ -59,33 +89,48 @@ def get_vehicle_route(vehID):
 
 def get_vehicle_length(vehID):
     """Get vehicle length.
-        Args:
-    @@ -491,6 +530,17 @@ def get_vehicle_length(self, vehID):
-            float: Vehicle length in m.
+
+    Args:
+        vehID (str): Vehicle ID.
+
+    Returns:
+        float: Vehicle length in m.
     """
     return traci.vehicle.getLength(vehID)
 
 
 def get_vehicle_width(vehID):
-    """Get vehicle length.
+    """Get vehicle width.
+
     Args:
         vehID (str): Vehicle ID.
+
     Returns:
-        float: Vehicle length in m.
+        float: Vehicle width in m.
     """
     return traci.vehicle.getWidth(vehID)
 
 
 def generate_unique_bv_id():
-    """Randomly generate an ID of the background vehicle
+    """Randomly generate an ID of the background vehicle.
 
     Returns:
-        str: ID of the background vehicle
+        str: ID of the background vehicle.
     """
     return "BV_" + str(uuid.uuid4())
 
 
 def remap(v, x, y):
+    """Remap the value v from the range of x to the range of y.
+
+    Args:
+        v (float): Value to be remapped.
+        x (list): Original range.
+        y (list): Target range.
+
+    Returns:
+        float: Remapped value.
+    """
     return y[0] + (v - x[0]) * (y[1] - y[0]) / (x[1] - x[0])
 
 
@@ -144,6 +189,8 @@ def cal_dis_with_start_end_speed(v_start, v_end, acc, time_interval=1.0, v_low=2
         v_end (float): End speed [m/s].
         acc (float): Acceleration [m/s^2].
         time_interval (float, optional): Time interval [s]. Defaults to 1.0.
+        v_low (int, optional): Low speed [m/s]. Defaults to 20.
+        v_high (int, optional): High speed [m/s]. Defaults to 40.
 
     Returns:
         float: Travel distance in the time interval.
@@ -182,6 +229,7 @@ def get_leading_vehicle(vehID, obs_range):
 
     Args:
         vehID (str): ID of the ego vehicle.
+        obs_range (float): Observation range.
 
     Returns:
         dict: necessary information of the leading vehicle, including:
@@ -208,6 +256,7 @@ def get_following_vehicle(vehID, obs_range):
 
     Args:
         vehID (str): ID of the ego vehicle.
+        obs_range (float): Observation range.
 
     Returns:
         dict: necessary information of the following vehicle, including:
@@ -234,6 +283,7 @@ def get_neighboring_leading_vehicle(vehID, obs_range, dir):
 
     Args:
         vehID (str): ID of the ego vehicle.
+        obs_range (float): Observation range.
         dir (str): Choose from "left" and "right".
 
     Returns:
@@ -270,6 +320,7 @@ def get_neighboring_following_vehicle(vehID, obs_range, dir):
 
     Args:
         vehID (str): ID of the ego vehicle.
+        obs_range (float): Observation range.
         dir (str): Choose from "left" and "right".
 
     Returns:
@@ -308,6 +359,7 @@ def get_ego_vehicle(vehID, obs_range, dist=0.0):
 
     Args:
         vehID (str): ID of the ego vehicle.
+        obs_range (float): Observation range.
         dist (float, optional): Distance between two vehicles. Defaults to 0.0.
 
     Returns:
@@ -377,7 +429,7 @@ def get_speed_without_traCI(vehID):
         vehID (str): Vehicle ID.
 
     Returns:
-        double: Speed of the vehicle without TraCI
+        float: Speed of the vehicle without TraCI.
     """
     return traci.vehicle.getSpeedWithoutTraCI(vehID)
 
@@ -386,23 +438,23 @@ def get_speed(vehID):
     """Get the (longitudinal) speed in m/s of the named vehicle within the last step.
 
     Args:
-        vehID (str): Vehicle ID
+        vehID (str): Vehicle ID.
 
     Returns:
-        double: Speed of the vehicle within the last step
+        float: Speed of the vehicle within the last step.
     """
     return traci.vehicle.getSpeed(vehID)
 
 
 def get_next_traffic_light(vehID):
     """Returns the information of the next traffic light the vehicle will encounter, which
-    will be a list of upcoming traffic lights [(tlsID, tlsIndex, distance, state), ...]
+    will be a list of upcoming traffic lights [(tlsID, tlsIndex, distance, state), ...].
 
     Args:
         vehID (str): Vehicle ID.
 
     Returns:
-        float: the distance to the first upcoming traffic light (tlsID, tlsIndex, distance, state)
+        float: The distance to the first upcoming traffic light (tlsID, tlsIndex, distance, state).
     """
     tls = traci.vehicle.getNextTLS(vehID)
     if len(tls) == 0:
@@ -429,6 +481,7 @@ def highlight_vehicle(vehID, duration=-1, color=(255, 0, 0, 255)):
     Args:
         vehID (str): Vehicle ID.
         duration (int, optional): Duration of the highlight. Defaults to -1.
+        color (tuple, optional): Color of the highlight. Defaults to (255, 0, 0, 255).
     """
     traci.vehicle.highlight(vehID, duration=duration, color=color, alphaMax=0.1)
 

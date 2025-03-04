@@ -4,8 +4,7 @@ This module re-export sumo and carla for the simulation platform
 
 import logging
 import os
-import pathlib
-import sys
+
 
 # ===== load sumo API, use libsumo by default =====
 has_libsumo = False
@@ -24,10 +23,7 @@ if not has_libsumo:
         raise
 
 
-import os
-
 should_profile = os.getenv("ENABLE_PROFILING", "False").lower() in ("true", "1")
-
 if should_profile:
     from line_profiler import LineProfiler
 
@@ -41,7 +37,7 @@ if should_profile:
             return result
 
         return wrapper
-
+    
 else:
 
     def profile(func):
