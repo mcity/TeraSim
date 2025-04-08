@@ -57,7 +57,7 @@ class Simulator(object):
         self.sumo_config_file_path = Path(sumo_config_file_path)
         assert self.sumo_net_file_path.exists(), "sumo_net_file_path does not exist"
         assert self.sumo_config_file_path.exists(), "sumo_config_file_path does not exist"
-        self.sumo_net = sumolib.net.readNet(str(self.sumo_net_file_path), withInternal=True)
+        self.sumo_net = sumolib.net.readNet(str(self.sumo_net_file_path), withInternal=True, withPrograms=True)
 
         self.gui_flag = gui_flag
         self.sumo_binary = "sumo-gui" if gui_flag else "sumo"
