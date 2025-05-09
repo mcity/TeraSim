@@ -38,6 +38,7 @@ class Simulator(object):
         sumo_output_file_types: list = None,
         step_length: float = None,
         realtime_flag: bool = False,
+        seed: int = None,
         additional_sumo_args: str or list = None,
     ):
         """Initialize the simulator.
@@ -52,6 +53,7 @@ class Simulator(object):
             step_length (float, optional): Step length. Defaults to None.
             realtime_flag (bool, optional): Realtime flag. Defaults to False.
             additional_sumo_args (str or list, optional): Additional SUMO arguments. Defaults to None.
+            seed (int, optional): Seed. Defaults to None.
         """
         self.sumo_net_file_path = Path(sumo_net_file_path)
         self.sumo_config_file_path = Path(sumo_config_file_path)
@@ -76,6 +78,8 @@ class Simulator(object):
             if isinstance(additional_sumo_args, str)
             else additional_sumo_args
         )
+        if seed is not None:
+            self.additional_sumo_args += ["--seed", str(seed)]
         if output_path is not None:
             self.output_path = Path(output_path)
             self.output_path.mkdir(parents=True, exist_ok=True)
