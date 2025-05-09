@@ -202,7 +202,7 @@ class IDMModel(HighwayBaseDecisionModel):
         Args:
             ego_vehicle (dict, optional): Information of the vehicle whose desired acceleration is to be computed. It does not have to be an IDM vehicle, which is why this method is a class method. This allows an IDM vehicle to reason about other vehicles behaviors even though they may not IDMs. Defaults to None.
             front_vehicle (dict, optional): Information of the vehicle preceding the ego-vehicle. Defaults to None.
-            mode (str, optional): Difference IDM parameters for BV and CAV. Defaults to None.
+            mode (str, optional): Difference IDM parameters for BV and AV. Defaults to None.
 
         Returns:
             float: Acceleration command for the ego-vehicle in m/s^2.

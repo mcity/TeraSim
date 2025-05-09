@@ -15,7 +15,7 @@ class EnvTemplate(BaseEnv):
             ctx (dict): The context information.
         """
         # your initialization (vehicle position, etc.), for example:
-        # `self.add_vehicle(veh_id="CAV", route="route_0", lane_id="0to1_0", position=100, speed=10)`
+        # `self.add_vehicle(veh_id="AV", route="route_0", lane_id="0to1_0", position=100, speed=10)`
         pass
 
     def on_step(self, ctx):

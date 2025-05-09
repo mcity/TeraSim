@@ -20,12 +20,12 @@ class HighwayBaseDecisionModel(AgentDecisionModel):
     LENGTH = 5
     ACTION_STEP = 1.0
     num_acc = int(1 + ((acc_high - acc_low) / acc_resolution))
-    CAV_acc_low, CAV_acc_high, CAV_acc_step = -4, 2, 0.2
-    num_CAV_acc = int((CAV_acc_high - CAV_acc_low) / CAV_acc_step + 1)
-    CAV_acc_to_idx_dic = bidict()
-    for i in range(num_CAV_acc):
-        CAV_acc_to_idx_dic[
-            list(np.arange(CAV_acc_low, CAV_acc_high + CAV_acc_step, CAV_acc_step))[i]
+    AV_acc_low, AV_acc_high, AV_acc_step = -4, 2, 0.2
+    num_AV_acc = int((AV_acc_high - AV_acc_low) / AV_acc_step + 1)
+    AV_acc_to_idx_dic = bidict()
+    for i in range(num_AV_acc):
+        AV_acc_to_idx_dic[
+            list(np.arange(AV_acc_low, AV_acc_high + AV_acc_step, AV_acc_step))[i]
         ] = i
     acc_to_idx_dic = bidict()
     for m in range(num_acc):
@@ -37,14 +37,14 @@ class HighwayBaseDecisionModel(AgentDecisionModel):
         self.ego_info = self.vehicle.observation.information["Ego"]
 
     @staticmethod
-    def _check_longitudinal_safety(obs, pdf_array, lateral_result=None, CAV_flag=False):
+    def _check_longitudinal_safety(obs, pdf_array, lateral_result=None, AV_flag=False):
         """Check longitudinal safety for vehicle.
 
         Args:
             obs (dict): Processed observation of the vehicle.
             pdf_array (list(float)): Old possibility distribution of the maneuvers.
             lateral_result (list(float), optional): Possibility distribution of the lateral maneuvers. Defaults to None.
-            CAV_flag (bool, optional): Check whether the vehicle is the CAV. Defaults to False.
+            AV_flag (bool, optional): Check whether the vehicle is the AV. Defaults to False.
 
         Returns:
             list(float): New possibility distribution of the maneuvers after checking the longitudinal direction.
@@ -53,8 +53,8 @@ class HighwayBaseDecisionModel(AgentDecisionModel):
         f_veh_info = obs["Lead"]
         safety_buffer = HighwayBaseDecisionModel.longi_safety_buffer
         for i in range(len(pdf_array) - 1, -1, -1):
-            if CAV_flag:
-                acc = HighwayBaseDecisionModel.CAV_acc_to_idx_dic.inverse[i]
+            if AV_flag:
+                acc = HighwayBaseDecisionModel.AV_acc_to_idx_dic.inverse[i]
             else:
                 acc = HighwayBaseDecisionModel.acc_to_idx_dic.inverse[i]
             if f_veh_info is not None:
@@ -87,31 +87,31 @@ class HighwayBaseDecisionModel(AgentDecisionModel):
         else:
             lateral_feasible = False
         if np.sum(pdf_array) == 0 and not lateral_feasible:
-            pdf_array[0] = 1 if not CAV_flag else np.exp(-2)
+            pdf_array[0] = 1 if not AV_flag else np.exp(-2)
             return pdf_array
 
-        if CAV_flag:
+        if AV_flag:
             new_pdf_array = pdf_array
         else:
             new_pdf_array = pdf_array / np.sum(pdf_array)
         return new_pdf_array
 
     @staticmethod
-    def _check_lateral_safety(obs, pdf_array, CAV_flag=False):
+    def _check_lateral_safety(obs, pdf_array, AV_flag=False):
         """Check the lateral safety of the vehicle.
 
         Args:
             obs (dict): Processed information of vehicle observation.
             pdf_array (list): Old possibility distribution of the maneuvers.
-            CAV_flag (bool, optional): Check whether the vehicle is the CAV. Defaults to False.
+            AV_flag (bool, optional): Check whether the vehicle is the AV. Defaults to False.
 
         Returns:
             list: New possibility distribution of the maneuvers after checking the lateral direction.
         """
-        CAV_observation = obs
-        f0, r0 = CAV_observation["LeftLead"], CAV_observation["LeftFoll"]
-        f2, r2 = CAV_observation["RightLead"], CAV_observation["RightFoll"]
-        CAV_info = CAV_observation["Ego"]
+        AV_observation = obs
+        f0, r0 = AV_observation["LeftLead"], AV_observation["LeftFoll"]
+        f2, r2 = AV_observation["RightLead"], AV_observation["RightFoll"]
+        AV_info = AV_observation["Ego"]
         lane_change_dir = [0, 2]
         nearby_vehs = [[f0, r0], [f2, r2]]
         safety_buffer = HighwayBaseDecisionModel.lateral_safety_buffer
@@ -124,7 +124,7 @@ class HighwayBaseDecisionModel(AgentDecisionModel):
             if pdf_array[lane_index] != 0:
                 f_veh, r_veh = nearby_veh[0], nearby_veh[1]
                 if f_veh is not None:
-                    rr = f_veh["velocity"] - CAV_info["velocity"]
+                    rr = f_veh["velocity"] - AV_info["velocity"]
                     r = f_veh["distance"]
                     dis_change = (
                         rr * HighwayBaseDecisionModel.ACTION_STEP
@@ -141,7 +141,7 @@ class HighwayBaseDecisionModel(AgentDecisionModel):
                         pdf_array[lane_index] = 0
                     elif rr_1 < 0:
                         self_v_2, f_v_2 = max(
-                            CAV_info["velocity"], HighwayBaseDecisionModel.v_low
+                            AV_info["velocity"], HighwayBaseDecisionModel.v_low
                         ), max(
                             (f_veh["velocity"] + HighwayBaseDecisionModel.acc_low),
                             HighwayBaseDecisionModel.v_low,
@@ -158,7 +158,7 @@ class HighwayBaseDecisionModel(AgentDecisionModel):
                         if r_2 <= safety_buffer:
                             pdf_array[lane_index] = 0
                 if r_veh is not None:
-                    rr = CAV_info["velocity"] - r_veh["velocity"]
+                    rr = AV_info["velocity"] - r_veh["velocity"]
                     r = r_veh["distance"]
                     dis_change = (
                         rr * HighwayBaseDecisionModel.ACTION_STEP
@@ -175,7 +175,7 @@ class HighwayBaseDecisionModel(AgentDecisionModel):
                         pdf_array[lane_index] = 0
                     elif rr_1 < 0:
                         self_v_2, r_v_2 = min(
-                            CAV_info["velocity"], HighwayBaseDecisionModel.v_high
+                            AV_info["velocity"], HighwayBaseDecisionModel.v_high
                         ), min(
                             (r_veh["velocity"] + HighwayBaseDecisionModel.acc_high),
                             HighwayBaseDecisionModel.v_high,
@@ -194,7 +194,7 @@ class HighwayBaseDecisionModel(AgentDecisionModel):
         if np.sum(pdf_array) == 0:
             return np.array([0, 1, 0])
 
-        if CAV_flag:
+        if AV_flag:
             new_pdf_array = pdf_array
         else:
             new_pdf_array = pdf_array / np.sum(pdf_array)

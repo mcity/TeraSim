@@ -157,7 +157,7 @@ class Simulator(object):
                     filename,
                     "--fcd-output.acceleration",
                     "--device.fcd.explicit",
-                    "CAV",
+                    "AV",
                     "--device.fcd.radius",
                     "200",
                 ]
@@ -331,11 +331,11 @@ class Simulator(object):
         for vehID in traci.vehicle.getIDList():
             traci.vehicle.remove(vehID)
 
-    def track_vehicle_gui(self, vehID="CAV"):
+    def track_vehicle_gui(self, vehID="AV"):
         """Track specific vehicle in GUI.
 
         Args:
-            vehID (str, optional): Vehicle ID. Defaults to "CAV".
+            vehID (str, optional): Vehicle ID. Defaults to "AV".
         """
         traci.gui.trackVehicle(viewID="View #0", vehID=vehID)
 
@@ -413,13 +413,13 @@ class Simulator(object):
                 available_lanes.append(lane)
         return available_lanes
 
-    def get_cav_travel_distance(self):
-        """Get the travel distance of CAV.
+    def get_av_travel_distance(self):
+        """Get the travel distance of AV.
 
         Returns:
             float: Travel distance.
         """
-        return traci.vehicle.getDistance("CAV")
+        return traci.vehicle.getDistance("AV")
 
     def get_edge_dist(
         self, first_edge_id, first_lane_position, second_edge_id, second_lane_position
