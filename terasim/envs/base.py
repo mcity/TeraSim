@@ -171,6 +171,9 @@ class BaseEnv(ABC):
         """
         # Log down initialization information
         self.episode_info = {"start_time": utils.get_time(), "end_time": None}
+        
+        # Call info extractor initialization
+        self.info_extractor.add_initialization_info()
 
         return self.on_start(ctx)
 
@@ -189,6 +192,9 @@ class BaseEnv(ABC):
 
         # Then call custom env defined step
         step_result = self.on_step(ctx)
+        
+        # Call info extractor snapshot
+        self.info_extractor.get_snapshot_info({"step_result": step_result})
 
         # If custom env requested to stop, log some of the information
         if isinstance(step_result, bool):
