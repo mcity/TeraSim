@@ -40,6 +40,7 @@ class Simulator(object):
         realtime_flag: bool = False,
         seed: int = None,
         additional_sumo_args: str or list = None,
+        traffic_scale: float = 1.0,
     ):
         """Initialize the simulator.
         
@@ -54,6 +55,7 @@ class Simulator(object):
             realtime_flag (bool, optional): Realtime flag. Defaults to False.
             additional_sumo_args (str or list, optional): Additional SUMO arguments. Defaults to None.
             seed (int, optional): Seed. Defaults to None.
+            traffic_scale (float, optional): Traffic scale factor. Values > 1.0 increase traffic, < 1.0 decrease traffic. Defaults to 1.0.
         """
         self.sumo_net_file_path = Path(sumo_net_file_path)
         self.sumo_config_file_path = Path(sumo_config_file_path)
@@ -68,6 +70,7 @@ class Simulator(object):
         self.sublane_flag = False
         self.step_length = step_length
         self.realtime_flag = realtime_flag
+        self.traffic_scale = traffic_scale
         assert (
             isinstance(additional_sumo_args, list)
             or isinstance(additional_sumo_args, str)
@@ -177,6 +180,9 @@ class Simulator(object):
         # log file
         if self.output_path is not None:
             sumo_cmd += ["-l", str(self.output_path / "run.log")]
+        # traffic scale
+        if self.traffic_scale != 1.0:
+            sumo_cmd += ["--scale", str(self.traffic_scale)]
         sumo_cmd += self.additional_sumo_args if self.additional_sumo_args is not None else []
         self.sumo_cmd = sumo_cmd
         if has_libsumo:
