@@ -61,10 +61,6 @@ TeraSim is built upon a series of foundational academic works in autonomous vehi
 ✅ **City-Scale AV Testing with TeraSim-Macro**  
 → Extends simulations from **single intersections to entire cities**, supporting **policy-level AV impact analysis**.  
 
-✅ **Multimodal Inputs & AI-Assisted Environment Creation**  
-→ TeraSim-GPT enables **language-driven environment customization**.  
-→ Define test cases in natural language: *"Create a left-turn driving environment at a busy intersection."*  
-
 ---
 
 ## **🛠️ System Architecture**  
@@ -82,7 +78,6 @@ TeraSim is modular, allowing users to **customize and extend** simulations easil
 - **[TeraSim-Service](https://github.com/mcity/TeraSim-Service):** RESTful API service built with FastAPI for seamless integration with **popular simulators like CARLA and AWSim**. Enables standardized communication and control.
 - **TeraSim-Macro** (coming soon): Enables **mesoscopic city-scale AV testing**.  
 - **TeraSim-Data-Zoo** (coming soon): Repository for **real-world driving data (Waymo, NuScenes, NuPlan)**.  
-- **TeraSim-GPT** (coming soon): AI-powered **multimodal user input handling** for environment customization.  
 
 📌 **Plug-and-Play Compatibility:**  
 ✅ SUMO-based microsimulation  
