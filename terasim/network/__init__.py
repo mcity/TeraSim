@@ -1,1 +1,0 @@
-from .trafficnet import TrafficNet

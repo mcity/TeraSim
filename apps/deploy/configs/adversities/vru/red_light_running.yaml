@@ -1,0 +1,9 @@
+adversity_cfg:
+  vulnerable_road_user:
+    red_light_running:
+      _target_: terasim_nde_nade.adversity.vru.red_light_running_adversity.RedLightRunningAdversity
+      _convert_: 'all'
+      location: 'crosswalk'
+      ego_type: 'vulnerable_road_user'
+      probability: 0.1
+      predicted_collision_type: "intersection_runningredlight"

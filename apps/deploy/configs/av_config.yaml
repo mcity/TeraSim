@@ -1,0 +1,11 @@
+# This is the default AV config and can be overrided by the map-specific config
+
+environment:
+  parameters:
+    AV_cfg:
+      type: "vehicle_passenger"
+      cache_radius: 100
+      control_radius: 50
+      initial_lane_index: 0  
+      initial_lane_position: 0.0
+      initial_speed: 0.0

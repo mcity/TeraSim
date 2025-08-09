@@ -1,0 +1,49 @@
+# Use NVIDIA CUDA base image with Python 3.10 support
+FROM nvidia/cuda:12.1.1-cudnn8-runtime-ubuntu22.04
+
+# Prevent interactive prompts during package installation
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Install Python 3.10 and essential tools
+RUN apt-get update && apt-get install -y \
+    python3.10 \
+    python3.10-venv \
+    python3-pip \
+    build-essential \
+    curl \
+    git \
+    libssl-dev \
+    pkg-config \
+    libxrender1 \
+    libgl1 \
+    && rm -rf /var/lib/apt/lists/*
+
+# Create Python symlink
+RUN ln -s /usr/bin/python3.10 /usr/bin/python
+
+WORKDIR /app
+
+# Copy dependency files
+COPY requirements.common.txt requirements.gpu.txt ./
+
+# Install Python dependencies
+RUN pip install --no-cache-dir -r requirements.common.txt \
+    && pip install --no-cache-dir -r requirements.gpu.txt
+
+# Install poetry
+RUN pip install --no-cache-dir poetry
+ENV PATH=/root/.local/bin:${PATH}
+RUN poetry config virtualenvs.create false
+
+# Set environment variables for CUDA and Python
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONPATH=/app \
+    CUDA_HOME=/usr/local/cuda \
+    PATH=/usr/local/cuda/bin:$PATH \
+    LD_LIBRARY_PATH=/usr/local/cuda/lib64:$LD_LIBRARY_PATH
+
+# Create non-root user
+RUN useradd -m -s /bin/bash terasim
+RUN chown -R terasim:terasim /app
+USER terasim 

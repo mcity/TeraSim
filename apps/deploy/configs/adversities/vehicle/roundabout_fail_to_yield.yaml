@@ -1,0 +1,9 @@
+adversity_cfg:
+  vehicle:
+    roundabout_fail_to_yield:
+      _target_: terasim_nde_nade.adversity.vehicles.trafficrule_adversity.TrafficRuleAdversity
+      _convert_: 'all'
+      location: 'roundabout'
+      ego_type: 'vehicle'
+      probability: 0.0005025411072000003
+      predicted_collision_type: "roundabout_fail_to_yield" 

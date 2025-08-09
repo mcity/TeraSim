@@ -118,6 +118,8 @@ poetry install
 
 ---
 
+This project includes modified code from SumoNetVis (https://github.com/patmalcolm91/SumoNetVis) licensed under the MIT License.
+
 <!-- ## **📌 Next Steps**
 - Read the **[Quick Start Guide](#quick-start-guide)**.  
 - Try a **[Basic Simulation](#basic-simulation-example)**.  

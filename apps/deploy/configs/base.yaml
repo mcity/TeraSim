@@ -1,0 +1,25 @@
+output:
+  dir: "outputs"  # Output directory
+  name: "test"  # Experiment name
+  nth: "0_0"  # Experiment number
+  aggregated_dir: "aggregated"  # Directory for aggregated logs
+
+seed: 42
+
+simulator:
+  module: "terasim.simulator"
+  class: "Simulator"
+  parameters:
+    num_tries: 10
+    gui_flag: false
+    realtime_flag: false  # Only applicable for AV mode
+    sumo_seed: 42
+    sumo_output_file_types: 
+      - "fcd_all"
+      - "collision"
+      - "tripinfo"
+
+logging:
+  levels:
+    - "TRACE"  # Log level for the main log file
+    - "INFO"   # Log level for the aggregated log file 

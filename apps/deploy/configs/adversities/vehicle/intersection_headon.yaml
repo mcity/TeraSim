@@ -1,0 +1,9 @@
+adversity_cfg:
+  vehicle:
+    intersection_headon:
+      _target_: terasim_nde_nade.adversity.vehicles.headon_adversity.HeadonAdversity
+      _convert_: 'all'
+      location: 'intersection'
+      ego_type: 'vehicle'
+      probability: 1.0663168272664859e-08
+      predicted_collision_type: "intersection_headon" 

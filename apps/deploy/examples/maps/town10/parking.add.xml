@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- generated on 2024-06-26 12:03:51 by Eclipse SUMO netedit Version 1.20.0
+-->
+
+<additional xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://sumo.dlr.de/xsd/additional_file.xsd">
+    <!-- StoppingPlaces -->
+<parkingArea id="parking_area_0_2" lane="0_3" width="2.00" length="5.0" startPos="0.0" endPos="8.91" friendlyPos="true" onRoad="false" roadsideCapacity="1" />
+<parkingArea id="parking_area_1_2" lane="1_3" width="2.00" length="5.0" startPos="0.0" endPos="129.52" friendlyPos="true" onRoad="false" roadsideCapacity="25" />
+<parkingArea id="parking_area_10_2" lane="10_3" width="2.50" length="5.0" startPos="0.0" endPos="10.61" friendlyPos="true" onRoad="false" roadsideCapacity="2" />
+<parkingArea id="parking_area_11_2" lane="11_3" width="2.50" length="5.0" startPos="0.0" endPos="11.24" friendlyPos="true" onRoad="false" roadsideCapacity="2" />
+<parkingArea id="parking_area_12_2" lane="12_3" width="2.00" length="5.0" startPos="0.0" endPos="11.08" friendlyPos="true" onRoad="false" roadsideCapacity="2" />
+<parkingArea id="parking_area_13_2" lane="13_3" width="2.50" length="5.0" startPos="0.0" endPos="55.13" friendlyPos="true" onRoad="false" roadsideCapacity="11" />
+<parkingArea id="parking_area_14_2" lane="14_3" width="2.50" length="5.0" startPos="0.0" endPos="25.63" friendlyPos="true" onRoad="false" roadsideCapacity="5" />
+<parkingArea id="parking_area_15_2" lane="15_3" width="2.00" length="5.0" startPos="0.0" endPos="24.22" friendlyPos="true" onRoad="false" roadsideCapacity="4" />
+<parkingArea id="parking_area_16_2" lane="16_3" width="2.00" length="5.0" startPos="0.0" endPos="2.91" friendlyPos="true" onRoad="false" roadsideCapacity="0" />
+<parkingArea id="parking_area_17_2" lane="17_3" width="2.00" length="5.0" startPos="0.0" endPos="26.37" friendlyPos="true" onRoad="false" roadsideCapacity="5" />
+<parkingArea id="parking_area_18_2" lane="18_3" width="2.00" length="5.0" startPos="0.0" endPos="96.86" friendlyPos="true" onRoad="false" roadsideCapacity="19" />
+<parkingArea id="parking_area_19_2" lane="19_3" width="2.00" length="5.0" startPos="0.0" endPos="73.85" friendlyPos="true" onRoad="false" roadsideCapacity="14" />
+<parkingArea id="parking_area_2_2" lane="2_3" width="2.00" length="5.0" startPos="0.0" endPos="126.87" friendlyPos="true" onRoad="false" roadsideCapacity="25" />
+<parkingArea id="parking_area_20_2" lane="20_3" width="2.00" length="5.0" startPos="0.0" endPos="20.46" friendlyPos="true" onRoad="false" roadsideCapacity="4" />
+<parkingArea id="parking_area_21_2" lane="21_3" width="2.00" length="5.0" startPos="0.0" endPos="15.62" friendlyPos="true" onRoad="false" roadsideCapacity="3" />
+<parkingArea id="parking_area_22_2" lane="22_3" width="2.50" length="5.0" startPos="0.0" endPos="10.65" friendlyPos="true" onRoad="false" roadsideCapacity="2" />
+<parkingArea id="parking_area_23_2" lane="23_3" width="2.00" length="5.0" startPos="0.0" endPos="8.99" friendlyPos="true" onRoad="false" roadsideCapacity="1" />
+<parkingArea id="parking_area_24_2" lane="24_3" width="2.00" length="5.0" startPos="0.0" endPos="106.62" friendlyPos="true" onRoad="false" roadsideCapacity="21" />
+<parkingArea id="parking_area_25_2" lane="25_3" width="2.00" length="5.0" startPos="0.0" endPos="104.54" friendlyPos="true" onRoad="false" roadsideCapacity="20" />
+<parkingArea id="parking_area_26_2" lane="26_3" width="2.50" length="5.0" startPos="0.0" endPos="27.93" friendlyPos="true" onRoad="false" roadsideCapacity="5" />
+<parkingArea id="parking_area_27_2" lane="27_3" width="2.50" length="5.0" startPos="0.0" endPos="54.16" friendlyPos="true" onRoad="false" roadsideCapacity="10" />
+<parkingArea id="parking_area_28_2" lane="28_3" width="2.00" length="5.0" startPos="0.0" endPos="32.32" friendlyPos="true" onRoad="false" roadsideCapacity="6" />
+<parkingArea id="parking_area_29_2" lane="29_3" width="2.00" length="5.0" startPos="0.0" endPos="9.17" friendlyPos="true" onRoad="false" roadsideCapacity="1" />
+<parkingArea id="parking_area_3_2" lane="3_3" width="2.50" length="5.0" startPos="0.0" endPos="27.93" friendlyPos="true" onRoad="false" roadsideCapacity="5" />
+<parkingArea id="parking_area_30_2" lane="30_3" width="2.00" length="5.0" startPos="0.0" endPos="1.11" friendlyPos="true" onRoad="false" roadsideCapacity="0" />
+<parkingArea id="parking_area_31_2" lane="31_3" width="2.00" length="5.0" startPos="0.0" endPos="8.45" friendlyPos="true" onRoad="false" roadsideCapacity="1" />
+<parkingArea id="parking_area_32_2" lane="32_3" width="2.00" length="5.0" startPos="0.0" endPos="8.85" friendlyPos="true" onRoad="false" roadsideCapacity="1" />
+<parkingArea id="parking_area_33_2" lane="33_3" width="2.50" length="5.0" startPos="0.0" endPos="10.61" friendlyPos="true" onRoad="false" roadsideCapacity="2" />
+<parkingArea id="parking_area_34_2" lane="34_3" width="2.50" length="5.0" startPos="0.0" endPos="11.24" friendlyPos="true" onRoad="false" roadsideCapacity="2" />
+<parkingArea id="parking_area_35_2" lane="35_3" width="2.00" length="5.0" startPos="0.0" endPos="11.08" friendlyPos="true" onRoad="false" roadsideCapacity="2" />
+<parkingArea id="parking_area_36_2" lane="36_3" width="2.50" length="5.0" startPos="0.0" endPos="55.13" friendlyPos="true" onRoad="false" roadsideCapacity="11" />
+<parkingArea id="parking_area_37_2" lane="37_3" width="2.50" length="5.0" startPos="0.0" endPos="25.63" friendlyPos="true" onRoad="false" roadsideCapacity="5" />
+<parkingArea id="parking_area_38_2" lane="38_3" width="2.00" length="5.0" startPos="0.0" endPos="24.22" friendlyPos="true" onRoad="false" roadsideCapacity="4" />
+<parkingArea id="parking_area_39_2" lane="39_3" width="2.00" length="5.0" startPos="0.0" endPos="2.91" friendlyPos="true" onRoad="false" roadsideCapacity="0" />
+<parkingArea id="parking_area_4_2" lane="4_3" width="2.50" length="5.0" startPos="0.0" endPos="54.16" friendlyPos="true" onRoad="false" roadsideCapacity="10" />
+<parkingArea id="parking_area_40_2" lane="40_3" width="2.00" length="5.0" startPos="0.0" endPos="26.37" friendlyPos="true" onRoad="false" roadsideCapacity="5" />
+<parkingArea id="parking_area_41_2" lane="41_3" width="2.00" length="5.0" startPos="0.0" endPos="116.64" friendlyPos="true" onRoad="false" roadsideCapacity="23" />
+<parkingArea id="parking_area_42_2" lane="42_3" width="2.00" length="5.0" startPos="0.0" endPos="97.01" friendlyPos="true" onRoad="false" roadsideCapacity="19" />
+<parkingArea id="parking_area_43_2" lane="43_3" width="2.00" length="5.0" startPos="0.0" endPos="20.46" friendlyPos="true" onRoad="false" roadsideCapacity="4" />
+<parkingArea id="parking_area_44_2" lane="44_3" width="2.00" length="5.0" startPos="0.0" endPos="15.57" friendlyPos="true" onRoad="false" roadsideCapacity="3" />
+<parkingArea id="parking_area_45_2" lane="45_3" width="2.50" length="5.0" startPos="0.0" endPos="10.65" friendlyPos="true" onRoad="false" roadsideCapacity="2" />
+<parkingArea id="parking_area_5_2" lane="5_3" width="2.00" length="5.0" startPos="0.0" endPos="32.32" friendlyPos="true" onRoad="false" roadsideCapacity="6" />
+<parkingArea id="parking_area_6_2" lane="6_3" width="2.00" length="5.0" startPos="0.0" endPos="9.17" friendlyPos="true" onRoad="false" roadsideCapacity="1" />
+<parkingArea id="parking_area_7_2" lane="7_3" width="2.00" length="5.0" startPos="0.0" endPos="1.11" friendlyPos="true" onRoad="false" roadsideCapacity="0" />
+<parkingArea id="parking_area_8_2" lane="8_3" width="2.00" length="5.0" startPos="0.0" endPos="8.25" friendlyPos="true" onRoad="false" roadsideCapacity="1" />
+<parkingArea id="parking_area_9_2" lane="9_3" width="2.00" length="5.0" startPos="0.0" endPos="8.78" friendlyPos="true" onRoad="false" roadsideCapacity="1" />
+</additional>

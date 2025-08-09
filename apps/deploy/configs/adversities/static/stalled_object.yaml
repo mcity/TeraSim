@@ -1,0 +1,10 @@
+adversity_cfg:
+  static:
+    stalled_object:
+      _target_: terasim_nde_nade.adversity.StalledObjectAdversity
+      _convert_: 'all'
+      lane_id: ""
+      lane_position: 1000
+      object_type: "veh_passenger"
+      other_settings:
+        duration: 1200 

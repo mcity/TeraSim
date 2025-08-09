@@ -1,0 +1,33 @@
+[project]
+name = "terasim-vis"
+version = "0.2.0"
+description = "TeraSim trajectory and network visualization tools"
+authors = [
+    {name = "Haowei Sun", email = "haoweis@umich.edu"},
+]
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.10,<3.13"
+dependencies = [
+    "terasim>=0.2.0",
+    "shapely",
+    "matplotlib",
+    "numpy==1.26.4",
+    "triangle",
+    "tqdm",
+]
+
+[tool.setuptools.packages.find]
+include = ["terasim_vis*"]
+
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.black]
+line-length = 110
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+addopts = "-v --cov=terasim_vis --cov-report=term-missing"

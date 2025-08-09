@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<viewsettings>
+    <scheme name="real world" >
+        <color id="lane" value="rgb(180, 168, 152)"/>
+    </scheme>
+    <decals>
+    <decal file="mcity.png" screenRelative="0" centerX="85.00" centerY="20.00" centerZ="0.00" width="795.31" height="573.00" altitude="0.00" rotation="0.00" tilt="0.00" roll="0.00" layer="0.00"/>
+</decals>
+</viewsettings>

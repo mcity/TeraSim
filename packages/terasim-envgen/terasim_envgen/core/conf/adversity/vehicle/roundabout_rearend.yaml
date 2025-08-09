@@ -1,0 +1,9 @@
+adversity_cfg:
+  vehicle:
+    roundabout_rearend:
+      _target_: terasim_nde_nade.adversity.vehicles.leader_adversity.LeaderAdversity
+      _convert_: 'all'
+      location: 'roundabout'
+      ego_type: 'vehicle'
+      probability: 1.8383121748678325e-10
+      predicted_collision_type: "roundabout_rearend" 

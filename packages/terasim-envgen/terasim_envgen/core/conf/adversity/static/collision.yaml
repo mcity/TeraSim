@@ -1,0 +1,13 @@
+adversity_cfg:
+  static:
+    collision:
+      _target_: terasim_nde_nade.adversity.CollisionAdversity
+      _convert_: 'all'
+      lane_id: ""
+      lane_position: 400
+      object_type:
+        - "veh_passenger"
+        - "veh_truck"
+      other_settings:
+        collision_type: "side_swipe"
+        duration: 600 

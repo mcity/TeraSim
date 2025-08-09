@@ -1,0 +1,9 @@
+adversity_cfg:
+  vehicle:
+    highway_merge:
+      _target_: terasim_nde_nade.adversity.vehicles.MergeAdversity
+      _convert_: 'all'
+      location: 'highway'
+      ego_type: 'vehicle'
+      probability: 1e-5
+      predicted_collision_type: "highway_cutin" 

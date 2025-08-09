@@ -1,0 +1,103 @@
+[project]
+name = "terasim"
+version = "0.2.0"
+description = "TeraSim traffic simulation platform"
+authors = [
+    {name = "Haowei Sun", email = "haoweis@umich.edu"},
+    {name = "Haojie Zhu", email = "zhuhj@umich.edu"},
+    {name = "Zhijie Qiao", email = "zhijieq@umich.edu"},
+    {name = "Xintao Yan", email = "xintaoy@umich.edu"},
+    {name = "Shuo Feng", email = "fshuo@umich.edu"},
+]
+readme = "README.md"
+license = "Apache-2.0"
+requires-python = ">=3.10,<3.13"
+dependencies = [
+    # Fixed numerical library versions (globally unified)
+    "numpy==1.26.4",
+    "scipy>=1.11.4",
+    
+    # Fixed SUMO version (core simulation engine, required dependency)
+    "eclipse-sumo==1.23.1",
+    "traci==1.23.1",
+    "libsumo==1.23.1", 
+    "sumolib==1.23.1",
+    
+    # Other core dependencies
+    "bidict>=0.23.1",
+    "attrs>=23.2.0",
+    "addict>=2.4.0",
+    "redis>=5.0.2",
+    "lxml>=5.1.0",
+    "pydantic>=2.6.3",
+    "pyproj>=3.6.1",
+    "rtree>=1.0.1",
+    "loguru>=0.7.2",
+]
+
+[project.optional-dependencies]
+# NDE-NADE enhancements
+nde-nade = ["terasim-nde-nade>=0.2.0"]
+
+# Service API
+service = ["terasim-service>=0.2.0"]
+
+# Environment generation tools
+envgen = ["terasim-envgen>=0.2.0"]
+
+# Data processing tools
+datazoo = ["terasim-datazoo>=0.2.0"]
+
+# Visualization tools
+visualization = ["terasim-vis>=0.2.0"]
+
+# Development dependencies
+dev = [
+    "pytest>=7.4.0",
+    "pytest-cov>=4.1.0",
+    "black>=23.7.0",
+    "ruff>=0.1.0", 
+    "mypy>=1.5.1",
+    "isort>=5.12.0",
+    "flake8>=6.1.0",
+    "sphinx>=7.1.2",
+    "sphinx-rtd-theme>=1.3.0",
+]
+
+# Predefined combinations
+essentials = ["terasim[nde-nade,service]"]
+tools = ["terasim[envgen,datazoo,visualization]"]
+full = ["terasim[nde-nade,service,envgen,datazoo,visualization]"]
+
+[tool.setuptools.packages.find]
+include = ["terasim*"]
+
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project.urls]
+Homepage = "https://github.com/michigan-traffic-lab/TeraSim"
+Repository = "https://github.com/michigan-traffic-lab/TeraSim.git"
+Documentation = "https://terasim.readthedocs.io"
+
+[tool.black]
+line-length = 100
+target-version = ['py310']
+include = '\.pyi?$'
+
+[tool.isort]
+profile = "black"
+multi_line_output = 3
+line_length = 100
+
+[tool.mypy]
+python_version = "3.10"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+addopts = "-v --cov=terasim --cov-report=term-missing"
