@@ -70,14 +70,15 @@ TeraSim is modular, allowing users to **customize and extend** simulations easil
 ![Architecture](docs/figure/TeraSim_architecture.svg)
 
 
-📌 **Core Components:**  
-- **[TeraSim](https://github.com/mcity/TeraSim):** Base simulation engine for generating AV test environments.  
-- **[TeraSim-NDE-NADE](https://github.com/mcity/TeraSim-NDE-NADE):** Realistic & adversarial driving environments for safety evaluation.  
+📌 **Packages:**  
+- **`terasim`:** Core simulation engine for generating AV test environments.  
+- **`terasim-nde-nade`:** Realistic & adversarial driving environments for safety evaluation.  
   - **Vehicle Adversities** (e.g., aggressive cut-ins, emergency braking).  
   - **VRU Adversities** (e.g., jaywalking pedestrians, erratic cyclists).  
-- **[TeraSim-Service](https://github.com/mcity/TeraSim-Service):** RESTful API service built with FastAPI for seamless integration with **popular simulators like CARLA and AWSim**. Enables standardized communication and control.
-- **TeraSim-Macro** (coming soon): Enables **mesoscopic city-scale AV testing**.  
-- **TeraSim-Data-Zoo** (coming soon): Repository for **real-world driving data (Waymo, NuScenes, NuPlan)**.  
+- **`terasim-service`:** RESTful API service built with FastAPI for seamless integration with **popular simulators like CARLA** and **AV planning and control system**.
+- **`terasim-envgen`:** Automatic environment generation (map and traffic) tools for creating test scenarios.
+- **`terasim-datazoo`:** Data processing utilities for **real-world driving datasets (Waymo, NuScenes, NuPlan)**.
+- **`terasim-vis`:** Advanced visualization tools for trajectory and network analysis.  
 
 📌 **Plug-and-Play Compatibility:**  
 ✅ SUMO-based microsimulation  
@@ -88,19 +89,81 @@ TeraSim is modular, allowing users to **customize and extend** simulations easil
 
 ## **🔧 Installation**  
 
-Currently, TeraSim is under active development. Please install it from source using poetry (required) and Anaconda (optional).
+### Quick Installation (Recommended)
+
+TeraSim is now available as a unified monorepo with multiple packages. Use our automated setup script for the easiest installation:
 
 ```bash
-conda create -n terasim python=3.10
-conda activate terasim
-```
-
-```bash
+# Clone the monorepo
 git clone https://github.com/mcity/TeraSim.git
 cd TeraSim
-poetry install
+
+# Run automated setup (installs all components)
+./setup_environment.sh
 ```
 
+
+### Development Installation
+
+For development or if you want the latest features:
+
+```bash
+# Create environment (recommended)
+conda create -n terasim python=3.10
+conda activate terasim
+
+# Clone and install in development mode
+git clone https://github.com/mcity/TeraSim.git
+cd TeraSim
+./setup_environment.sh
+```
+
+**System Requirements:**
+- Python 3.10-3.12
+- SUMO 1.23.1 (automatically installed)
+- Redis (for service components)
+
+---
+
+## **🚀 Quick Start**
+
+After installation, try a basic simulation:
+
+```python
+import terasim
+
+# Create and run a simple simulation
+from terasim import Simulator
+from terasim.envs import EnvTemplate
+
+# Initialize simulator with example map
+sim = Simulator("examples/maps/Mcity/sim.sumocfg")
+
+# Set up environment  
+env = EnvTemplate()
+sim.bind_env(env)
+
+# Run simulation
+sim.start()
+sim.run(steps=1000)
+sim.close()
+```
+
+For more examples, see the [`examples/`](examples/) directory.
+
+**Development Commands:**
+```bash
+# Run tests
+uv run pytest
+
+# Format code  
+uv run black .
+
+# Start Python shell with TeraSim
+uv run python
+```
+
+---
 
 ## **🚀 Why TeraSim?**  
 
@@ -118,9 +181,34 @@ poetry install
 
 ---
 
-This project includes modified code from SumoNetVis (https://github.com/patmalcolm91/SumoNetVis) licensed under the MIT License.
+## **📦 Monorepo Structure**
 
-<!-- ## **📌 Next Steps**
-- Read the **[Quick Start Guide](#quick-start-guide)**.  
-- Try a **[Basic Simulation](#basic-simulation-example)**.  
-- Join our **[Community Discussions](https://github.com/michigan-traffic-lab/TeraSim/discussions)**.  -->
+```
+TeraSim/
+├── packages/           # Python packages
+│   ├── terasim/        # Core simulation engine
+│   ├── terasim-nde-nade/   # NDE-NADE algorithms
+│   ├── terasim-service/    # API service
+│   ├── terasim-envgen/     # Environment generation
+│   ├── terasim-datazoo/    # Data processing
+│   └── terasim-vis/        # Visualization tools
+├── apps/               # Applications & deployment
+├── examples/           # Example simulations
+├── docs/               # Documentation  
+└── tests/              # Test suites
+```
+
+---
+
+## **📌 Contributing**
+
+We welcome contributions! Please see our [contribution guidelines](CONTRIBUTING.md) and join our [community discussions](https://github.com/mcity/TeraSim/discussions).
+
+---
+
+## **📄 License & Attribution**
+
+- **TeraSim Core and other packages**: Apache 2.0 License
+- **Visualization Tools**: MIT License
+
+This project includes modified code from [SumoNetVis](https://github.com/patmalcolm91/SumoNetVis) licensed under the MIT License.
