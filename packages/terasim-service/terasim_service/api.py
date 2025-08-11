@@ -9,7 +9,6 @@ from typing import Annotated
 
 import redis
 from fastapi import Body, Depends, FastAPI, HTTPException
-from fastapi_mcp import FastApiMCP
 from loguru import logger
 from pydantic import Field
 
@@ -727,10 +726,6 @@ async def shutdown_event():
     for sim_id, info in list(running_simulations.items()):
         terminate_simulation_process(sim_id, info)
 
-
-# Add MCP support to the FastAPI application
-mcp = FastApiMCP(app)
-mcp.mount()
 
 def create_app():
     """Create and return the FastAPI application with MCP support."""

@@ -12,6 +12,13 @@ from terasim_nde_nade.envs import NADE, NADEWithAV
 from terasim_nde_nade.vehicle import NDEVehicleFactory
 from terasim_nde_nade.vru import NDEVulnerableRoadUserFactory
 
+import sys
+from pathlib import Path
+
+# Add packages directory to sys path if needed
+# sys.path.append(str(Path(__file__).resolve().parent.parent))
+
+
 
 def main(config_path: str) -> None:
     config = OmegaConf.load(config_path)
@@ -55,11 +62,11 @@ def main(config_path: str) -> None:
 
 
 if __name__ == "__main__":
-    # Get all yaml files in config_yamls directory
-    config_dir = Path(__file__).parent / "config_yamls" / "config_yaml_with_static"
+    # Get all yaml files in examples/scenarios directory
+    config_dir = Path(__file__).parent / "examples" / "scenarios"
     # yaml_files = sorted(config_dir.glob("*.yaml"), key=lambda x: int(''.join(filter(str.isdigit, x.stem)) or '0'))
-    # yaml_files = ["config_yamls/config_yaml_with_static/config_2_002.yaml"]
-    yaml_files = [Path("stalled_vehicle_disappear_front_vehicle.yaml")]
+    # yaml_files = ["examples/scenarios/cutin.yaml"]
+    yaml_files = [Path(__file__).parent / "examples" / "scenarios" / "cutin.yaml"]
     # Randomly shuffle yaml files
     random.shuffle(yaml_files)
 

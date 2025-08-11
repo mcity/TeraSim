@@ -168,3 +168,8 @@ packages.png
 /maps
 /demo_path
 /local_test
+packages/terasim-nde-nade/terasim_nde_nade/utils/collision/collision_check_cy.c
+packages/terasim-nde-nade/terasim_nde_nade/utils/geometry/geometry_utils_cy.c
+packages/terasim-nde-nade/terasim_nde_nade/utils/trajectory/trajectory_utils_cy.c
+examples/maps/texas_highway_maps
+/outputs

@@ -15,7 +15,7 @@ def get_av_state(base_url, simulation_id):
 
 
 
-def run_simulation(config_file="police_pullover_case.yaml", auto_run=False, initialize_timeout=3600, tick_timeout=3600, enable_viz=False, viz_port=8050, viz_update_freq=1):
+def run_simulation(config_file="examples/scenarios/police_pullover_case.yaml", auto_run=False, initialize_timeout=3600, tick_timeout=3600, enable_viz=False, viz_port=8050, viz_update_freq=1):
     """
     Run simulation and provide HTTP API interface calls
     
@@ -103,7 +103,7 @@ if __name__ == "__main__":
     
     # Example 2: Run simulation with visualization
     result = run_simulation(
-        config_file="police_pullover_case.yaml",
+        config_file="examples/scenarios/police_pullover_case.yaml",
         enable_viz=True,  # Enable visualization
         viz_port=8050,    # Visualization port
         viz_update_freq=2 # Update every 2 simulation steps (reduce load)

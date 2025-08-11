@@ -15,12 +15,13 @@ This is TeraSim-Deploy, a containerized deployment platform for TeraSim, an auto
 ### Environment Setup
 ```bash
 # Download and setup all repositories
-bash download_repo.sh
+bash scripts/download_repo.sh
 
-# Setup individual components with Poetry
-cd TeraSim && poetry install && cd ..
-cd TeraSim-Service && poetry install && cd ..
-cd TeraSim-NDE-NADE && poetry install && cd ..
+# Setup environment
+bash scripts/setup_environment.sh
+
+# Setup individual components with Poetry (from root)
+cd ../.. && poetry install
 
 # Prerequisites: Redis server must be running
 sudo systemctl start redis-server
@@ -28,8 +29,9 @@ sudo systemctl start redis-server
 
 ### Running the Application
 ```bash
+# From project root:
 # Start the main service (runs on port 8000)
-python terasim_service_main.py
+python run_service.py
 
 # Run experiments
 python run_experiments.py
@@ -83,12 +85,12 @@ cd TeraSim-Service && poetry run mypy terasim_service/
 - **TeraSim-Service**: FastAPI service providing HTTP endpoints for simulation control
 - **TeraSim-NDE-NADE**: Neural differential equations for advanced scenario generation
 
-### Key Directories
-- `config_yamls/` - Configuration files for different simulation scenarios
-- `examples/` - Example configuration files and coordinate conversion utilities
-- `austin_cases/` - Austin city traffic scenario data
-- `outputs/` - Simulation results and logs
-- `docker/` - Docker configuration files for deployment
+### Key Directories (from project root)
+- `/configs/` - Core system configuration files
+- `/examples/scenarios/` - Example simulation scenarios
+- `/examples/maps/` - Map files for different test environments
+- `apps/deploy/docker/` - Docker configuration files for deployment
+- `apps/deploy/scripts/` - Deployment and setup scripts
 
 ### API Architecture
 The service exposes REST endpoints for:

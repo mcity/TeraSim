@@ -43,8 +43,17 @@ poetry run mypy terasim/
 
 ### Running Simulations
 ```bash
+# Run main simulation experiments
+python run_experiments.py  # Uses examples/scenarios/police_pullover_case.yaml by default
+
+# Run debug mode with GUI
+python run_experiments_debug.py  # Uses examples/scenarios/cutin.yaml with GUI enabled
+
+# Start TeraSim service
+python run_service.py  # Starts FastAPI service on port 8000
+
 # Run example simulation
-cd examples/
+cd examples/scripts/
 python example.py
 
 # With GUI enabled (modify gui_flag=True in example.py)
@@ -84,8 +93,14 @@ python example.py
 
 ### Configuration System
 
+- **Core Configs**: System-level configurations in `configs/` directory
+  - `base.yaml`: Base configuration settings
+  - `environment.yaml`: Environment parameters
+  - `av_config.yaml`: Autonomous vehicle configuration
+  - `adversities/`: Adversarial behavior templates
+- **Scenario Examples**: Concrete scenarios in `examples/scenarios/`
 - **SUMO Integration**: Uses `.sumocfg`, `.net.xml`, and `.rou.xml` files for network and traffic definition
-- **Map Examples**: `examples/maps/` contains Mcity and 3LaneHighway scenarios
+- **Map Examples**: `examples/maps/` contains various test maps including Mcity, 3LaneHighway, and Town10
 - **Programmatic Config**: Python-based configuration through factory classes and environment setup
 
 ## Development Notes
@@ -103,6 +118,7 @@ python example.py
 
 ### Testing Strategy
 - Unit tests in `tests/` directory
+- Integration tests in `tests/integration/` directory
 - Physics simulation testing with dummy models
 - Integration tests through example scenarios
 - Coverage reporting with pytest-cov

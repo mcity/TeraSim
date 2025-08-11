@@ -10,6 +10,30 @@ environment:
       initial_speed: 30.0
       clearance_distance: 50
       type: vehicle_passenger
+      warmup_control:
+        enabled: true  # Enable AV warmup (false keeps original behavior)
+        
+        # Trigger condition (choose one)
+        trigger_type: "time"  # Options: "position", "time", "zone", "edge"
+        
+        # Position trigger configuration
+        # position_trigger:
+        #   target_position: 650.0  # Target position in meters (50m before construction zone at 700m)
+        #   tolerance: 5.0         # Tolerance range
+          
+        # # Time trigger configuration (alternative)
+        time_trigger:
+          duration: 10.0  # Warmup duration in seconds
+          
+        # # Zone trigger configuration (alternative)
+        # zone_trigger:
+        #   edge_id: "95975047"     # Target edge
+        #   min_position: 640.0      # Zone start position
+        #   max_position: 660.0      # Zone end position
+          
+        # Logging and visualization
+        log_progress: true         # Log warmup progress
+        visual_indicator: true     # Show status in GUI
     MOBIL_lc_flag: true
     adversity_cfg:
       static:
@@ -68,8 +92,8 @@ environment:
     run_time: 1200
     stochastic_acc_flag: false
     vehicle_factory: terasim_nde_nade.vehicle.nde_vehicle_factory.NDEVehicleFactory
-    warmup_time_lb: 749
-    warmup_time_ub: 750
+    warmup_time_lb: 630
+    warmup_time_ub: 640
 input:
   sumo_config_file: examples/texas_highway_maps/2/simulation.sumocfg
   sumo_net_file: examples/texas_highway_maps/2/map.net.xml
@@ -90,6 +114,7 @@ simulator:
     gui_flag: false  # Enable GUI to see the construction zone
     num_tries: 10
     realtime_flag: false
+    traffic_scale: 4
     sumo_output_file_types:
     - collision
     - tripinfo

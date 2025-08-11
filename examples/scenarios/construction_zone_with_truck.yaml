@@ -10,6 +10,32 @@ environment:
       initial_speed: 30.0
       clearance_distance: 50
       type: vehicle_passenger
+      
+      # AV warmup control configuration
+      warmup_control:
+        enabled: true  # Enable AV warmup (false keeps original behavior)
+        
+        # Trigger condition (choose one)
+        trigger_type: "position"  # Options: "position", "time", "zone", "edge"
+        
+        # Position trigger configuration
+        position_trigger:
+          target_position: 650.0  # Target position in meters (50m before construction zone at 700m)
+          tolerance: 5.0         # Tolerance range
+          
+        # # Time trigger configuration (alternative)
+        # time_trigger:
+        #   duration: 20.0  # Warmup duration in seconds
+          
+        # # Zone trigger configuration (alternative)
+        # zone_trigger:
+        #   edge_id: "95975047"     # Target edge
+        #   min_position: 640.0      # Zone start position
+        #   max_position: 660.0      # Zone end position
+          
+        # Logging and visualization
+        log_progress: true         # Log warmup progress
+        visual_indicator: true     # Show status in GUI
     MOBIL_lc_flag: true
     adversity_cfg:
       static:
