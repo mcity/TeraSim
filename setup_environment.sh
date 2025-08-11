@@ -165,6 +165,40 @@ print(f'TeraSim version: 0.2.0')
 "
 }
 
+setup_sumo_tools() {
+    log_info "Setting up SUMO tools..."
+    
+    # Create dependencies directory
+    DEPS_DIR="${HOME}/.terasim/deps"
+    mkdir -p "${DEPS_DIR}"
+    
+    # Set SUMO_HOME path
+    SUMO_HOME="${DEPS_DIR}/sumo"
+    
+    if [ ! -d "${SUMO_HOME}" ]; then
+        log_info "📦 Cloning SUMO repository for tools..."
+        if ! check_command git; then
+            log_error "Git not found. Please install git first"
+            exit 1
+        fi
+        
+        git clone --depth 1 https://github.com/eclipse/sumo.git "${SUMO_HOME}"
+        log_info "✅ SUMO tools downloaded successfully"
+    else
+        log_info "🔄 Updating SUMO tools..."
+        cd "${SUMO_HOME}"
+        git pull origin main || git pull origin master || log_warning "Failed to update SUMO tools (not critical)"
+        cd - > /dev/null
+        log_info "✅ SUMO tools updated"
+    fi
+    
+    # Save SUMO_HOME path for reference
+    echo "SUMO_HOME=${SUMO_HOME}" > "${DEPS_DIR}/.sumo_home"
+    
+    log_info "📍 SUMO_HOME: ${SUMO_HOME}"
+    log_info "📍 SUMO tools: ${SUMO_HOME}/tools"
+}
+
 create_output_directories() {
     log_info "Creating output directories..."
     mkdir -p outputs logs
@@ -178,6 +212,7 @@ main() {
     check_python
     check_uv
     check_redis
+    setup_sumo_tools
     setup_monorepo
     create_output_directories
     

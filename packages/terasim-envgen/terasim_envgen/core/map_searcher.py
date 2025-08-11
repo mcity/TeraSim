@@ -29,8 +29,7 @@ import geopandas as gpd
 from pyproj import Geod
 import polyline
 
-SUMO_HOME = os.getenv("SUMO_HOME")
-sys.path.append(os.path.join(SUMO_HOME, "tools"))
+# SUMO tools path is automatically configured by terasim_envgen.__init__.py
 
 class MapSearcher:
     def __init__(self, config_file=None):

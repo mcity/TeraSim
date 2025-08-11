@@ -18,7 +18,7 @@ def test_generate_scenario_from_latlon(temp_dir):
     result = generate_scenario_from_latlon(
         lat=42.277547872840174,   
         lon=-83.73466185958247, 
-        bbox_size=9000, 
+        bbox_size=200, 
         output_dir=str(temp_dir / "test_ann_arbor"),
         scenario_name="ann_arbor"
     )
@@ -27,4 +27,4 @@ def test_generate_scenario_from_latlon(temp_dir):
     assert result is not None
 
 if __name__ == "__main__":
-    test_generate_scenario_from_latlon(Path("test_output"))
+    test_generate_scenario_from_latlon(Path("outputs"))
