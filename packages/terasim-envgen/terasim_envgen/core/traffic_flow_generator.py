@@ -19,9 +19,10 @@ logger = logging.getLogger(__name__)
 
 
 class TrafficFlowGenerator:
-    def __init__(self, config_file="config/config.yaml", allow_fringe=True):
+    def __init__(self, config_file=None, allow_fringe=True):
         # Load environment variables
-        
+        if config_file is None:
+            config_file = Path(__file__).parent / "config.yaml"
         # Load configuration
         with open(config_file, "r") as f:
             self.config = yaml.safe_load(f)

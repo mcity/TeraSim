@@ -17,9 +17,11 @@ logger = logging.getLogger(__name__)
 
 
 class IntersectionQuery:
-    def __init__(self, config_file="config.yaml"):
+    def __init__(self, config_file=None):
         """Initialize the intersection query module."""
         # Load configuration
+        if config_file is None:
+            config_file = Path(__file__).parent / "config.yaml"
         with open(config_file, "r") as f:
             self.config = yaml.safe_load(f)
 
@@ -174,7 +176,7 @@ if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
 
     # Test the intersection query module
-    query = IntersectionQuery("config.yaml")
+    query = IntersectionQuery()
 
     # Test finding intersections
     intersections = query.find_junction(

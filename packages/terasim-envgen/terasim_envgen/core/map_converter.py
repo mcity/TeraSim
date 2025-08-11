@@ -8,7 +8,7 @@ import os
 import logging
 import shutil
 import gzip
-from crdesigner.map_conversion.map_conversion_interface import opendrive_to_lanelet
+# from crdesigner.map_conversion.map_conversion_interface import opendrive_to_lanelet
 from tqdm import tqdm
 import yaml
 import subprocess

@@ -3,7 +3,7 @@ import fiftyone as fo
 from fiftyone.core.labels import GeoLocation
 import os
 import glob
-from src.utils.find_osm_center import find_osm_center
+from terasim_envgen.utils.find_osm_center import find_osm_center
 # Load environment variables from .env file
 from dotenv import load_dotenv
 import uuid

@@ -261,7 +261,7 @@ The platform can search for and download maps in multiple ways:
 
 #### Option A: Search by City and Road Type
 ```python
-from src.core.map_searcher import MapSearcher
+from terasim_envgen.core.map_searcher import MapSearcher
 
 # Initialize searcher
 searcher = MapSearcher("test_config.yaml")
@@ -321,7 +321,7 @@ This will generate maps for multiple cities and road types:
 Convert downloaded OSM maps to simulation formats:
 
 ```python
-from src.core.map_converter import MapConverter
+from terasim_envgen.core.map_converter import MapConverter
 
 converter = MapConverter("config/config.yaml")
 
@@ -344,7 +344,7 @@ net_file, xodr_file, ll2_file = converter.convert(
 Generate realistic traffic patterns:
 
 ```python
-from src.core.traffic_flow_generator import TrafficFlowGenerator
+from terasim_envgen.core.traffic_flow_generator import TrafficFlowGenerator
 
 # Initialize traffic generator
 traffic_gen = TrafficFlowGenerator("config/config.yaml")

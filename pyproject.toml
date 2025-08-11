@@ -56,6 +56,35 @@ warn_unused_configs = true
 disallow_untyped_defs = true
 
 [tool.pytest.ini_options]
-testpaths = ["tests", "packages/*/tests"]
+testpaths = ["tests"]
 python_files = ["test_*.py"]
-addopts = "-v --cov-report=term-missing"
+addopts = "-v --cov=terasim --cov=terasim_envgen --cov=terasim_service --cov=terasim_nde_nade --cov-report=term-missing --cov-report=html --cov-config=pyproject.toml"
+markers = [
+    "integration: marks tests as integration tests (deselect with '-m \"not integration\"')",
+    "requires_sumo: marks tests as requiring SUMO installation",
+    "requires_gui: marks tests as requiring GUI (skipped in CI)",
+    "slow: marks tests as slow running"
+]
+
+[tool.coverage.run]
+source = ["packages/"]
+omit = [
+    "*/tests/*",
+    "*/test_*",
+    "*/__pycache__/*",
+    "*/migrations/*",
+    "*/venv/*",
+    "*/.venv/*"
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "if self.debug:",
+    "if settings.DEBUG",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if 0:",
+    "if __name__ == .__main__.:"
+]

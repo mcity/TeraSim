@@ -5,7 +5,7 @@ Maps core modules to MCP tools
 
 TOOL_MAPPINGS = {
     "map_searcher": {
-        "module": "src.core.map_searcher",
+        "module": "terasim_envgen.core.map_searcher",
         "class": "MapSearcher",
         "methods": {
             "search_roads": {
@@ -42,7 +42,7 @@ TOOL_MAPPINGS = {
     },
     
     "map_converter": {
-        "module": "src.core.map_converter",
+        "module": "terasim_envgen.core.map_converter",
         "class": "MapConverter",
         "methods": {
             "convert": {
@@ -58,7 +58,7 @@ TOOL_MAPPINGS = {
     },
     
     "traffic_generator": {
-        "module": "src.core.traffic_flow_generator",
+        "module": "terasim_envgen.core.traffic_flow_generator",
         "class": "TrafficFlowGenerator",
         "methods": {
             "generate_flows": {
@@ -82,7 +82,7 @@ TOOL_MAPPINGS = {
     },
     
     "corner_case_generator": {
-        "module": "src.core.terasim_corner_case_generator",
+        "module": "terasim_envgen.core.terasim_corner_case_generator",
         "class": "TerSimCornerCaseGenerator",
         "methods": {
             "parse_adversities": {
@@ -96,7 +96,7 @@ TOOL_MAPPINGS = {
     },
     
     "llm_parser": {
-        "module": "src.core.llm_parser",
+        "module": "terasim_envgen.core.llm_parser",
         "class": "LLMParser",
         "methods": {
             "parse_scenario_description": {

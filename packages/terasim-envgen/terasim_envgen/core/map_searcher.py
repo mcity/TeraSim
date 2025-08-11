@@ -16,9 +16,9 @@ import matplotlib.pyplot as plt
 import os
 import sys
 # Import specialized modules
-from src.utils.query_road import find_roads_by_tag, query_road_info
-from src.utils.query_intersection import IntersectionQuery
-from src.utils.metadata import save_metadata, load_metadata, update_metadata
+from terasim_envgen.utils.query_road import find_roads_by_tag, query_road_info
+from terasim_envgen.utils.query_intersection import IntersectionQuery
+from terasim_envgen.utils.metadata import save_metadata, load_metadata, update_metadata
 import requests
 import math
 logger = logging.getLogger(__name__)
@@ -33,9 +33,11 @@ SUMO_HOME = os.getenv("SUMO_HOME")
 sys.path.append(os.path.join(SUMO_HOME, "tools"))
 
 class MapSearcher:
-    def __init__(self, config_file="config.yaml"):
+    def __init__(self, config_file=None):
         """Initialize the map searcher coordinator."""
         # Load configuration
+        if config_file is None:
+            config_file = Path(__file__).parent / "config.yaml"
         with open(config_file, "r") as f:
             self.config = yaml.safe_load(f)
 
@@ -819,7 +821,7 @@ if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
 
     # Test the coordinator
-    searcher = MapSearcher("config.yaml")
+    searcher = MapSearcher()
 
     # Test intersection search
     intersections = searcher.find_junction(

@@ -15,14 +15,15 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 
-from src.core.map_searcher import MapSearcher
-from src.core.traffic_flow_generator import TrafficFlowGenerator
+from terasim_envgen.core.map_searcher import MapSearcher
+from terasim_envgen.core.traffic_flow_generator import TrafficFlowGenerator
 
 # Try to import MapConverter, but make it optional
 try:
-    from src.core.map_converter import MapConverter
+    from terasim_envgen.core.map_converter import MapConverter
     MAP_CONVERTER_AVAILABLE = True
-except ImportError:
+except ImportError as e:
+    print(e)
     MAP_CONVERTER_AVAILABLE = False
     logger.warning("MapConverter not available - map conversion features will be limited")
 
@@ -33,7 +34,7 @@ class IntegratedScenarioGenerator:
     Combines map downloading, format conversion, and traffic flow generation.
     """
     
-    def __init__(self, config_path: str = "config.yaml"):
+    def __init__(self, config_path: str = None):
         """
         Initialize the integrated generator with all necessary components.
         
@@ -297,7 +298,7 @@ def generate_scenario_from_latlon(
     bbox_size: int = 500,
     output_dir: str = "generated_scenarios",
     scenario_name: Optional[str] = None,
-    config_path: str = "config.yaml",
+    config_path: str = None,
     traffic_densities: List[str] = ["low", "medium", "high"],
     convert_formats: List[str] = ["sumo", "opendrive"]
 ) -> Dict:
