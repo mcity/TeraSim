@@ -31,16 +31,44 @@ class NADEWithAV(NADE):
         self.control_radius = 50 if "control_radius" not in av_cfg else av_cfg.control_radius
         self.excluded_agent_set = set([AV_ID])
         self.insert_bv = False
+        # AV control state management
+        self.av_control_mode = "pending"  # "pending", "sumo", "external"
+        self.av_warmup_enabled = False
+        self.av_warmup_config = None
+        self.av_warmup_start_time = None
+        self.av_warmup_completed = False
+        
+        # Parse warmup configuration
+        if hasattr(av_cfg, 'warmup_control'):
+            warmup_control = av_cfg.warmup_control
+            if isinstance(warmup_control, dict) and warmup_control.get('enabled', False):
+                self.av_warmup_enabled = True
+                self.av_warmup_config = warmup_control
+                logger.info(f"AV warmup enabled with trigger type: {self.av_warmup_config.get('trigger_type')}")
+            elif hasattr(warmup_control, 'enabled') and warmup_control.enabled:
+                self.av_warmup_enabled = True
+                self.av_warmup_config = warmup_control
+                logger.info(f"AV warmup enabled with trigger type: {self.av_warmup_config.get('trigger_type')}")
 
     def on_start(self, ctx):
-        """Initialize the surrogate model and add AV to env.
+        """Initialize the surrogate model and add AV to env with optional warmup.
         
         Args:
             ctx (dict): Context dictionary.
         """
-        # initialize the surrogate model and add AV to env
+        # Step 1: Execute parent class initialization (includes first sumo_warmup)
         super().on_start(ctx)
+        
+        # Step 2: Add AV to simulation
         self.add_av_safe()
+        
+        # Step 3: If AV warmup is enabled, execute AV warmup phase
+        if self.av_warmup_enabled:
+            logger.info("Starting AV warmup phase...")
+            self.execute_av_warmup()
+            logger.info("AV warmup completed, external control activated")
+        
+        return True
 
     def add_av_unsafe(self, edge_id="EG_35_1_14", lane_id=None, position=0.0, speed=0.0):
         """Add a AV to the simulation.
@@ -80,9 +108,9 @@ class NADEWithAV(NADE):
         traci.vehicle.setSpeedMode(AV_ID, 0)
         traci.vehicle.setLaneChangeMode(AV_ID, 0)
         traci.vehicle.setSpeed(AV_ID, speed)
-
-        # traci.vehicle.setLaneChangeMode(AV_ID, 0)
-        # traci.vehicle.setSpeedMode(AV_ID, 62)
+        
+        # Set control mode to external
+        self.av_control_mode = "external"
 
     def add_av_safe(self):
         """Add a AV to the simulation safely.
@@ -168,8 +196,16 @@ class NADEWithAV(NADE):
                     speed = float(self.av_cfg.initial_speed)
                 else:
                     speed = 0.0
-                self.add_av_unsafe(edge_id, lane_id, position, speed)
-                logger.info(f"AV added safely at lane {lane_id}, position {position}")
+                    
+                # Choose add method based on warmup configuration
+                if self.av_warmup_enabled:
+                    # Use SUMO-controlled add method
+                    self.add_av_with_sumo_control(edge_id, lane_id, position, speed)
+                else:
+                    # Use original external control method
+                    self.add_av_unsafe(edge_id, lane_id, position, speed)
+                    
+                logger.info(f"AV added safely at lane {lane_id}, position {position}, mode: {self.av_control_mode}")
                 if self.simulator.gui_flag:
                     traci.gui.trackVehicle("View #0", AV_ID)
                     # traci.gui.setZoom("View #0", 10000)
@@ -232,9 +268,15 @@ class NADEWithAV(NADE):
             speed = float(self.av_cfg.initial_speed)
         else:
             speed = 0.0
-        self.add_av_unsafe(edge_id, lane_id, position, speed)
+            
+        # Choose add method based on warmup configuration
+        if self.av_warmup_enabled:
+            self.add_av_with_sumo_control(edge_id, lane_id, position, speed)
+        else:
+            self.add_av_unsafe(edge_id, lane_id, position, speed)
+            
         logger.warning(
-            f"AV added using fallback method at lane {lane_id}, position {position}"
+            f"AV added using fallback method at lane {lane_id}, position {position}, mode: {self.av_control_mode}"
         )
         if self.simulator.gui_flag:
             traci.gui.trackVehicle("View #0", AV_ID)
@@ -254,6 +296,194 @@ class NADEWithAV(NADE):
             if abs(veh_pos - position) < clear_distance:
                 traci.vehicle.remove(veh)
         logger.info(f"Cleared area around position {position} on lane {lane_id}")
+    
+    def add_av_with_sumo_control(self, edge_id, lane_id, position, speed):
+        """Add AV while maintaining SUMO control for warmup phase.
+        
+        Args:
+            edge_id (str): Edge ID where the AV is added.
+            lane_id (str): Lane ID where the AV is added.
+            position (float): Position of the AV.
+            speed (float): Speed of the AV.
+        """
+        av_type = self.av_cfg.type if hasattr(self.av_cfg, "type") else "DEFAULT_VEHTYPE"
+        
+        # Add vehicle
+        self.add_vehicle(
+            veh_id=AV_ID,
+            route_id=AV_ROUTE_ID,
+            lane="best",
+            lane_id=lane_id,
+            position=position,
+            speed=speed,
+            type_id=av_type,
+        )
+        
+        # Set yellow color to indicate SUMO control
+        traci.vehicle.setColor(AV_ID, (255, 255, 0, 255))
+        
+        # Subscribe to context information
+        traci.vehicle.subscribeContext(
+            AV_ID,
+            traci.constants.CMD_GET_VEHICLE_VARIABLE,
+            self.cache_radius,
+            [traci.constants.VAR_DISTANCE],
+        )
+        
+        # Key: DO NOT set SpeedMode and LaneChangeMode to 0
+        # Let SUMO continue to control AV normally
+        
+        # Update control mode
+        self.av_control_mode = "sumo"
+        logger.info(f"AV added with SUMO control at {lane_id}, position {position}")
+    
+    def execute_av_warmup(self):
+        """Execute AV warmup phase with monitoring."""
+        self.av_warmup_start_time = traci.simulation.getTime()
+        warmup_step_count = 0
+        
+        # Get trigger condition
+        if isinstance(self.av_warmup_config, dict):
+            trigger_type = self.av_warmup_config.get('trigger_type', 'position')
+            log_progress = self.av_warmup_config.get('log_progress', False)
+        else:
+            trigger_type = getattr(self.av_warmup_config, 'trigger_type', 'position')
+            log_progress = getattr(self.av_warmup_config, 'log_progress', False)
+        
+        logger.info(f"AV warmup started at simulation time {self.av_warmup_start_time}")
+        
+        while not self.check_warmup_trigger(trigger_type):
+            traci.simulationStep()
+            warmup_step_count += 1
+            
+            # Log progress periodically
+            if log_progress and warmup_step_count % 50 == 0:
+                self.log_warmup_progress(trigger_type)
+                
+        # Warmup complete, switch to external control
+        self.switch_av_to_external_control()
+        
+        warmup_duration = traci.simulation.getTime() - self.av_warmup_start_time
+        logger.info(f"AV warmup completed after {warmup_duration:.1f} seconds, {warmup_step_count} steps")
+    
+    def check_warmup_trigger(self, trigger_type):
+        """Check if warmup end condition is met.
+        
+        Args:
+            trigger_type (str): Type of trigger condition.
+            
+        Returns:
+            bool: True if trigger condition is met.
+        """
+        if not AV_ID in traci.vehicle.getIDList():
+            logger.warning("AV not in simulation during warmup")
+            return True
+            
+        if trigger_type == "position":
+            if isinstance(self.av_warmup_config, dict):
+                config = self.av_warmup_config.get('position_trigger', {})
+                target_pos = config.get('target_position', 500.0)
+                tolerance = config.get('tolerance', 5.0)
+            else:
+                config = getattr(self.av_warmup_config, 'position_trigger', {})
+                target_pos = getattr(config, 'target_position', 500.0) if hasattr(config, 'target_position') else config.get('target_position', 500.0)
+                tolerance = getattr(config, 'tolerance', 5.0) if hasattr(config, 'tolerance') else config.get('tolerance', 5.0)
+            
+            current_pos = traci.vehicle.getLanePosition(AV_ID)
+            return current_pos >= (target_pos - tolerance)
+            
+        elif trigger_type == "time":
+            if isinstance(self.av_warmup_config, dict):
+                config = self.av_warmup_config.get('time_trigger', {})
+                duration = config.get('duration', 20.0)
+            else:
+                config = getattr(self.av_warmup_config, 'time_trigger', {})
+                duration = getattr(config, 'duration', 20.0) if hasattr(config, 'duration') else config.get('duration', 20.0)
+            
+            elapsed = traci.simulation.getTime() - self.av_warmup_start_time
+            return elapsed >= duration
+            
+        elif trigger_type == "zone":
+            config = self.av_warmup_config.get('zone_trigger', {})
+            target_edge = config.get('edge_id', '')
+            min_pos = config.get('min_position', 0)
+            max_pos = config.get('max_position', 1000)
+            
+            current_edge = traci.vehicle.getRoadID(AV_ID)
+            current_pos = traci.vehicle.getLanePosition(AV_ID)
+            
+            return (target_edge in current_edge and 
+                    min_pos <= current_pos <= max_pos)
+            
+        elif trigger_type == "edge":
+            config = self.av_warmup_config.get('edge_trigger', {})
+            target_edge = config.get('edge_id', '')
+            
+            current_edge = traci.vehicle.getRoadID(AV_ID)
+            return target_edge in current_edge
+            
+        else:
+            logger.warning(f"Unknown trigger type: {trigger_type}")
+            return True
+    
+    def log_warmup_progress(self, trigger_type):
+        """Log warmup progress information.
+        
+        Args:
+            trigger_type (str): Type of trigger condition.
+        """
+        current_pos = traci.vehicle.getLanePosition(AV_ID)
+        current_speed = traci.vehicle.getSpeed(AV_ID)
+        current_edge = traci.vehicle.getRoadID(AV_ID)
+        
+        if trigger_type == "position":
+            if isinstance(self.av_warmup_config, dict):
+                target = self.av_warmup_config.get('position_trigger', {}).get('target_position', 0)
+            else:
+                config = getattr(self.av_warmup_config, 'position_trigger', {})
+                target = getattr(config, 'target_position', 0) if hasattr(config, 'target_position') else 0
+            progress = (current_pos / target) * 100 if target > 0 else 0
+            logger.info(f"AV warmup progress: {progress:.1f}% (pos: {current_pos:.1f}/{target}m)")
+            
+        elif trigger_type == "time":
+            elapsed = traci.simulation.getTime() - self.av_warmup_start_time
+            if isinstance(self.av_warmup_config, dict):
+                target = self.av_warmup_config.get('time_trigger', {}).get('duration', 0)
+            else:
+                config = getattr(self.av_warmup_config, 'time_trigger', {})
+                target = getattr(config, 'duration', 0) if hasattr(config, 'duration') else 0
+            progress = (elapsed / target) * 100 if target > 0 else 0
+            logger.info(f"AV warmup progress: {progress:.1f}% (time: {elapsed:.1f}/{target}s)")
+            
+        logger.debug(f"AV state - Edge: {current_edge}, Pos: {current_pos:.1f}m, Speed: {current_speed:.1f}m/s")
+    
+    def switch_av_to_external_control(self):
+        """Switch AV from SUMO control to external control."""
+        if self.av_control_mode == "external":
+            logger.warning("AV already in external control mode")
+            return
+            
+        # Get current state for logging
+        current_pos = traci.vehicle.getLanePosition(AV_ID)
+        current_speed = traci.vehicle.getSpeed(AV_ID)
+        current_edge = traci.vehicle.getRoadID(AV_ID)
+        
+        # Disable SUMO automatic control
+        traci.vehicle.setSpeedMode(AV_ID, 0)
+        traci.vehicle.setLaneChangeMode(AV_ID, 0)
+        
+        # Maintain current speed to avoid sudden changes
+        traci.vehicle.setSpeed(AV_ID, current_speed)
+        
+        # Update color to green for external control
+        traci.vehicle.setColor(AV_ID, (0, 255, 0, 255))
+        
+        # Update control mode
+        self.av_control_mode = "external"
+        self.av_warmup_completed = True
+        
+        logger.info(f"AV control switched to EXTERNAL at edge {current_edge}, "
+                   f"position {current_pos:.1f}m, speed {current_speed:.1f}m/s")
 
     def preparation(self):
         """Prepare for the NADE step."""

@@ -192,13 +192,14 @@ class NDE(EnvTemplateComplete):
                 traci.simulationStep()
                 if traci.simulation.getTime() > warmup_time:
                     break
-            if traci.vehicle.getIDCount() > 2500:
-                logger.warning(
-                    f"Too many vehicles in the simulation: {traci.vehicle.getIDCount()}, Restarting..."
-                )
-                traci.load(self.simulator.sumo_cmd[1:])
-            else:
-                break
+            break
+            # if traci.vehicle.getIDCount() > 2500:
+            #     logger.warning(
+            #         f"Too many vehicles in the simulation: {traci.vehicle.getIDCount()}, Restarting..."
+            #     )
+            #     traci.load(self.simulator.sumo_cmd[1:])
+            # else:
+            #     break
         self.record.warmup_vehicle_num = traci.vehicle.getIDCount()
         self._vehicle_in_env_distance("before")
 
@@ -256,7 +257,7 @@ class NDE(EnvTemplateComplete):
         Returns:
             bool: Flag to indicate if the simulation should continue.
         """
-        # return True
+        return True
         num_colliding_vehicles = self.simulator.get_colliding_vehicle_number()
         self._vehicle_in_env_distance("after")
         if num_colliding_vehicles >= 2: # collision happens between two vehicles.

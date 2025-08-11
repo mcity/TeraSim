@@ -128,7 +128,7 @@ class StalledObjectAdversity(AbstractStaticAdversity):
                 vehicle_id,
                 routeID=stalled_object_route_id,
                 typeID=self._object_type,
-                # vclass="DEFAULT_VEHTYPE"
+                vclass=self._vclass
             )
             self.set_vehicle_feature(vehicle_id)
             traci.vehicle.moveTo(vehicle_id, self._lane_id, self._lane_position)

@@ -112,6 +112,7 @@ def create_simulator(config, base_dir):
         ],
         seed=config["simulator"]["parameters"].get("sumo_seed", None),
         additional_sumo_args=["--start", "--quit-on-end"],
+        traffic_scale=config["simulator"]["parameters"].get("traffic_scale", 1),
     )
 
 def set_random_seed(seed):

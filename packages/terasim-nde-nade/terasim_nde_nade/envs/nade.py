@@ -68,24 +68,6 @@ class NADE(BaseEnv):
         on_start_result = super().on_start(ctx)
         return on_start_result
     
-    def sumo_warmup(self, warmup_time):
-        while True:
-            while True:
-                traci.simulationStep()
-                if self.static_adversity is not None:
-                    self.static_adversity.update(time=utils.get_time())
-                if traci.simulation.getTime() > warmup_time:
-                    break
-            if traci.vehicle.getIDCount() > 2500:
-                logger.warning(
-                    f"Too many vehicles in the simulation: {traci.vehicle.getIDCount()}, Restarting..."
-                )
-                traci.load(self.simulator.sumo_cmd[1:])
-            else:
-                break
-        self.record.warmup_vehicle_num = traci.vehicle.getIDCount()
-        self._vehicle_in_env_distance("before")
-    
     def preparation(self):
         """Prepare for the NADE step."""
         if self.static_adversity is not None:
@@ -599,8 +581,6 @@ class NADE(BaseEnv):
         
         if hasattr(self.configuration, "adversity_sampling_probability") and float(self.configuration.adversity_sampling_probability) > 0:
             return float(self.configuration.adversity_sampling_probability)
-        
-        return 0.1
         
         IS_magnitude = IS_MAGNITUDE_DEFAULT
         try:
