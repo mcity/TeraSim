@@ -10,7 +10,6 @@ license = "Apache-2.0"
 requires-python = ">=3.10,<3.13"
 dependencies = [
     "terasim>=0.2.0",
-    # 添加Data Zoo特定依赖
 ]
 
 [tool.setuptools.packages.find]

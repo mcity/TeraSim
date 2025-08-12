@@ -271,8 +271,8 @@ class TLSGenerator:
                 - weight: The weights associated with the imputed states.
         """
 
-        # heuristics: (raw+est双重认证的)>>(仅est认证的(无论raw如何))>>(仅raw认证的)>>(什么都没有的)
-        # 数量级： 100>>1>>0.1>>0
+        # heuristics: (raw+est double confirmed) >> (est confirmed only (regardless of raw)) >> (raw confirmed only) >> (none confirmed)
+        # magnitude: 100 >> 1 >> 0.1 >> 0
         imp_state: list[dict[tuple, TLS]] = copy.deepcopy(self.container_template)
         weight: list[dict[tuple, float]] = copy.deepcopy(self.container_template)
 
@@ -352,7 +352,7 @@ class TLSGenerator:
                     )
                     for i in green_group
                 ):
-                    # L green S red，前提：直行左转不在一起
+                    # Left turn green, straight red (precondition: straight and left turn are not combined)
                     candidate_state = copy.deepcopy(self.container_template)
                     for j in range(4):
                         for phase in candidate_state[j].keys():
@@ -365,7 +365,7 @@ class TLSGenerator:
                                 candidate_state[j][phase] = TLS.RED
                     candidate_states.append(candidate_state)
 
-                    # L red S green，前提：直行左转不在一起
+                    # Left turn red, straight green (precondition: straight and left turn are not combined)
                     candidate_state = copy.deepcopy(self.container_template)
                     for j in range(4):
                         for phase in candidate_state[j].keys():
@@ -387,7 +387,7 @@ class TLSGenerator:
                         candidate_state[j][phase] = TLS.GREEN if j == i else TLS.RED
                 candidate_states.append(candidate_state)
 
-            # opposite（前提是直走不和左转一起）
+            # opposite (precondition: straight and left turn are not combined)
             if not any(
                 any(
                     Direction.S in phase and Direction.L in phase
@@ -395,7 +395,7 @@ class TLSGenerator:
                 )
                 for i in [0, 1]
             ):
-                # case 1: 双向直走绿灯
+                # case 1: both straight directions are green
                 candidate_state = copy.deepcopy(self.container_template)
                 for phase in candidate_state[2].keys():
                     candidate_state[2][phase] = TLS.RED
@@ -407,7 +407,7 @@ class TLSGenerator:
                             candidate_state[j][phase] = TLS.GREEN
                 candidate_states.append(candidate_state)
 
-                # case 2：双向左转绿灯（正常情况下理应只有其中一边有左转）
+                # case 2: both left turns are green
                 candidate_state = copy.deepcopy(self.container_template)
                 for phase in candidate_state[2].keys():
                     candidate_state[2][phase] = TLS.RED
@@ -419,7 +419,7 @@ class TLSGenerator:
                             candidate_state[j][phase] = TLS.RED
                 candidate_states.append(candidate_state)
 
-            # opposite 干道全绿灯
+            # opposite: all green
             candidate_state = copy.deepcopy(self.container_template)
             for j in range(3):
                 for phase in candidate_state[2].keys():

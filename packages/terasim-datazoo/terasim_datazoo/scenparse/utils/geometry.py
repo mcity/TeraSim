@@ -89,26 +89,26 @@ def two_lines_parallel(line1, line2, LINE_PARALLEL_THRESHOLD: float = 15) -> boo
 
     'LINE_PARALLEL_THRESHOLD' unit is degree
     """
-    # 将线段转换为向量
+    # Convert line segments to vectors
     vec1 = (line1[1][0] - line1[0][0], line1[1][1] - line1[0][1])
     vec2 = (line2[1][0] - line2[0][0], line2[1][1] - line2[0][1])
 
-    # 计算点积
+    # calculate dot product
     dot_product = vec1[0] * vec2[0] + vec1[1] * vec2[1]
-    # 计算向量的模
+    # calculate magnitude of vectors
     mag_vec1 = math.sqrt(vec1[0] ** 2 + vec1[1] ** 2)
     mag_vec2 = math.sqrt(vec2[0] ** 2 + vec2[1] ** 2)
 
-    # 计算夹角的余弦值
+    # calculate cosine of angle
     cos_angle = dot_product / (mag_vec1 * mag_vec2)
 
-    # 防止由于浮点数误差导致的超出定义域的情况
+    # prevent floating point error from exceeding domain
     cos_angle = max(min(cos_angle, 1), -1)
 
-    # 计算夹角（以度为单位）
+    # calculate angle (in degrees)
     angle = math.acos(cos_angle) * (180 / math.pi)
 
-    # 判断夹角接近0度
+    # check if angle is close to 0
     return angle < LINE_PARALLEL_THRESHOLD
 
 
@@ -232,19 +232,19 @@ def interpolate(coords: list[tuple], length: float, step: float = 0.5) -> list[t
 
 def calculate_turning_angle(points):
     """in radians"""
-    # 计算每对相邻点之间的向量
+    # calculate vector between adjacent points
     vectors = np.diff(points, axis=0)
 
-    # 计算每个向量的方向角（弧度制）
+    # calculate direction angle of each vector (in radians)
     angles = np.arctan2(vectors[:, 1], vectors[:, 0])
 
-    # 计算相邻方向角的差值
+    # calculate difference between adjacent direction angles
     angle_diffs = np.diff(angles)
 
-    # 将角度差值限制在[-pi, pi]之间
+    # limit angle difference to [-pi, pi]
     angle_diffs = (angle_diffs + np.pi) % (2 * np.pi) - np.pi
 
-    # 计算总转向角
+    # calculate total turning angle
     total_turning_angle = np.sum(angle_diffs)
 
     return total_turning_angle
@@ -262,9 +262,9 @@ def classify_direction(shape) -> Direction:
 
 
 def compute_direction_vector(x, y):
-    # 使用起点和终点计算方向向量
+    # calculate direction vector using start and end points
     direction_vector = np.array([x[-1] - x[0], y[-1] - y[0]])
-    return normalized_vector(direction_vector)  # 归一化
+    return normalized_vector(direction_vector)  # normalize
 
 
 def normalized_vector(vec):
@@ -279,7 +279,7 @@ def points_to_vector(pt_start: Pt, pt_end: Pt) -> np.ndarray:
 
 
 def vector_heading(vec, unit: str = "radian") -> float:
-    """单个向量在直角坐标系下的朝向角 [-pi, pi]
+    """Heading angle of a single vector in Cartesian coordinate system [-pi, pi]
 
     unit = 'degree' | 'radian'"""
 
@@ -300,7 +300,7 @@ def heading_2_unit_vector(angle, unit: str = "radian") -> np.ndarray:
 
 def angle_of_two_vectors(vec1, vec2, unit: str = "radian") -> float:
     """unit = 'degree' | 'radian'
-    都是在直角坐标系下的结果； 夹角
+    angle between two vectors in Cartesian coordinate system [-pi, pi]
     """
     # vec1, vec2 = (x,y, [z])
     if np.linalg.norm(vec1) == 0 or np.linalg.norm(vec2) == 0:
@@ -318,16 +318,16 @@ def angle_of_two_vectors(vec1, vec2, unit: str = "radian") -> float:
 
 
 def angle_of_twoheadings(angle1, angle2, unit: str = "radian"):
-    """朝向角差值, unit ='degree' | 'radian'"""
+    """angle difference between two headings, unit ='degree' | 'radian'"""
 
     if unit == "degree":
         angle1, angle2 = np.deg2rad(angle1), np.deg2rad(angle2)
 
     diff = np.abs(angle1 - angle2)
-    # 先把差值调整到 < 2 pi
+    # adjust difference to < 2 pi
     while diff > 2 * np.pi:
         diff -= np.pi * 2
-    # >180的话就反过来
+    # if diff > 180, reverse it
     if diff > np.pi:
         diff = 2 * np.pi - diff
 
@@ -337,7 +337,7 @@ def angle_of_twoheadings(angle1, angle2, unit: str = "radian"):
         return np.rad2deg(diff)  # [0, 180]
 
 def group_vectors_by_angles(lane_vectors: list[np.ndarray], ANGLE_CRITERIA: float = np.pi/6) -> list[list[int]]:
-    uf = UnionFind(len(lane_vectors))  # uf[i]对应node.incoming_SUMO_edges[i]
+    uf = UnionFind(len(lane_vectors))  # uf[i] corresponds to node.incoming_SUMO_edges[i]
     for i in range(len(lane_vectors)):
         for j in range(len(lane_vectors)):
             if angle_of_two_vectors(lane_vectors[i], lane_vectors[j]) < ANGLE_CRITERIA:

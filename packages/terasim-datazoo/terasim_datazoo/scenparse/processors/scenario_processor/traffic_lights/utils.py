@@ -52,9 +52,9 @@ def group_lanes_into_ways(approaching_lanes: list[ApproachingLane]) -> list[list
         angle01 = angle_of_two_vectors(_form_lane_vector(ways[1][0]), _form_lane_vector(ways[0][0]))
         angle02 = angle_of_two_vectors(_form_lane_vector(ways[2][0]), _form_lane_vector(ways[0][0]))
         angle12 = angle_of_two_vectors(_form_lane_vector(ways[2][0]), _form_lane_vector(ways[1][0]))
-        if angle02 > angle01 and angle02 > angle12:  # 0 2方向相对
+        if angle02 > angle01 and angle02 > angle12:  # 0 2 opposite directions
             ways = [ways[0], ways[2], ways[1]]
-        elif angle12 > angle01 and angle12 > angle02:  # 1 2方向相对
+        elif angle12 > angle01 and angle12 > angle02:  # 1 2 opposite directions
             ways = [ways[1], ways[2], ways[0]]
     # if it is a 4-way intersection, we ensure that way0&way2 are opposites, way1&way3 are opposites
     elif len(ways) == 4:

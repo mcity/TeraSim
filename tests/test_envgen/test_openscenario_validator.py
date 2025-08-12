@@ -57,30 +57,30 @@ def validate_openscenario_file(file_path, timeout=30):
     try:
         start_time = time.time()
 
-        # 获取场景目录路径
+        # Get scenario directory path
         scenario_dir = os.path.dirname(file_path)
 
-        # 检查OpenDRIVE文件是否存在
+        # Check if OpenDRIVE file exists
         xodr_file = os.path.join(scenario_dir, "map.xodr")
         if not os.path.exists(xodr_file):
             logger.error(f"OpenDRIVE file not found: {xodr_file}")
             return False, "Missing OpenDRIVE file (map.xodr)"
 
-        # 修改命令，添加更多参数以获取详细输出
+        # Modify command to add more parameters for detailed output
         cmd = [
             ESMINI_PATH,
             "--osc",
-            file_path,  # 使用--osc而不是直接传递文件路径
+            file_path,  # Use --osc instead of directly passing file path
             "--odr",
-            xodr_file,  # 指定OpenDRIVE文件路径
-            "--validate",  # 验证模式
-            "--headless",  # 无界面模式
-            "--disable-controllers",  # 禁用控制器以加快验证
-            "--disable-signals",  # 禁用交通信号灯验证
+            xodr_file,  # Specify OpenDRIVE file path
+            "--validate",  # Validation mode
+            "--headless",  # Headless mode
+            "--disable-controllers",  # Disable controllers to speed up validation
+            "--disable-signals",  # Disable traffic signals validation
             "--tolerance",
-            "0.1",  # 设置位置验证容差为0.1米
+            "0.1",  # Set position validation tolerance to 0.1 meters
             "--logfile",
-            os.path.join(scenario_dir, "validation.log"),  # 输出日志到场景目录
+            os.path.join(scenario_dir, "validation.log"),  # Output log to scenario directory
         ]
 
         logger.info(f"Validating file: {file_path}")
@@ -93,7 +93,7 @@ def validate_openscenario_file(file_path, timeout=30):
         )
         logger.info(f"Current working directory: {os.getcwd()}")
 
-        # 切换到场景目录运行命令
+        # Switch to scenario directory and run command
         original_dir = os.getcwd()
         os.chdir(scenario_dir)
 
@@ -102,7 +102,7 @@ def validate_openscenario_file(file_path, timeout=30):
                 cmd, capture_output=True, text=True, timeout=timeout
             )
         finally:
-            # 恢复原始工作目录
+            # Restore original working directory
             os.chdir(original_dir)
 
         validation_time = time.time() - start_time
@@ -150,38 +150,38 @@ def visualize_openscenario_file(file_path, timeout=30):
     Returns: (bool, str) - (success, message)
     """
     try:
-        # 获取场景目录路径
+        # Get scenario directory path
         scenario_dir = os.path.dirname(file_path)
 
-        # 检查OpenDRIVE文件是否存在
+        # Check if OpenDRIVE file exists
         xodr_file = os.path.join(scenario_dir, "map.xodr")
         if not os.path.exists(xodr_file):
             logger.error(f"OpenDRIVE file not found: {xodr_file}")
             return False, "Missing OpenDRIVE file (map.xodr)"
 
-        # 修改命令，添加可视化相关参数
+        # Modify command to add visualization related parameters
         cmd = [
             ESMINI_PATH,
             "--osc",
-            file_path,  # 使用--osc而不是直接传递文件路径
+            file_path,  # Use --osc instead of directly passing file path
             "--odr",
-            xodr_file,  # 指定OpenDRIVE文件路径
+            xodr_file,  # Specify OpenDRIVE file path
             "--window",
             "60",
             "60",
             "800",
-            "600",  # 设置窗口位置和大小
-            "--disable-controllers",  # 禁用控制器以加快加载
-            "--disable-signals",  # 禁用交通信号灯验证
+            "600",  # Set window position and size
+            "--disable-controllers",  # Disable controllers to speed up loading
+            "--disable-signals",  # Disable traffic signals validation
             "--tolerance",
-            "0.1",  # 设置位置验证容差为0.1米
+            "0.1",  # Set position validation tolerance to 0.1 meters
         ]
 
         logger.info(f"Visualizing file: {file_path}")
         logger.info(f"Using OpenDRIVE file: {xodr_file}")
         logger.info(f"Running command: {' '.join(cmd)}")
 
-        # 切换到场景目录运行命令
+        # Switch to scenario directory and run command
         original_dir = os.getcwd()
         os.chdir(scenario_dir)
 
@@ -195,7 +195,7 @@ def visualize_openscenario_file(file_path, timeout=30):
                     f"Visualization failed with return code {process.returncode}",
                 )
         finally:
-            # 恢复原始工作目录
+            # Restore original working directory
             os.chdir(original_dir)
 
     except subprocess.TimeoutExpired:

@@ -150,7 +150,6 @@ class SumonicTLS(Enum):
 
 class SumoTLPhase:
     def __init__(self) -> None:
-        # linkindex 一一对应
         self.duration: float = None
         self.states: list[SumonicTLS] = []
         self.connections: list[str] = []

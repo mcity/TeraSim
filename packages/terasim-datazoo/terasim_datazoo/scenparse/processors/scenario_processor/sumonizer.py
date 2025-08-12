@@ -611,7 +611,6 @@ class Sumonizer:
         # find all the parallel lanes
         all_parallel_lanes = self._find_parallel_lanes(feature)
 
-        # 对于每一条lane，决定它的路宽，然后生成一个Lane
         all_lanes: list[Lane] = []
         for i, f_id in enumerate(all_parallel_lanes):
             speed = mph_to_ms(self.features[f_id].lane.speed_limit_mph)
@@ -1856,7 +1855,6 @@ class Sumonizer:
             - The crossing is only added if the intersection area is significant and the distance to the edges is within a threshold.
         """
 
-        # 先找到这个crossing应该在哪个node
         crosswalk_polygon = Polygon([[pt.x, pt.y] for pt in crossing_feature])
         node_polygons = {
             node_id: Polygon([pt.to_list()[:2] for pt in node.shape])
@@ -1875,7 +1873,6 @@ class Sumonizer:
         if assign_node_id == None:
             return
 
-        # 再决定它应该跨哪个边
         assign_node = self.nodes[assign_node_id]
         ways: list[tuple[list[Edge], list[Edge]]] = self._get_ways_from_node(self.nodes[assign_node_id])
         ways: list[list[Edge]] = [[*way[0], *way[1]] for way in ways]
@@ -1927,14 +1924,6 @@ class Sumonizer:
         assign_node.crossings.append(
             Crossing(edges=connection_edges, width=4, shape=[Pt(*pt) for pt in center_polyline])
         )
-
-        # 先把这个node到所有incoming outgoing edge 分组；
-        # 对每一edge，计算它的顶点和node中心的角度；然后对edge排序，使得每一组edge都按逆时针方向排列
-        # 对每一组edge，计算一个vector代表逆时针方向
-        # 计算每个polygon到这些edge到顶点的平均距离
-        # 找出平均距离最小的那一组，这就是要跨过的edge
-        # shape由crosswalk的polyline决定；根据polyline vector和这组edge的vector对比，可能要将shape反向
-        # width也由polyline决定
 
     @staticmethod
     def _get_polylines_from_polygon(polygon: np.ndarray):

@@ -38,7 +38,7 @@ class UnionFind:
 
     def find(self, p):
         if self.parent[p] != p:
-            self.parent[p] = self.find(self.parent[p])  # 路径压缩
+            self.parent[p] = self.find(self.parent[p])  # path compression
         return self.parent[p]
 
     def union(self, p, q):
