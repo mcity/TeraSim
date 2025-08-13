@@ -1,0 +1,105 @@
+<routes xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://sumo.dlr.de/xsd/routes_file.xsd">
+
+    <!-- <vType id="IDM_waymo_motion" length="5.00" width="1.85" minGap="3.28" maxSpeed="10.00" carFollowModel="IDM" accel="1.84" decel="4.00" tau="1.17" emergencyDecel="9.0" lcAccelLat="20000.0" latAlignment="center" lcSublane="1" lcSpeedGain="0" lcKeepRight="0" lcCooperative="0" /> -->
+
+    <vType id="NDE_URBAN" length="5.00" width="1.85" minGap="3.28" maxSpeed="10.00" carFollowModel="IDM" accel="1.84" decel="1.29" tau="1.17" emergencyDecel="7.06" lcSpeedGain="0" lcCooperative="0" lcKeepRight="1" speedFactor="normc(1,0.1,0.8,1.2)"/>
+    <vType id="NDE_HIGHWAY" length="5.00" width="1.85" minGap="5.92" maxSpeed="28.31" carFollowModel="IDM" accel="5.95" decel="5.96" tau="1.72" emergencyDecel="7.06" lcSpeedGain="0" lcCooperative="0" lcKeepRight="1" speedFactor="normc(1,0.1,0.8,1.2)"/>
+    <route id="r_0" edges="EG_5_2_1 EG_5_2_11 EG_7_4_1 EG_7_4_2 EG_8_1_1 EG_9_1_1 EG_9_1_1.28 EG_21_1_1 EG_21_1_5 EG_20_1_11" />
+    <route id="r_1" edges="EG_22_1_1 EG_21_1_14 EG_21_1_18 EG_9_1_23 EG_17_23_1 EG_17_23_1.16 EG_13_1_1 EG_7_1_1 EG_7_1_2 EG_5_1_1" />
+    <route id="r_10" edges="EG_5_2_1 EG_5_2_11 EG_11_1_1 EG_16_1_5 EG_15_1_8 EG_15_1_17 EG_23_1_1" />
+    <route id="r_11" edges="EG_23_2_1 EG_15_1_1 EG_15_1_8 EG_10_2_1 EG_4_1_20 EG_7_4_1 EG_7_4_2 EG_6_3_1" />
+    <route id="r_12" edges="EG_27_2_1 gneE6 EG_27_3_1 EG_16_1_1 EG_11_2_1 EG_5_1_1" />
+    <route id="r_13" edges="EG_25_2_1 EG_25_2_7 EG_28_2_1 EG_14_2_1 EG_14_2_1.5 EG_14_2_1.24 EG_8_3_1 EG_8_23_12 EG_7_1_1 EG_7_1_2 EG_4_2_1 EG_4_2_3 EG_4_2_5 EG_34_1_16 EG_1_1_1" />
+    <route id="r_14" edges="EG_1_3_1 EG_1_3_1.61 EG_1_3_1.136 EG_34_1_24 EG_34_1_3 gneE0 EG_4_1_1 EG_10_1_1 EG_15_1_17 EG_15_1_1 EG_16_23_1 EG_13_1_1 EG_6_4_1" />
+    <route id="r_15" edges="EG_24_1_1 EG_25_1_1 EG_29_1_1" />
+    <route id="r_16" edges="EG_22_1_1 EG_21_1_14 EG_21_1_18 EG_9_1_23 EG_28_1_1 EG_24_2_1" />
+    <route id="r_17" edges="EG_1_3_1 EG_1_3_1.61 EG_1_3_1.136 EG_34_1_24 EG_34_1_3 EG_34_1_6 EG_34_1_16 EG_1_1_1" />
+    <route id="r_18" edges="EG_22_1_1 EG_21_1_14 EG_18_1_1 EG_18_12_171 EG_14_1_1 EG_28_1_1 EG_25_1_1" />
+    <route id="r_19" edges="EG_23_2_1 EG_15_1_1 EG_16_23_1 EG_17_1_1 EG_17_1_1.17 EG_19_1_1 EG_21_1_5 EG_20_1_11" />
+    <route id="r_2" edges="EG_25_2_1 EG_20_1_1 EG_21_1_10 EG_21_1_14 EG_18_1_1 EG_18_12_171 EG_8_3_1 EG_8_23_12 EG_6_4_1" />
+    <route id="r_20" edges="EG_22_1_1 EG_21_1_14 EG_21_1_18 EG_21_1_1 EG_19_1_10 EG_25_2_7 EG_24_2_1" />
+    <route id="r_3" edges="EG_6_2_1 EG_12_1_1 EG_12_1_2 EG_17_1_1 EG_17_1_1.17 EG_19_1_1 EG_21_1_5 EG_20_1_11" />
+    <route id="r_4" edges="EG_27_2_1 EG_27_2_2 EG_13_1_1 EG_6_3_1" />
+    <route id="r_5" edges="EG_6_2_1 EG_8_1_1 EG_14_1_1 EG_17_23_1 EG_17_23_1.16 EG_26_12_1" />
+    <route id="r_6" edges="EG_27_1_1 EG_17_1_1 EG_17_1_1.17 EG_28_1_1 EG_24_2_1" />
+    <route id="r_7" edges="EG_24_1_1 EG_28_2_1 EG_14_2_1 EG_14_2_1.5 EG_14_2_1.24 EG_8_3_1 EG_8_23_12 EG_12_1_1 EG_12_1_2 EG_26_12_1" />
+    <route id="r_8" edges="EG_1_3_1 EG_1_3_1.61 EG_1_3_1.136 EG_34_1_24 EG_34_1_3 gneE0 EG_4_1_1 EG_10_1_1 EG_15_1_17 EG_23_1_1" />
+    <route id="r_9" edges="EG_23_2_1 EG_15_1_1 EG_16_23_1 EG_26_12_1" />
+    <route id="r_21" edges="EG_1_3_1 EG_1_3_1.61 EG_1_3_1.136 EG_34_1_24 EG_34_1_3 gneE0 EG_4_1_1 EG_10_1_1 EG_15_1_17 EG_15_1_1 EG_16_23_1 EG_17_1_1 EG_17_1_1.17 EG_14_2_1 EG_14_2_1.5 EG_14_2_1.24 EG_9_1_1 EG_9_1_1.28 EG_21_1_1 EG_21_1_5 EG_20_1_11 EG_29_1_1" />
+    <route id="r_22" edges="EG_25_2_1 EG_20_1_1 EG_21_1_10 EG_21_1_14 EG_21_1_18 EG_21_1_1 EG_21_1_5 EG_20_1_11" />
+    <route id="r_23" edges="EG_22_1_1 EG_21_1_14 EG_21_1_18 EG_21_1_1 EG_21_1_5 EG_20_1_11" />
+    <route id="av_route" edges="EG_35_1_14 EG_1_3_1 EG_1_3_1.61 EG_1_3_1.136 EG_34_1_24 EG_34_1_3 gneE0 EG_4_1_1 EG_10_1_1 EG_15_1_17 EG_15_1_1 EG_16_23_1 EG_17_1_1 EG_17_1_1.17 EG_14_2_1 EG_14_2_1.5 EG_14_2_1.24 EG_9_1_1 EG_9_1_1.28 EG_21_1_1 EG_21_1_5 EG_20_1_11 EG_29_1_1 EG_35_1_14" />
+
+    <flow id="BV_0" type="NDE_URBAN" begin="0.00" departLane="best" route="r_0" vehsPerHour="37" />
+    <flow id="BV_1" type="NDE_URBAN" begin="0.00" departLane="best" route="r_1" vehsPerHour="67" />
+    <flow id="BV_10" type="NDE_URBAN" begin="0.00" departLane="best" route="r_10" vehsPerHour="96" />
+    <!-- <flow id="BV_11" type="NDE_URBAN" begin="0.00" departLane="best" route="r_11" vehsPerHour="47" /> -->
+    <flow id="BV_12" type="NDE_URBAN" begin="0.00" departLane="best" route="r_12" vehsPerHour="74" />
+    <flow id="BV_13" type="NDE_URBAN" begin="0.00" departLane="best" route="r_13" vehsPerHour="45" />
+    <flow id="BV_14" type="NDE_HIGHWAY" begin="0.00" departLane="best" route="r_14" vehsPerHour="45" />
+    <flow id="BV_15" type="NDE_URBAN" begin="0.00" departLane="best" route="r_15" vehsPerHour="73" />
+    <flow id="BV_16" type="NDE_URBAN" begin="0.00" departLane="best" route="r_16" vehsPerHour="45" />
+    <flow id="BV_17" type="NDE_HIGHWAY" begin="0.00" departLane="best" route="r_17" vehsPerHour="279" />
+    <flow id="BV_21" type="NDE_URBAN" begin="0.00" departLane="best" arrivalLane="1" route="r_17" vehsPerHour="279" />
+    <flow id="BV_18" type="NDE_URBAN" begin="0.00" departLane="best" route="r_18" vehsPerHour="94" />
+    <flow id="BV_19" type="NDE_URBAN" begin="0.00" departLane="best" route="r_19" vehsPerHour="23" />
+    <flow id="BV_2" type="NDE_URBAN" begin="0.00" departLane="best" route="r_2" vehsPerHour="28" />
+    <flow id="BV_20" type="NDE_URBAN" begin="0.00" departLane="best" route="r_20" vehsPerHour="133" />
+    <flow id="BV_3" type="NDE_URBAN" begin="0.00" departLane="best" route="r_3" vehsPerHour="79" />
+    <flow id="BV_4" type="NDE_URBAN" begin="0.00" departLane="best" route="r_4" vehsPerHour="77" />
+    <flow id="BV_5" type="NDE_URBAN" begin="0.00" departLane="best" route="r_5" vehsPerHour="64" />
+    <flow id="BV_6" type="NDE_URBAN" begin="0.00" departLane="best" route="r_6" vehsPerHour="68" />
+    <flow id="BV_7" type="NDE_URBAN" begin="0.00" departLane="best" route="r_7" vehsPerHour="50" />
+    <flow id="BV_8" type="NDE_HIGHWAY" begin="0.00" departLane="best" route="r_8" vehsPerHour="230" />
+    <flow id="BV_9" type="NDE_URBAN" begin="0.00" departLane="best" route="r_9" vehsPerHour="85" />
+    <flow id="BV_22" type="NDE_URBAN" begin="0.00" departLane="best" route="r_21" vehsPerHour="40" />
+    <flow id="BV_23" type="NDE_URBAN" begin="0.00" departLane="best" route="r_22" vehsPerHour="173" />
+
+    <route id="pr_0" edges="EG_16_23_1 EG_17_1_1 EG_17_1_1.17 EG_28_1_1"/>
+    <route id="pr_1" edges="EG_28_1_1 EG_14_1_1 EG_8_1_1 EG_12_1_1 EG_12_1_2 EG_16_1_1 EG_11_1_1 EG_7_4_1 EG_7_1_1"/>
+    <route id="pr_2" edges="E5 -E0 E2"/>
+    <route id="pr_3" edges="E3 E4 E0"/>
+    <route id="pr_4" edges="EG_6_1_1 EG_6_1_1"/>
+    <route id="pr_5" edges="EG_28_1_1 EG_14_2_1"/>
+    <route id="pr_6" edges="EG_27_1_1 EG_17_1_1 EG_17_1_1.17 EG_17_23_1 EG_17_23_1.16 EG_13_1_1 EG_7_4_2 EG_7_1_2"/>
+
+    <personFlow id="VRU_0" begin="0.00" end="3600.00" personsPerHour="100">
+        <walk route="pr_0"/>
+    </personFlow>
+    <personFlow id="VRU_1" begin="0.00" end="3600.00" personsPerHour="100">
+        <walk route="pr_1"/>
+    </personFlow>
+    <personFlow id="VRU_2" begin="0.00" end="3600.00" personsPerHour="100">
+        <walk route="pr_2"/>
+    </personFlow>
+    <personFlow id="VRU_3" begin="0.00" end="3600.00" personsPerHour="100">
+        <walk route="pr_3"/>
+    </personFlow>
+    <personFlow id="VRU_4" begin="0.00" end="3600.00" personsPerHour="100">
+        <walk route="pr_4"/>
+    </personFlow>
+    <personFlow id="VRU_5" begin="0.00" end="3600.00" personsPerHour="100">
+        <walk route="pr_5"/>
+    </personFlow>
+    <personFlow id="VRU_6" begin="0.00" end="3600.00" personsPerHour="100">
+        <walk route="pr_6"/>
+    </personFlow>
+
+    <!-- <personFlow id="VRU_bike_0" type="DEFAULT_BIKETYPE" begin="0.00" end="3600.00" personsPerHour="100">
+        <walk edges="EG_17_1_1 EG_17_1_1.17 EG_28_1_1"/>
+    </personFlow>
+
+    <personFlow id="VRU_bike_1" type="DEFAULT_BIKETYPE" begin="0.00" end="3600.00" personsPerHour="100">
+        <walk edges="EG_17_1_1 EG_17_1_1.17 EG_19_1_1 EG_19_1_10 EG_25_2_7"/>
+    </personFlow> -->
+
+    <vType id="bike" vClass="bicycle" latAlignment="right" lcStrategic="0.5" />
+
+    <route id="br_0" edges="EG_27_1_1 EG_17_1_1 EG_17_1_1.17 EG_19_1_1 EG_19_1_10 EG_25_2_7" />
+    <!-- <route id="br_1" edges="EG_27_1_1 EG_17_1_1 EG_17_1_1.17 EG_14_2_1 EG_14_2_1.5 EG_14_2_1.24" /> -->
+
+    <flow id="BV_bike_flow_0" type="bike" begin="0.00" route="br_0" vehsPerHour="200" />
+    <!-- <flow id="BV_bike_flow_1" type="bike" begin="0.00" route="br_1" vehsPerHour="200" /> -->
+    <!-- <flow id="BV_bike_flow_2" type="bike" begin="0.00" route="r_23" vehsPerHour="200" /> -->
+
+</routes>

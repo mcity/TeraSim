@@ -165,9 +165,9 @@ simulator:
       - "tripinfo"
 
 # New section for file paths
-file_paths:
-  sumo_net_file: "examples/maps/Mcity_safetest_carla/mcity.net.xml"
-  sumo_config_file: "examples/maps/Mcity_safetest_carla/mcity.sumocfg"
+input:
+  sumo_net_file: "/home/mtl/TeraSim/examples/maps/Mcity/mcity.net.xml"
+  sumo_config_file: "/home/mtl/TeraSim/examples/maps/Mcity/mcity.sumocfg"
 
 logging:
   levels:

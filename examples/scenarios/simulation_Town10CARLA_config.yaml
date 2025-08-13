@@ -163,7 +163,7 @@ simulator:
       - "tripinfo"
 
 # New section for file paths
-file_paths:
+input:
   sumo_net_file: "examples/maps/town10/town10.net.xml"
   sumo_config_file: "examples/maps/town10/town10.sumocfg"
 

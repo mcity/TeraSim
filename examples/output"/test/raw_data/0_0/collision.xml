@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- generated on 2025-08-13 17:07:04 by 
+<Configuration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://sumo.dlr.de/xsd/Configuration.xsd">
+
+    <input>
+        <net-file value="/home/mtl/TeraSim/examples/maps/Mcity/mcity.net.xml"/>
+        <route-files value="/home/mtl/TeraSim/examples/maps/Mcity/mcity.rou.xml"/>
+        <additional-files value="/home/mtl/TeraSim/examples/maps/Mcity/mcity.add.xml"/>
+    </input>
+
+    <output>
+        <collision-output value="examples/output&quot;/test/raw_data/0_0/collision.xml"/>
+    </output>
+
+    <time>
+        <begin value="0"/>
+        <end value="3600"/>
+        <step-length value="0.1"/>
+    </time>
+
+    <processing>
+        <lateral-resolution value="0.5"/>
+        <collision.action value="warn"/>
+        <collision.check-junctions value="true"/>
+        <collision.mingap-factor value="0"/>
+        <scale value="0.8"/>
+        <time-to-teleport value="-1"/>
+    </processing>
+
+    <report>
+        <log value="examples/output&quot;/test/raw_data/0_0/run.log"/>
+    </report>
+
+    <bluelight_device>
+        <device.bluelight.explicit value="true"/>
+    </bluelight_device>
+
+    <random_number>
+        <random value="true"/>
+    </random_number>
+
+    <gui_only>
+        <gui-settings-file value="/home/mtl/TeraSim/examples/maps/Mcity/gui-settings.xml"/>
+    </gui_only>
+
+</Configuration>
+-->
+
+<collisions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://sumo.dlr.de/xsd/collision_file.xsd">
+    <collision time="117.10" type="junction" lane=":NODE_18_1_0" pos="4.76" collider="BV_bike_flow_0.0" victim="BV_6.0" colliderType="bike" victimType="NDE_URBAN" colliderSpeed="3.23" victimSpeed="3.43" colliderFront="46.34,-16.80,271.70" colliderBack="46.35,-15.20,271.70" victimFront="47.14,-18.18,271.66" victimBack="48.75,-13.55,271.70"/>
+    <collision time="118.50" type="junction" lane=":NODE_18_1_0" pos="5.00" collider="BV_bike_flow_0.1" victim="BV_6.0" colliderType="bike" victimType="NDE_URBAN" colliderSpeed="3.69" victimSpeed="2.51" colliderFront="46.34,-17.03,271.70" colliderBack="46.35,-15.44,271.70" victimFront="44.93,-19.99,271.64" victimBack="48.20,-16.40,271.68"/>
+    <collision time="231.10" type="junction" lane=":NODE_18_1_0" pos="4.74" collider="BV_bike_flow_0.5" victim="BV_6.2" colliderType="bike" victimType="NDE_URBAN" colliderSpeed="3.26" victimSpeed="3.52" colliderFront="46.34,-16.78,271.70" colliderBack="46.35,-15.18,271.70" victimFront="46.93,-18.54,271.65" victimBack="48.70,-13.96,271.70"/>
+    <collision time="232.60" type="junction" lane=":NODE_18_1_0" pos="5.41" collider="BV_bike_flow_0.6" victim="BV_6.2" colliderType="bike" victimType="NDE_URBAN" colliderSpeed="3.85" victimSpeed="3.05" colliderFront="46.33,-17.45,271.70" colliderBack="46.34,-15.85,271.70" victimFront="43.38,-20.71,271.63" victimBack="47.31,-17.89,271.66"/>
+    <collision time="352.00" type="junction" lane=":NODE_18_1_0" pos="4.95" collider="BV_bike_flow_0.15" victim="BV_6.4" colliderType="bike" victimType="NDE_URBAN" colliderSpeed="5.70" victimSpeed="2.74" colliderFront="46.34,-16.99,271.70" colliderBack="46.35,-15.39,271.70" victimFront="47.36,-17.81,271.66" victimBack="48.81,-13.13,271.70"/>
+    <collision time="573.10" type="junction" lane=":NODE_18_1_0" pos="4.72" collider="BV_bike_flow_0.21" victim="BV_6.7" colliderType="bike" victimType="NDE_URBAN" colliderSpeed="3.19" victimSpeed="3.53" colliderFront="46.34,-16.76,271.70" colliderBack="46.35,-15.16,271.70" victimFront="46.86,-18.66,271.65" victimBack="48.68,-14.10,271.69"/>
+    <collision time="574.90" type="junction" lane=":NODE_18_1_0" pos="6.54" collider="BV_bike_flow_0.22" victim="BV_6.7" colliderType="bike" victimType="NDE_URBAN" colliderSpeed="4.12" victimSpeed="3.75" colliderFront="46.33,-18.58,271.69" colliderBack="46.34,-16.98,271.70" victimFront="41.86,-20.92,271.61" victimBack="46.41,-19.09,271.65"/>
+    <collision time="703.70" type="crossing" lane=":NODE_19_0_0" pos="6.72" collider="BV_bike_flow_0.27" victim="VRU_2.19" colliderType="bike" victimType="DEFAULT_PEDTYPE" colliderSpeed="1.73" victimSpeed="0.00" colliderFront="43.56,-59.93,270.75" colliderBack="44.22,-58.47,270.85" victimFront="43.28,-59.93,270.80" victimBack="43.28,-59.93,270.80"/>
+    <collision time="806.40" type="junction" lane=":NODE_18_1_0" pos="5.28" collider="BV_bike_flow_0.33" victim="BV_6.11" colliderType="bike" victimType="NDE_URBAN" colliderSpeed="5.14" victimSpeed="2.92" colliderFront="46.34,-17.31,271.70" colliderBack="46.34,-15.71,271.70" victimFront="47.19,-18.09,271.66" victimBack="48.77,-13.45,271.70"/>
+    <collision time="807.40" type="junction" lane=":NODE_18_1_0" pos="1.98" collider="BV_bike_flow_0.34" victim="BV_6.11" colliderType="bike" victimType="NDE_URBAN" colliderSpeed="5.18" victimSpeed="0.00" colliderFront="47.71,-14.03,271.71" colliderBack="47.71,-12.43,271.71" victimFront="46.96,-18.49,271.65" victimBack="48.70,-13.91,271.70"/>
+    <collision time="807.70" type="junction" lane=":NODE_18_1_0" pos="4.67" collider="BV_bike_flow_0.35" victim="BV_6.11" colliderType="bike" victimType="NDE_URBAN" colliderSpeed="5.15" victimSpeed="0.00" colliderFront="46.34,-16.70,271.70" colliderBack="46.35,-15.10,271.70" victimFront="46.96,-18.49,271.65" victimBack="48.70,-13.91,271.70"/>
+    <collision time="922.60" type="junction" lane=":NODE_18_1_0" pos="4.48" collider="BV_bike_flow_0.39" victim="BV_6.13" colliderType="bike" victimType="NDE_URBAN" colliderSpeed="5.37" victimSpeed="3.45" colliderFront="46.34,-16.51,271.70" colliderBack="46.35,-14.91,271.70" victimFront="46.24,-19.20,271.65" victimBack="48.56,-14.94,271.69"/>
+    <collision time="953.10" type="junction" lane=":NODE_18_1_0" pos="4.93" collider="BV_bike_flow_0.41" victim="BV_6.14" colliderType="bike" victimType="NDE_URBAN" colliderSpeed="3.39" victimSpeed="3.50" colliderFront="46.34,-16.97,271.70" colliderBack="46.35,-15.37,271.70" victimFront="47.09,-18.26,271.66" victimBack="48.74,-13.64,271.70"/>
+    <collision time="992.90" type="junction" lane=":NODE_18_10_0" pos="18.66" collider="BV_1.14" victim="BV_5.13" colliderType="NDE_URBAN" victimType="NDE_URBAN" colliderSpeed="6.03" victimSpeed="0.06" colliderFront="56.78,-18.12,271.69" colliderBack="56.79,-23.12,271.67" victimFront="57.73,-17.36,271.70" victimBack="60.82,-21.11,271.69"/>
+    <collision time="1076.90" type="junction" lane=":NODE_17_1_0" pos="17.07" collider="BV_19.5" victim="BV_5.14" colliderType="NDE_URBAN" victimType="NDE_URBAN" colliderSpeed="5.17" victimSpeed="0.05" colliderFront="48.53,40.77,272.33" colliderBack="48.42,45.77,272.42" victimFront="44.23,42.83,272.11" victimBack="48.05,39.77,272.09"/>
+    <collision time="1080.30" type="junction" lane=":NODE_17_1_0" pos="17.05" collider="BV_22.8" victim="BV_5.14" colliderType="NDE_URBAN" victimType="NDE_URBAN" colliderSpeed="5.06" victimSpeed="0.00" colliderFront="48.53,40.79,272.33" colliderBack="48.42,45.79,272.42" victimFront="44.17,42.84,272.11" victimBack="48.01,39.81,272.09"/>
+    <collision time="1430.10" type="crossing" lane=":NODE_19_0_0" pos="6.38" collider="BV_bike_flow_0.61" victim="VRU_2.39" colliderType="bike" victimType="DEFAULT_PEDTYPE" colliderSpeed="1.52" victimSpeed="0.77" colliderFront="43.70,-59.62,270.77" colliderBack="44.36,-58.16,270.87" victimFront="43.69,-59.83,270.80" victimBack="43.69,-59.83,270.80"/>
+    <collision time="1535.20" type="crossing" lane=":NODE_19_0_0" pos="6.56" collider="BV_bike_flow_0.63" victim="VRU_2.42" colliderType="bike" victimType="DEFAULT_PEDTYPE" colliderSpeed="1.54" victimSpeed="0.94" colliderFront="43.69,-59.64,270.77" colliderBack="44.35,-58.19,270.86" victimFront="43.53,-59.76,270.80" victimBack="43.53,-59.76,270.80"/>
+    <collision time="1637.10" type="junction" lane=":NODE_18_1_0" pos="4.69" collider="BV_bike_flow_0.68" victim="BV_6.23" colliderType="bike" victimType="NDE_URBAN" colliderSpeed="3.21" victimSpeed="3.60" colliderFront="46.34,-16.73,271.70" colliderBack="46.35,-15.13,271.70" victimFront="46.87,-18.64,271.65" victimBack="48.68,-14.08,271.69"/>
+    <collision time="1638.90" type="junction" lane=":NODE_18_1_0" pos="6.56" collider="BV_bike_flow_0.69" victim="BV_6.23" colliderType="bike" victimType="NDE_URBAN" colliderSpeed="4.16" victimSpeed="3.68" colliderFront="46.33,-18.60,271.69" colliderBack="46.34,-17.00,271.70" victimFront="41.86,-20.92,271.61" victimBack="46.41,-19.10,271.65"/>
+    <collision time="1751.10" type="junction" lane=":NODE_18_1_0" pos="4.86" collider="BV_bike_flow_0.73" victim="BV_6.25" colliderType="bike" victimType="NDE_URBAN" colliderSpeed="3.28" victimSpeed="3.41" colliderFront="46.34,-16.90,271.70" colliderBack="46.35,-15.30,271.70" victimFront="47.00,-18.41,271.66" victimBack="48.72,-13.81,271.70"/>
+    <collision time="1752.50" type="junction" lane=":NODE_18_1_0" pos="5.18" collider="BV_bike_flow_0.74" victim="BV_6.25" colliderType="bike" victimType="NDE_URBAN" colliderSpeed="3.77" victimSpeed="2.67" colliderFront="46.34,-17.22,271.70" colliderBack="46.35,-15.62,271.70" victimFront="43.92,-20.60,271.63" victimBack="47.59,-17.42,271.67"/>
+    <collision time="1891.00" type="crossing" lane=":NODE_19_0_0" pos="6.70" collider="BV_bike_flow_0.80" victim="VRU_2.52" colliderType="bike" victimType="DEFAULT_PEDTYPE" colliderSpeed="1.69" victimSpeed="0.00" colliderFront="43.62,-59.81,270.76" colliderBack="44.27,-58.35,270.85" victimFront="43.32,-59.88,270.80" victimBack="43.32,-59.88,270.80"/>
+    <collision time="2000.30" type="crossing" lane=":NODE_19_0_0" pos="6.81" collider="BV_bike_flow_0.84
