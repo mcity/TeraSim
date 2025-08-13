@@ -119,27 +119,27 @@ setup_monorepo() {
     # Initialize workspace and install dependencies
     log_info "Installing workspace packages..."
     # Install packages explicitly for conda compatibility
-    uv pip install -e packages/terasim
-    uv pip install -e packages/terasim-nde-nade
-    uv pip install -e packages/terasim-service
-    uv pip install -e packages/terasim-envgen
-    uv pip install -e packages/terasim-datazoo
-    uv pip install -e packages/terasim-vis
+    pip install -e packages/terasim
+    pip install -e packages/terasim-nde-nade
+    pip install -e packages/terasim-service
+    pip install -e packages/terasim-envgen
+    pip install -e packages/terasim-datazoo
+    pip install -e packages/terasim-vis
     
     # Install development dependencies
-    uv pip install "pytest>=7.4.0" "pytest-cov>=4.1.0" "black>=23.7.0" "ruff>=0.1.0" "mypy>=1.5.1" "isort>=5.12.0"
+    pip install "pytest>=7.4.0" "pytest-cov>=4.1.0" "black>=23.7.0" "ruff>=0.1.0" "mypy>=1.5.1" "isort>=5.12.0"
     
     # Build Cython extensions
     if [ -d "packages/terasim-nde-nade" ]; then
         log_info "Building Cython extensions for NDE-NADE..."
         cd packages/terasim-nde-nade
-        uv run python setup.py build_ext --inplace
+        python setup.py build_ext --inplace
         cd ../..
     fi
     
     # Verify installation
     log_info "Testing installation..."
-    uv run python -c "
+    python -c "
 import terasim
 print('✅ TeraSim core imported successfully')
 

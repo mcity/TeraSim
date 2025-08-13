@@ -359,17 +359,20 @@ class MapSearcher:
             osm_path = self._save_osm_data_webwizard(mid_lat, mid_lon, scene_dir, bbox_size)
         except Exception as e:
             logger.warning(f"Failed to save OSM WebWizard data for scene {scene_dir.name}: {str(e)}")
-        try:
-            osm_path = self._save_osm_data_osmnx(mid_lat, mid_lon, scene_dir, bbox_size)
-        except Exception as e:
-            logger.warning(f"Failed to save OSM OSMNX data for scene {scene_dir.name}: {str(e)}")
-            return False
+        # try:
+        #     osm_path = self._save_osm_data_osmnx(mid_lat, mid_lon, scene_dir, bbox_size)
+        # except Exception as e:
+        #     logger.warning(f"Failed to save OSM OSMNX data for scene {scene_dir.name}: {str(e)}")
+        #     return False
         if not osm_path:
             logger.error(f"Failed to save OSM data for scene {scene_dir.name}")
             return False
         
-        # Create visualization
-        self._create_visualization(mid_lat, mid_lon, scene_dir, bbox_size, av_route)
+        # Create visualization for < 500m
+        if bbox_size < 500:
+            self._create_visualization(mid_lat, mid_lon, scene_dir, bbox_size, av_route)
+        else:
+            logger.warning(f"Bbox size is too large for visualization: {bbox_size}, skipping visualization")
         
         return True
 

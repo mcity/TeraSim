@@ -6,7 +6,7 @@ authors = [
     {name = "Haowei Sun", email = "haoweis@umich.edu"},
 ]
 readme = "README.md"
-license = "CC-BY-NC-4.0"
+license = {text = "CC-BY-NC-4.0"}
 requires-python = ">=3.10,<3.13"
 dependencies = [
     "terasim>=0.2.0",          # Depends on main package (inherits numpy and SUMO)

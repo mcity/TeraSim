@@ -224,7 +224,7 @@ class TrafficFlowGenerator:
         # Define traffic flow levels if using traffic_level parameter
         flow_levels = {
             'low': 5,   # 5 seconds per vehicle
-            'medium': 2,   # 0.7 seconds per vehicle
+            'medium': 0.7,   # 0.7 seconds per vehicle
             'high': 0.3    # 0.3 seconds per vehicle
         }
         map_metadata_path = os.path.join(os.path.dirname(net_path), "metadata.json")
@@ -582,7 +582,7 @@ class TrafficFlowGenerator:
         
         # Define traffic flow levels
         # flow_levels = ['low', 'medium', 'high']
-        flow_levels = ['low']
+        flow_levels = ['medium']
         
         # Find map.net.xml files in the directory (recursively)
         network_files = glob.glob(os.path.join(directory_path, "**", "map.net.xml"), recursive=True)

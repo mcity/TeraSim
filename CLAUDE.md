@@ -106,7 +106,7 @@ python example.py
 ## Development Notes
 
 ### SUMO Integration
-- Uses SUMO 1.22.0 with TraCI for real-time control
+- Uses SUMO 1.23.1 with TraCI for real-time control
 - Supports both GUI and headless modes
 - Network files define road topology, traffic lights, and routing
 

@@ -9,6 +9,8 @@ readme = "README.md"
 license = "Apache-2.0"
 requires-python = ">=3.10,<3.13"
 dependencies = [
+    "numpy==1.26.4",        # Fixed version to avoid conflicts
+    "scipy>=1.11.4",        # Compatible with numpy 1.26.4
     "terasim>=0.2.0",
     "osmnx>=1.9.4",
     "googlemaps>=4.10.0",
