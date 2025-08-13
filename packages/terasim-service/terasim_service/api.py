@@ -64,9 +64,9 @@ def check_simulation_running(simulation_id: str, redis_client: redis.Redis) -> b
     return status is not None
 
 
-def run_simulation_process(simulation_id: str, config: dict, auto_run: bool, enable_viz: bool = False, viz_port: int = 8050, viz_update_freq: int = 5):
+def run_simulation_process(simulation_id: str, config: dict, auto_run: bool, config_file_path: str = None, enable_viz: bool = False, viz_port: int = 8050, viz_update_freq: int = 5):
     # This function will run in a separate process
-    asyncio.run(run_simulation_task(simulation_id, config, auto_run, enable_viz, viz_port, viz_update_freq))
+    asyncio.run(run_simulation_task(simulation_id, config, auto_run, config_file_path, enable_viz, viz_port, viz_update_freq))
 
 
 description = """
@@ -173,7 +173,7 @@ async def get_av_route(
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-async def run_simulation_task(simulation_id: str, config: dict, auto_run: bool, enable_viz: bool = False, viz_port: int = 8050, viz_update_freq: int = 5):
+async def run_simulation_task(simulation_id: str, config: dict, auto_run: bool, config_file_path: str = None, enable_viz: bool = False, viz_port: int = 8050, viz_update_freq: int = 5):
     try:
         base_dir = (
             Path(config["output"]["dir"])
@@ -188,7 +188,7 @@ async def run_simulation_task(simulation_id: str, config: dict, auto_run: bool, 
         set_random_seed(config["seed"])
         
         env = create_environment(config, base_dir)
-        sim = create_simulator(config, base_dir)
+        sim = create_simulator(config, base_dir, config_file_path)
         try:
             get_map_metadata(config, simulation_id) # get the map metadata and store it in redis
         except Exception as e:
@@ -265,7 +265,7 @@ async def start_simulation(
     # Start the simulation in a new process
     process = Process(
         target=run_simulation_process,
-        args=(simulation_id, config_data, config.auto_run, enable_viz, viz_port, viz_update_freq),
+        args=(simulation_id, config_data, config.auto_run, config.config_file, enable_viz, viz_port, viz_update_freq),
     )
     process.start()
 

@@ -1,0 +1,12 @@
+# Example AV Route Coordinates
+# These coordinates define a route within the bounding box
+# Use with --route parameter when generating scenarios
+# Format: latitude, longitude
+
+# Example route in Ann Arbor area
+42.278000, -83.735000
+42.277800, -83.734500
+42.277600, -83.734000
+42.277400, -83.733500
+42.277200, -83.733000
+42.277000, -83.732500

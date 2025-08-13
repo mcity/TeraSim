@@ -89,19 +89,31 @@ def create_environment(config, base_dir):
     )
 
 
-def create_simulator(config, base_dir):
+def create_simulator(config, base_dir, config_file_path=None):
     """Create the simulator based on the configuration.
 
     Args:
         config (dict): The configuration dictionary.
         base_dir (str): Base directory for the simulator.
+        config_file_path (str): Path to the configuration file (for resolving relative paths).
 
     Returns:
         Simulator: The simulator object.
     """
+    # Resolve paths - use absolute if given, otherwise relative to config file location
+    sumo_net_file = Path(config["input"]["sumo_net_file"])
+    sumo_config_file = Path(config["input"]["sumo_config_file"])
+    
+    if config_file_path:
+        config_dir = Path(config_file_path).parent
+        if not sumo_net_file.is_absolute():
+            sumo_net_file = config_dir / sumo_net_file
+        if not sumo_config_file.is_absolute():
+            sumo_config_file = config_dir / sumo_config_file
+    
     return Simulator(
-        sumo_net_file_path=Path(config["input"]["sumo_net_file"]),
-        sumo_config_file_path=Path(config["input"]["sumo_config_file"]),
+        sumo_net_file_path=sumo_net_file,
+        sumo_config_file_path=sumo_config_file,
         num_tries=config["simulator"]["parameters"]["num_tries"],
         gui_flag=config["simulator"]["parameters"]["gui_flag"],
         # gui_flag=True,

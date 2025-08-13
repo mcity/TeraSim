@@ -359,7 +359,6 @@ class MapSearcher:
             osm_path = self._save_osm_data_webwizard(mid_lat, mid_lon, scene_dir, bbox_size)
         except Exception as e:
             logger.warning(f"Failed to save OSM WebWizard data for scene {scene_dir.name}: {str(e)}")
-        # osm_path = self._save_osm_data_overpass(mid_lat, mid_lon, scene_dir, bbox_size)
         try:
             osm_path = self._save_osm_data_osmnx(mid_lat, mid_lon, scene_dir, bbox_size)
         except Exception as e:
