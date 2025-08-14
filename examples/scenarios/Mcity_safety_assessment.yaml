@@ -8,7 +8,7 @@ parameters:
 simulation_type: "safetest_mcity_av"
 
 output:
-  dir: examples/output"  # Output directory (use "output" for non-AV simulations)
+  dir: "outputs"  # Output directory (use "output" for non-AV simulations)
   name: "test"  # Experiment name
   nth: "0_0"  # Experiment number
   aggregated_dir: "aggregated"  # Directory for aggregated logs

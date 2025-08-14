@@ -40,16 +40,9 @@ def main(config_path: str) -> None:
 
     # Resolve paths - use absolute if given, otherwise relative to YAML file location
     config_dir = Path(config_path).parent
-    
-    # Handle sumo_net_file path
-    sumo_net_file = Path(config.input.sumo_net_file)
-    if not sumo_net_file.is_absolute():
-        sumo_net_file = config_dir / sumo_net_file
-    
-    # Handle sumo_config_file path
-    sumo_config_file = Path(config.input.sumo_config_file)
-    if not sumo_config_file.is_absolute():
-        sumo_config_file = config_dir / sumo_config_file
+    sumo_net_file = config.input.sumo_net_file
+    sumo_config_file = config.input.sumo_config_file
+
     sim = Simulator(
         sumo_net_file_path=sumo_net_file,
         sumo_config_file_path=sumo_config_file,
@@ -77,7 +70,7 @@ if __name__ == "__main__":
     config_dir = Path(__file__).parent / "examples" / "scenarios"
     # yaml_files = sorted(config_dir.glob("*.yaml"), key=lambda x: int(''.join(filter(str.isdigit, x.stem)) or '0'))
     # yaml_files = ["examples/scenarios/cutin.yaml"]
-    yaml_files = [Path("examples/scenarios/simulation_Mcity_carla_config.yaml")]
+    yaml_files = [Path("examples/scenarios/Mcity_safety_assessment.yaml")]
     # Randomly shuffle yaml files
     random.shuffle(yaml_files)
 

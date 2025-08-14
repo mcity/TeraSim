@@ -188,7 +188,7 @@ async def run_simulation_task(simulation_id: str, config: dict, auto_run: bool, 
         set_random_seed(config["seed"])
         
         env = create_environment(config, base_dir)
-        sim = create_simulator(config, base_dir, config_file_path)
+        sim = create_simulator(config, base_dir)
         try:
             get_map_metadata(config, simulation_id) # get the map metadata and store it in redis
         except Exception as e:
