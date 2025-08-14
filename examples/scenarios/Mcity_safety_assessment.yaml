@@ -151,7 +151,15 @@ environment:
       type: "NDE_HIGHWAY"
       cache_radius: 100
       control_radius: 50
-
+      warmup_control:
+        enabled: true  # Enable AV warmup (false keeps original behavior)
+        
+        # Trigger condition (choose one)
+        trigger_type: "time"  # Options: "position", "time", "zone", "edge"
+        
+        # Position trigger configuration
+        time_trigger:
+          duration: 20.0  # Warmup duration in seconds
 simulator:
   module: "terasim.simulator"
   class: "Simulator"
