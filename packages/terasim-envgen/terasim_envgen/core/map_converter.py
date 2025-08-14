@@ -95,11 +95,6 @@ class MapConverter:
         """
         logger.info(f"Converting OSM file {osm_path} to SUMO network and OpenDRIVE")
 
-        # Ensure the OSM file exists
-        if not os.path.exists(osm_path):
-            logger.error(f"OSM file {osm_path} does not exist")
-            return None, None, None
-
         # Use the same directory as the OSM file
         output_dir = os.path.dirname(osm_path)
 
