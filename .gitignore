@@ -175,3 +175,5 @@ examples/maps/texas_highway_maps
 examples/maps/ann_arbor
 /outputs
 /generated_experiments
+/phase1_results
+phase1_results.zip

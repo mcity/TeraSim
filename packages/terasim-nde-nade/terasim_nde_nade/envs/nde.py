@@ -225,10 +225,26 @@ class NDE(EnvTemplateComplete):
             self.vehicle_list[veh_id].controller._update_controller_status(
                 veh_id, current_time
             )
+        
+        # Handle VRU removal - need to check before updating status to avoid dict modification during iteration
+        vrus_to_remove = []
         for vru_id in self.vulnerable_road_user_list.keys():
-            self.vulnerable_road_user_list[vru_id].controller._update_controller_status(
-                vru_id, current_time
-            )
+            controller = self.vulnerable_road_user_list[vru_id].controller
+            controller._update_controller_status(vru_id, current_time)
+            
+            # Check if VRU should be removed after adversity control ends
+            if controller.used_to_be_busy:
+                try:
+                    traci.person.remove(vru_id)
+                    vrus_to_remove.append(vru_id)
+                    print(f"VRU {vru_id} removed after adversity completion")
+                except Exception as e:
+                    print(f"Failed to remove VRU {vru_id}: {e}")
+        
+        # Remove VRUs from environment list
+        for vru_id in vrus_to_remove:
+            if vru_id in self.vulnerable_road_user_list:
+                self.vulnerable_road_user_list.pop(vru_id)._uninstall()
 
     def _vehicle_in_env_distance(self, mode):
         """Record the distance of all vehicles in the environment.

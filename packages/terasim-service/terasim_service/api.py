@@ -21,6 +21,7 @@ from terasim_service.utils import (
     create_environment,
     create_simulator,
     load_config,
+    resolve_config_paths,
     SimulationConfig,
     SimulationCommand,
     SimulationStatus,
@@ -33,6 +34,7 @@ from terasim_service.utils import (
 def get_map_metadata(config, simulation_id):
     """Get the metadata for the simulation. Store it in redis.
     """
+    # Paths should already be resolved in config
     map_path = Path(config["input"]["sumo_net_file"])
     # the metadata.json is in the same directory as the sumo net file
     metadata_path = map_path.parent / "metadata.json"
@@ -64,9 +66,9 @@ def check_simulation_running(simulation_id: str, redis_client: redis.Redis) -> b
     return status is not None
 
 
-def run_simulation_process(simulation_id: str, config: dict, auto_run: bool, config_file_path: str = None, enable_viz: bool = False, viz_port: int = 8050, viz_update_freq: int = 5):
+def run_simulation_process(simulation_id: str, config: dict, auto_run: bool, enable_viz: bool = False, viz_port: int = 8050, viz_update_freq: int = 5):
     # This function will run in a separate process
-    asyncio.run(run_simulation_task(simulation_id, config, auto_run, config_file_path, enable_viz, viz_port, viz_update_freq))
+    asyncio.run(run_simulation_task(simulation_id, config, auto_run, enable_viz, viz_port, viz_update_freq))
 
 
 description = """
@@ -173,7 +175,7 @@ async def get_av_route(
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-async def run_simulation_task(simulation_id: str, config: dict, auto_run: bool, config_file_path: str = None, enable_viz: bool = False, viz_port: int = 8050, viz_update_freq: int = 5):
+async def run_simulation_task(simulation_id: str, config: dict, auto_run: bool, enable_viz: bool = False, viz_port: int = 8050, viz_update_freq: int = 5):
     try:
         base_dir = (
             Path(config["output"]["dir"])
@@ -260,12 +262,13 @@ async def start_simulation(
         }
     """
     config_data = load_config(config.config_file)
+    config_data = resolve_config_paths(config_data, config.config_file)
     simulation_id = str(uuid.uuid4())
 
     # Start the simulation in a new process
     process = Process(
         target=run_simulation_process,
-        args=(simulation_id, config_data, config.auto_run, config.config_file, enable_viz, viz_port, viz_update_freq),
+        args=(simulation_id, config_data, config.auto_run, enable_viz, viz_port, viz_update_freq),
     )
     process.start()
 

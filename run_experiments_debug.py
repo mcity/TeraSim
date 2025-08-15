@@ -12,8 +12,8 @@ from terasim_nde_nade.envs import NADE, NADEWithAV
 from terasim_nde_nade.vehicle import NDEVehicleFactory
 from terasim_nde_nade.vru import NDEVulnerableRoadUserFactory
 
-import sys
-from pathlib import Path
+# Import resolve_config_paths function
+from terasim_service.utils.base import resolve_config_paths
 
 # Add packages directory to sys path if needed
 # sys.path.append(str(Path(__file__).resolve().parent.parent))
@@ -22,6 +22,16 @@ from pathlib import Path
 
 def main(config_path: str) -> None:
     config = OmegaConf.load(config_path)
+    
+    # Convert OmegaConf to dict for path resolution
+    config_dict = OmegaConf.to_container(config, resolve=True)
+    
+    # Resolve all paths in config
+    config_dict = resolve_config_paths(config_dict, config_path)
+    
+    # Convert back to OmegaConf for attribute access
+    config = OmegaConf.create(config_dict)
+    
     base_dir = Path(config.output.dir) / config.output.name / "raw_data" / config.output.nth
     base_dir.mkdir(parents=True, exist_ok=True)
     env = NADEWithAV(
@@ -37,8 +47,7 @@ def main(config_path: str) -> None:
         configuration=config.environment.parameters,
     )
 
-    # Resolve paths - use absolute if given, otherwise relative to YAML file location
-    config_dir = Path(config_path).parent
+    # Paths already resolved in config
     sumo_net_file = config.input.sumo_net_file
     sumo_config_file = config.input.sumo_config_file
 
@@ -69,7 +78,7 @@ if __name__ == "__main__":
     config_dir = Path(__file__).parent / "examples" / "scenarios"
     # yaml_files = sorted(config_dir.glob("*.yaml"), key=lambda x: int(''.join(filter(str.isdigit, x.stem)) or '0'))
     # yaml_files = ["examples/scenarios/cutin.yaml"]
-    yaml_files = [Path("generated_experiments/ann_arbor_1000m/config_aa.yaml")]
+    yaml_files = [Path("examples/scenarios/Mcity_safety_assessment.yaml")]
     # Randomly shuffle yaml files
     random.shuffle(yaml_files)
 

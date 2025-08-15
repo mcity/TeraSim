@@ -7,11 +7,6 @@ parameters:
 # Simulation type: Choose between "safetest_mcity_av" or "safetest_mcity"
 simulation_type: "safetest_mcity_av"
 
-output:
-  dir: "outputs"  # Output directory (use "output" for non-AV simulations)
-  name: "test"  # Experiment name
-  nth: "0_0"  # Experiment number
-  aggregated_dir: "aggregated"  # Directory for aggregated logs
 
 environment:
   # Module containing the environment class
@@ -172,10 +167,21 @@ simulator:
       - "collision"
       - "tripinfo"
 
+# Path resolution mode:
+# - "config_relative": Relative paths are resolved from the config file's directory
+# - "cwd_relative": Relative paths are resolved from the current working directory
+path_resolution: "config_relative" 
+
 # New section for file paths
 input:
-  sumo_net_file: "/home/mtl/TeraSim/examples/maps/Mcity/mcity.net.xml"
-  sumo_config_file: "/home/mtl/TeraSim/examples/maps/Mcity/mcity.sumocfg"
+  sumo_net_file: "../maps/Mcity/mcity.net.xml"
+  sumo_config_file: "../maps/Mcity/mcity.sumocfg"
+
+output:
+  dir: "outputs"  # Output directory (use "output" for non-AV simulations)
+  name: "Mcity"  # Experiment name
+  nth: "0_0"  # Experiment number
+  aggregated_dir: "aggregated"  # Directory for aggregated logs
 
 logging:
   levels:

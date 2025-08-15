@@ -87,10 +87,17 @@ class EnvTemplateComplete(BaseEnvComplete):
         Args:
             control_commands (dict): The control commands for all vehicles and vulnerable road users.
         """
-        for veh_id, command in control_commands[AgentType.VEHICLE].items():
-            self.vehicle_list[veh_id].apply_control(command)
-        for vru_id, command in control_commands[AgentType.VULNERABLE_ROAD_USER].items():
-            self.vulnerable_road_user_list[vru_id].apply_control(command)
+        # Execute vehicle commands - only for vehicles that exist in both command list and environment
+        vehicle_commands = control_commands[AgentType.VEHICLE]
+        valid_vehicle_ids = set(vehicle_commands.keys()) & set(self.vehicle_list.keys())
+        for veh_id in valid_vehicle_ids:
+            self.vehicle_list[veh_id].apply_control(vehicle_commands[veh_id])
+        
+        # Execute VRU commands - only for VRUs that exist in both command list and environment  
+        vru_commands = control_commands[AgentType.VULNERABLE_ROAD_USER]
+        valid_vru_ids = set(vru_commands.keys()) & set(self.vulnerable_road_user_list.keys())
+        for vru_id in valid_vru_ids:
+            self.vulnerable_road_user_list[vru_id].apply_control(vru_commands[vru_id])
 
     def should_continue_simulation(self):
         """Check whether the simulation has ends, return False or Dict (including reason and info) to stop the simulation. Or return True to continue the simulation.

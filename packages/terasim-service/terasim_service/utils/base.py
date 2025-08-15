@@ -60,6 +60,47 @@ def load_config(config_file):
         return yaml.safe_load(file)
 
 
+def resolve_config_paths(config, config_file_path=None):
+    """Resolve all relative paths in config to absolute paths based on path_resolution setting.
+    
+    Args:
+        config (dict): The configuration dictionary.
+        config_file_path (str): Path to the configuration file (for resolving relative paths).
+    
+    Returns:
+        dict: The configuration with resolved absolute paths.
+    """
+    # Get path resolution mode from config
+    path_resolution = config.get("path_resolution", "config_relative")
+    
+    def resolve_path(path_str):
+        """Resolve a single path based on path_resolution configuration"""
+        path = Path(path_str)
+        if path.is_absolute():
+            return str(path)
+        else:
+            if path_resolution == "cwd_relative":
+                # Relative to current working directory
+                return str(Path(path).resolve())
+            else:  # path_resolution == "config_relative" or not set
+                # Relative to config file location
+                if config_file_path:
+                    yaml_dir = Path(config_file_path).parent
+                    return str((yaml_dir / path).resolve())
+                else:
+                    # Fallback to current directory if no config file path
+                    return str(Path(path).resolve())
+    
+    # Resolve paths in the config
+    if "input" in config:
+        if "sumo_net_file" in config["input"]:
+            config["input"]["sumo_net_file"] = resolve_path(config["input"]["sumo_net_file"])
+        if "sumo_config_file" in config["input"]:
+            config["input"]["sumo_config_file"] = resolve_path(config["input"]["sumo_config_file"])
+    
+    return config
+
+
 def create_environment(config, base_dir):
     """Create the environment based on the configuration.
 
@@ -93,20 +134,16 @@ def create_simulator(config, base_dir):
     """Create the simulator based on the configuration.
 
     Args:
-        config (dict): The configuration dictionary.
+        config (dict): The configuration dictionary with resolved paths.
         base_dir (str): Base directory for the simulator.
-        config_file_path (str): Path to the configuration file (for resolving relative paths).
 
     Returns:
         Simulator: The simulator object.
     """
-    # Resolve paths - use absolute if given, otherwise relative to config file location
-    sumo_net_file = Path(config["input"]["sumo_net_file"])
-    sumo_config_file = Path(config["input"]["sumo_config_file"])
-    
+    # Paths should already be resolved in config
     return Simulator(
-        sumo_net_file_path=sumo_net_file,
-        sumo_config_file_path=sumo_config_file,
+        sumo_net_file_path=config["input"]["sumo_net_file"],
+        sumo_config_file_path=config["input"]["sumo_config_file"],
         num_tries=config["simulator"]["parameters"]["num_tries"],
         gui_flag=config["simulator"]["parameters"]["gui_flag"],
         # gui_flag=True,
