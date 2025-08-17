@@ -14,7 +14,7 @@ from ..trajectory.trajectory_utils_cy import \
     sumo_trajectory_to_normal_trajectory
 
 # Constants
-DEFAULT_DISTANCE_THRESHOLD = 30.0
+DEFAULT_DISTANCE_THRESHOLD = 50.0
 
 def check_collision(np.ndarray[double, ndim=2] traj1,
                    np.ndarray[double, ndim=2] traj2,

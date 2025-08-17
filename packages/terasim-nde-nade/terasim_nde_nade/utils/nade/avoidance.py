@@ -12,7 +12,8 @@ from .tools import get_nde_cmd_from_cmd_info, unavoidable_maneuver_challenge_hoo
 from ..base import CommandType, NDECommand
 from ..trajectory import predict_future_trajectory_vehicle
 
-
+predict_steps = 10 # * duration seconds
+predict_time_resolution = 0.5 # seconds
 def get_vehicle_accept_collision_command():
     """Get the accept collision command for the vehicle.
 
@@ -187,9 +188,9 @@ def add_avoid_accept_collision_command(
                 env_observation[AgentType.VEHICLE][victim_vehicle_id],
                 avoidance_command,
                 sumo_net,
-                time_horizon_step=5,
-                time_resolution=0.5,
-                interpolate_resolution=0.5,
+                time_horizon_step=predict_steps,
+                time_resolution=predict_time_resolution,
+                interpolate_resolution=predict_time_resolution,
                 current_time=None,
                 veh_info=None,
             )
@@ -208,9 +209,9 @@ def add_avoid_accept_collision_command(
                 env_observation[AgentType.VEHICLE][victim_vehicle_id],
                 accept_command,
                 sumo_net,
-                time_horizon_step=5,
-                time_resolution=0.5,
-                interpolate_resolution=0.5,
+                time_horizon_step=predict_steps,
+                time_resolution=predict_time_resolution,
+                interpolate_resolution=predict_time_resolution,
                 current_time=None,
                 veh_info=None,
             )
@@ -253,9 +254,9 @@ def add_avoid_accept_collision_command(
                 env_observation[AgentType.VEHICLE][victim_vehicle_id],
                 avoidance_command,
                 sumo_net,
-                time_horizon_step=5,
-                time_resolution=0.5,
-                interpolate_resolution=0.5,
+                time_horizon_step=predict_steps,
+                time_resolution=predict_time_resolution,
+                interpolate_resolution=predict_time_resolution,
                 current_time=None,
                 veh_info=None,
             )
@@ -274,9 +275,9 @@ def add_avoid_accept_collision_command(
                 env_observation[AgentType.VEHICLE][victim_vehicle_id],
                 accept_command,
                 sumo_net,
-                time_horizon_step=5,
-                time_resolution=0.5,
-                interpolate_resolution=0.5,
+                time_horizon_step=predict_steps,
+                time_resolution=predict_time_resolution,
+                interpolate_resolution=predict_time_resolution,
                 current_time=None,
                 veh_info=None,
             )

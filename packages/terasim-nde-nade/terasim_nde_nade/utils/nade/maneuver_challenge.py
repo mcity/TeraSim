@@ -9,7 +9,7 @@ from ..collision import check_trajectory_intersection
 
 
 predict_steps = 10 # * duration seconds
-vehicle_vehicle_maneuver_challenge_step = 5 # * duration seconds
+vehicle_vehicle_maneuver_challenge_step = 10 # * duration seconds
 vru_to_vehicle_maneuver_challenge_step = 10 # * duration seconds
 vehicle_vru_maneuver_challenge_step = 10 # * durationseconds
 predict_time_resolution = 0.5 # seconds
