@@ -12,7 +12,8 @@ def terasim_to_cosmos_input(path_to_output: Path,
                             camera_setting_name: str = "default",
                             vehicle_id: str = None,
                             timestep_start: int = 0,
-                            timestep_end: int = 100):
+                            timestep_end: int = 100,
+                            streetview_retrieval: bool = False):
     
     print(f"Processing fcd: {path_to_fcd}")
     print(f"Processing map: {path_to_map}")
@@ -28,19 +29,22 @@ def terasim_to_cosmos_input(path_to_output: Path,
         except Exception as e:
             raise Exception(f"Error loading monitor.json: {e}")
     
-    # Use the new class for street view retrieval and analysis
-    streetview_analyzer = StreetViewRetrievalAndAnalysis()
-    streetview_analyzer.get_streetview_image_and_description(
-        path_to_output=path_to_output, 
-        path_to_fcd=path_to_fcd,
-        path_to_map=path_to_map,
-        vehicle_id=vehicle_id,
-        timestep_start=timestep_start,
-        timestep_end=timestep_end
-    )
+    if streetview_retrieval:
+        # Use the new class for street view retrieval and analysis
+        streetview_analyzer = StreetViewRetrievalAndAnalysis()
+        streetview_analyzer.get_streetview_image_and_description(
+            path_to_output=path_to_output, 
+            path_to_fcd=path_to_fcd,
+            path_to_map=path_to_map,
+            vehicle_id=vehicle_id,
+            timestep_start=timestep_start,
+            timestep_end=timestep_end
+        )
     
     convert_terasim_to_wds(
         terasim_record_root=path_to_output,
+        path_to_fcd=path_to_fcd,
+        path_to_map=path_to_map,
         output_wds_path=path_to_output / "wds",
         single_camera=False,
         camera_setting_name=camera_setting_name,
@@ -82,4 +86,5 @@ if __name__ == "__main__":
                             camera_setting_name=camera_setting_name,
                             vehicle_id=vehicle_id,
                             timestep_start=timestep_start,
-                            timestep_end=timestep_end)
+                            timestep_end=timestep_end,
+                            streetview_retrieval=True)
