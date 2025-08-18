@@ -137,4 +137,6 @@ When using TeraSim-World in your research, please cite both TeraSim and the orig
 
 ## License
 
-See LICENSE file in the TeraSim root directory. The original Cosmos-Drive-Dreams toolkits are subject to their own licensing terms.
+This subrepository follows the licensing terms of the [Cosmos-Drive-Dreams toolkits](https://github.com/nv-tlabs/Cosmos-Drive-Dreams) and is subject to their license agreement. This package will be synchronously maintained in the Cosmos-Drive-Dreams repository.
+
+For the broader TeraSim project license, see the LICENSE file in the TeraSim root directory.

@@ -492,8 +492,8 @@ def convert_waymo_tfrecord_to_wds(
     convert_waymo_lidar(output_wds_path, clip_id, dataset)
 
 @click.command()
-@click.option("--waymo_tfrecord_root", "-i", type=str, help="Waymo tfrecord root", default="/home/mtl/waymo_open_dataset")
-@click.option("--output_wds_path", "-o", type=str, help="Output wds path", default="waymo_demo_new")
+@click.option("--waymo_tfrecord_root", "-i", type=str, help="Waymo tfrecord root", required=True)
+@click.option("--output_wds_path", "-o", type=str, help="Output wds path", required=True)
 @click.option("--num_workers", "-n", type=int, default=1, help="Number of workers")
 @click.option("--single_camera", "-s", type=bool, default=False, help="Convert only front camera")
 def main(waymo_tfrecord_root: str, output_wds_path: str, num_workers: int, single_camera: bool):

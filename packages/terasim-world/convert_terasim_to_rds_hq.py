@@ -650,8 +650,8 @@ def convert_terasim_to_wds(
     
 
 @click.command()
-@click.option("--terasim_record_root", "-i", type=str, help="Terasim record root", default="terasim_mcity_dataset")
-@click.option("--output_wds_path", "-o", type=str, help="Output wds path", default="/home/mtl/cosmos-av-sample-toolkits/terasim_demo_headon")
+@click.option("--terasim_record_root", "-i", type=str, help="Terasim record root", required=True)
+@click.option("--output_wds_path", "-o", type=str, help="Output wds path", required=True)
 @click.option("--num_workers", "-n", type=int, default=1, help="Number of workers")
 @click.option("--single_camera", "-s", type=bool, default=False, help="Convert only front camera")
 def main(terasim_record_root: str, output_wds_path: str, num_workers: int, single_camera: bool):

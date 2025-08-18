@@ -274,7 +274,7 @@ def run_single_experiment(params: Tuple[str, str, str]) -> Tuple[str, str, bool]
 if __name__ == "__main__":
     # Example usage:
     run_single_experiment((
-        "/home/mtl/TeraSim-Agent/test_output/task_1748272232676_h7p71kv2i/0", 
+        "path/to/road/directory", 
         "vehicle:intersection_tfl", 
         "intersection_tfl_0"
     ))

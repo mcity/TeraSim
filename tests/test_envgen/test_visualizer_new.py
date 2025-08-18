@@ -443,4 +443,4 @@ if __name__ == "__main__":
     # Process all maps in parallel
     # process_maps_parallel(test_output_dir, max_workers=5)
 
-    test_visualizer("/home/haoweis/TeraSim-Agent/test_output/Ann_Arbor_Michigan_USA_signalized_d076834f", "/home/haoweis/TeraSim-Agent/test_output/Ann_Arbor_Michigan_USA_signalized_d076834f/simulation_output/intersection_tfl_86")
+    test_visualizer("/path/to/road/directory", "/path/to/scenario/directory")

@@ -8,7 +8,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-sumo_map_path = Path("/home/mtl/TeraSim-Agent/test_output_texas_1km_bbox_beginend/0/map.net.xml")
+sumo_map_path = Path("path/to/road/directory/map.net.xml")
 
 # Load SUMO network file
 net = sumolib.net.readNet(str(sumo_map_path))

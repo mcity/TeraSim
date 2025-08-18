@@ -2,11 +2,11 @@ import matplotlib
 import matplotlib.animation as animation
 import matplotlib.pyplot as plt
 
-import SumoTrajVis
+import terasim_vis
 matplotlib.use('Agg')
 # Load net file and trajectory file
-net = SumoTrajVis.Net("/home/mtl/cosmos-av-sample-toolkits/terasim_dataset/e7078100-3635-4e58-a497-64e5528f08e8/map.net.xml")
-trajectories = SumoTrajVis.Trajectories("/home/mtl/cosmos-av-sample-toolkits/terasim_dataset/e7078100-3635-4e58-a497-64e5528f08e8/fcd_all.xml")
+net = terasim_vis.Net("path/to/road/directory/map.net.xml")
+trajectories = terasim_vis.Trajectories("path/to/road/directory/fcd_all.xml")
 # Set trajectory color for different vehicles
 for trajectory in trajectories:
     if trajectory.id == "CAV":

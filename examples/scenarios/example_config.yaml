@@ -8,7 +8,7 @@ parameters:
 simulation_type: "safetest_mcity_av"
 
 output:
-  dir: "/home/haoweis/TeraSim-Deploy/examples/test_output"  # Output directory (use "output" for non-AV simulations)
+  dir: "examples/test_output"  # Output directory (use "output" for non-AV simulations)
   name: "test"  # Experiment name
   nth: "0_0"  # Experiment number
   aggregated_dir: "aggregated"  # Directory for aggregated logs
@@ -78,8 +78,8 @@ simulator:
 
 # New section for file paths
 file_paths:
-  sumo_net_file: "/home/haoweis/TeraSim-Deploy/examples/bot_auto_map/osm.net.xml"
-  sumo_config_file: "/home/haoweis/TeraSim-Deploy/examples/bot_auto_map/osm.sumocfg"
+  sumo_net_file: "path/to/road/directory/map.net.xml"
+  sumo_config_file: "path/to/road/directory/osm.sumocfg"
 
 logging:
   levels:
