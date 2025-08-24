@@ -1,0 +1,19 @@
+map_search:
+  bbox_size: 1000
+  default_city: Ann Arbor, Michigan, USA
+  max_results: 5
+output:
+  base_dir: test_output
+visualization:
+  preview:
+    dpi: 300
+    figure_height: 6
+    figure_width: 8
+    interactive_map: false
+    randomize:
+      enabled: true
+      map_style: true
+      node_selection: true
+      seed: 33
+      visualization: true
+    satellite_view: true
