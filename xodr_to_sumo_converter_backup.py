@@ -343,94 +343,87 @@ class OpenDriveToSumoConverter:
             return "priority"
     
     def _create_nodes(self):
-        """Create Plain XML nodes - one node per junction, regular nodes for road endpoints"""
-        # First pass: Create nodes for normal road endpoints (not connected to junctions)
+        """Create Plain XML nodes"""
+        # First pass: Create connection nodes for road-junction connections
+        # Each road-junction connection gets its own precise node
         for road_id, road in self.road_map.items():
             if road.junction != '-1':
-                continue  # Skip junction internal roads
+                continue  # Skip junction internal roads for now
             
-            # Create start node if not connected to junction
-            if not road.predecessor or road.predecessor['elementType'] != 'junction':
-                start_node = self._create_road_endpoint_node(road, 'start')
+            # Create start node
+            if road.predecessor:
+                if road.predecessor['elementType'] == 'junction':
+                    # Create junction connection node
+                    junction_id = road.predecessor['elementId']
+                    node_id = f"road_{road_id}_from_junction_{junction_id}"
+                    x, y = road.geometry[0]['x'], road.geometry[0]['y'] if road.geometry else (0, 0)
+                    self.nodes.append(PlainNode(id=node_id, x=x, y=y, type="priority"))
+                    # Store for later reference
+                    self.node_map[f"{road_id}_start"] = node_id
+                else:
+                    # Regular node or connection to another road
+                    start_node = self._get_or_create_node(road, 'start')
+                    self.node_map[f"{road_id}_start"] = start_node
+            else:
+                start_node = self._get_or_create_node(road, 'start')
                 self.node_map[f"{road_id}_start"] = start_node
             
-            # Create end node if not connected to junction
-            if not road.successor or road.successor['elementType'] != 'junction':
-                end_node = self._create_road_endpoint_node(road, 'end')
+            # Create end node
+            if road.successor:
+                if road.successor['elementType'] == 'junction':
+                    # Create junction connection node
+                    junction_id = road.successor['elementId']
+                    node_id = f"road_{road_id}_to_junction_{junction_id}"
+                    end_pos = self._calculate_road_end(road)
+                    x, y = end_pos if end_pos else (0, 0)
+                    self.nodes.append(PlainNode(id=node_id, x=x, y=y, type="priority"))
+                    # Store for later reference
+                    self.node_map[f"{road_id}_end"] = node_id
+                else:
+                    # Regular node or connection to another road
+                    end_node = self._get_or_create_node(road, 'end')
+                    self.node_map[f"{road_id}_end"] = end_node
+            else:
+                end_node = self._get_or_create_node(road, 'end')
                 self.node_map[f"{road_id}_end"] = end_node
         
-        # Second pass: Create single node for each junction
-        for junction_id, internal_road_ids in self.junction_roads.items():
-            # Calculate junction center from all internal roads
-            center_x, center_y = self._calculate_junction_center(internal_road_ids)
+        # Second pass: Create any remaining junction nodes
+        # These are junctions that might not be connected by regular roads
+        for junction_id, road_ids in self.junction_roads.items():
+            if junction_id in self.node_map:
+                # Junction already created from road endpoints
+                continue
+                
+            # Use the first internal road's start position as junction position
+            junction_x, junction_y = None, None
+            
+            if road_ids:
+                for road_id in road_ids:
+                    road = self.road_map[road_id]
+                    if road.geometry:
+                        geom = road.geometry[0]
+                        junction_x = geom['x']
+                        junction_y = geom['y']
+                        break
+            
+            # Fallback if no geometry found
+            if junction_x is None or junction_y is None:
+                junction_x, junction_y = 0, 0
+                logger.warning(f"No geometry found for junction {junction_id}, using origin")
             
             # Determine junction type based on complexity
-            junction_type = self._determine_junction_type(junction_id, internal_road_ids)
+            junction_type = self._determine_junction_type(junction_id, road_ids)
             
-            # Create single junction node
             node_id = f"junction_{junction_id}"
             self.nodes.append(PlainNode(
                 id=node_id,
-                x=center_x,
-                y=center_y,
+                x=junction_x,
+                y=junction_y,
                 type=junction_type
             ))
             self.node_map[junction_id] = node_id
-            
-            logger.debug(f"Created junction node {node_id} at ({center_x:.2f}, {center_y:.2f})")
         
-        logger.info(f"Created {len(self.nodes)} nodes ({len(self.junction_roads)} junctions)")
-    
-    def _create_road_endpoint_node(self, road: OpenDriveRoad, position: str) -> str:
-        """Create a node for road endpoint (not connected to junction)"""
-        if position == 'start':
-            if road.geometry:
-                x, y = road.geometry[0]['x'], road.geometry[0]['y']
-            else:
-                x, y = 0, 0
-            node_id = f"node_{road.id}_start"
-        else:  # end
-            end_pos = self._calculate_road_end(road)
-            if end_pos:
-                x, y = end_pos
-            else:
-                x, y = 0, 0
-            node_id = f"node_{road.id}_end"
-        
-        # Check if node already exists at this position
-        tolerance = 0.01
-        for node in self.nodes:
-            if abs(node.x - x) < tolerance and abs(node.y - y) < tolerance:
-                return node.id
-        
-        # Create new node
-        self.nodes.append(PlainNode(id=node_id, x=x, y=y, type="priority"))
-        return node_id
-    
-    def _calculate_junction_center(self, internal_road_ids: List[str]) -> Tuple[float, float]:
-        """Calculate junction center from all internal roads"""
-        points = []
-        
-        for road_id in internal_road_ids:
-            road = self.road_map.get(road_id)
-            if not road or not road.geometry:
-                continue
-            
-            # Add start point
-            points.append((road.geometry[0]['x'], road.geometry[0]['y']))
-            
-            # Add end point
-            end_pos = self._calculate_road_end(road)
-            if end_pos:
-                points.append(end_pos)
-        
-        if points:
-            center_x = sum(p[0] for p in points) / len(points)
-            center_y = sum(p[1] for p in points) / len(points)
-            return center_x, center_y
-        
-        logger.warning(f"No geometry found for junction internal roads, using origin")
-        return 0.0, 0.0
+        logger.info(f"Created {len(self.nodes)} nodes")
     
     def _get_or_create_node(self, road: OpenDriveRoad, position: str) -> str:
         """Get or create node - maintaining precise geometry"""
@@ -605,32 +598,86 @@ class OpenDriveToSumoConverter:
         
         return shape_points
     
-    def _get_road_from_node(self, road: OpenDriveRoad) -> Optional[str]:
-        """Get the from node for a road"""
-        if road.predecessor:
-            if road.predecessor['elementType'] == 'junction':
-                # Road starts from a junction
-                return f"junction_{road.predecessor['elementId']}"
-            elif road.predecessor['elementType'] == 'road':
-                # Road connects to another road - use stored node
-                return self.node_map.get(f"{road.id}_start")
-        # Road has no predecessor - use stored endpoint node
-        return self.node_map.get(f"{road.id}_start")
-    
-    def _get_road_to_node(self, road: OpenDriveRoad) -> Optional[str]:
-        """Get the to node for a road"""
-        if road.successor:
-            if road.successor['elementType'] == 'junction':
-                # Road ends at a junction
-                return f"junction_{road.successor['elementId']}"
-            elif road.successor['elementType'] == 'road':
-                # Road connects to another road - use stored node
-                return self.node_map.get(f"{road.id}_end")
-        # Road has no successor - use stored endpoint node
-        return self.node_map.get(f"{road.id}_end")
-    
-    # Note: _create_junction_edges is no longer needed since we use via points instead
-    # Junction internal roads are not created as explicit edges in the new approach
+    def _create_junction_edges(self):
+        """Create edges for junction internal roads"""
+        for junction_id, connections in self.junction_connections.items():
+            for conn in connections:
+                connecting_road_id = conn['connectingRoad']
+                
+                # Get the connecting road
+                if connecting_road_id not in self.road_map:
+                    logger.warning(f"Connecting road {connecting_road_id} not found")
+                    continue
+                
+                connecting_road = self.road_map[connecting_road_id]
+                
+                # Find the nodes for this junction road
+                incoming_road_id = conn['incomingRoad']
+                contact_point = conn.get('contactPoint', 'start')
+                
+                # Determine from_node based on incoming road
+                if incoming_road_id in self.road_map:
+                    incoming_road = self.road_map[incoming_road_id]
+                    
+                    # Check if incoming road connects to this junction
+                    if incoming_road.successor and incoming_road.successor['elementId'] == junction_id:
+                        from_node = f"road_{incoming_road_id}_to_junction_{junction_id}"
+                    elif incoming_road.predecessor and incoming_road.predecessor['elementId'] == junction_id:
+                        from_node = f"road_{incoming_road_id}_from_junction_{junction_id}"
+                    else:
+                        logger.warning(f"Cannot determine from_node for junction road {connecting_road_id}")
+                        continue
+                else:
+                    logger.warning(f"Incoming road {incoming_road_id} not found")
+                    continue
+                
+                # Determine to_node based on contact_point
+                # When contact_point is "end", the connection is reversed
+                if contact_point == 'end':
+                    # Reverse connection: from connecting road's successor to predecessor
+                    to_node = self._find_junction_road_endpoint(connecting_road, junction_id, find_start=True)
+                else:
+                    # Normal connection: from connecting road's predecessor to successor
+                    to_node = self._find_junction_road_endpoint(connecting_road, junction_id, find_start=False)
+                
+                if not to_node:
+                    # Create a default endpoint node
+                    if contact_point == 'end':
+                        # For reversed connection, use the start position
+                        end_pos = self._calculate_road_start(connecting_road)
+                    else:
+                        end_pos = self._calculate_road_end(connecting_road)
+                        
+                    if end_pos:
+                        to_node = f"junction_{junction_id}_internal_{connecting_road_id}_end"
+                        self.nodes.append(PlainNode(id=to_node, x=end_pos[0], y=end_pos[1], type="priority"))
+                    else:
+                        logger.warning(f"Cannot determine to_node for junction road {connecting_road_id}")
+                        continue
+                
+                # Generate shape for junction road
+                shape_points = self._generate_road_shape(connecting_road)
+                
+                # Reverse shape points if contact_point is "end"
+                if contact_point == 'end' and shape_points:
+                    shape_points = list(reversed(shape_points))
+                
+                # Create edge for junction road
+                edge_id = f"junction_{junction_id}_road_{connecting_road_id}"
+                
+                # Determine number of lanes
+                num_lanes = max(len(connecting_road.lanes_left), len(connecting_road.lanes_right), 1)
+                
+                self.edges.append(PlainEdge(
+                    id=edge_id,
+                    from_node=from_node,
+                    to_node=to_node,
+                    num_lanes=num_lanes,
+                    speed=connecting_road.speed_limit,
+                    name=f"Junction {junction_id} internal",
+                    type="junction",
+                    shape=shape_points if len(shape_points) > 2 else None
+                ))
     
     def _find_junction_road_endpoint(self, junction_road: OpenDriveRoad, junction_id: str, find_start: bool = False) -> Optional[str]:
         """Find the endpoint node for a junction internal road
@@ -676,20 +723,20 @@ class OpenDriveToSumoConverter:
         return None
     
     def _create_edges(self):
-        """Create Plain XML edges - only for normal roads, not junction internal roads"""
+        """Create Plain XML edges"""
+        # First: Create edges for normal roads
         for road_id, road in self.road_map.items():
-            # Skip junction internal roads completely
             if road.junction != '-1':
-                logger.debug(f"Skipping junction internal road {road_id}")
-                continue
+                continue  # Handle junction roads separately
             
-            # Determine from and to nodes
-            from_node = self._get_road_from_node(road)
-            to_node = self._get_road_to_node(road)
+            # Get nodes from our stored mapping
+            from_node = self.node_map.get(f"{road_id}_start")
+            to_node = self.node_map.get(f"{road_id}_end")
             
             if not from_node or not to_node:
-                logger.warning(f"Cannot determine nodes for road {road_id}")
-                continue
+                # Fallback to old method if nodes not found
+                from_node = self._get_or_create_node(road, 'start')
+                to_node = self._get_or_create_node(road, 'end')
             
             # Generate shape points from road geometry
             shape_points = self._generate_road_shape(road)
@@ -707,7 +754,6 @@ class OpenDriveToSumoConverter:
                     type=road.road_type,
                     shape=shape_points if len(shape_points) > 2 else None
                 ))
-                logger.debug(f"Created forward edge {edge_id}: {from_node} -> {to_node}")
             
             # Create backward edge for left lanes (OpenDRIVE left lanes have positive IDs)
             if road.lanes_left:
@@ -724,207 +770,102 @@ class OpenDriveToSumoConverter:
                     type=road.road_type,
                     shape=reversed_shape if reversed_shape and len(reversed_shape) > 2 else None
                 ))
-                logger.debug(f"Created backward edge {edge_id}: {to_node} -> {from_node}")
         
-        logger.info(f"Created {len(self.edges)} edges (junction internal roads excluded)")
+        # Second: Create edges for junction internal roads
+        # Create junction internal roads as edges to ensure connectivity
+        self._create_junction_edges()
+        
+        logger.info(f"Created {len(self.edges)} edges")
     
     def _create_connections(self):
-        """Create Plain XML connections using connecting road geometry as via points"""
+        """Create Plain XML connections with via points from OpenDRIVE junction information"""
         # Process each junction in OpenDRIVE
-        for junction_id, junction_connections in self.junction_connections.items():
-            for conn in junction_connections:
-                # Get connection details
+        for junction in self.junctions:
+            junction_id = junction['id']
+            
+            # Process each connection in the junction
+            for conn in junction.get('connections', []):
                 incoming_road_id = conn.get('incomingRoad')
                 connecting_road_id = conn.get('connectingRoad')
                 contact_point = conn.get('contactPoint', 'start')
                 
-                # Get road objects
-                incoming_road = self.road_map.get(incoming_road_id)
-                connecting_road = self.road_map.get(connecting_road_id)
-                
-                if not incoming_road or not connecting_road:
-                    logger.warning(f"Missing roads for connection: {incoming_road_id} -> {connecting_road_id}")
+                # Skip if roads not found
+                if incoming_road_id not in self.road_map or connecting_road_id not in self.road_map:
+                    logger.warning(f"Road not found for connection: {incoming_road_id} -> {connecting_road_id}")
                     continue
                 
-                # Determine the actual outgoing road
-                outgoing_road_id = self._get_outgoing_road_from_connecting(connecting_road, contact_point)
-                if not outgoing_road_id:
-                    logger.warning(f"Cannot determine outgoing road for connecting road {connecting_road_id}")
-                    continue
+                incoming_road = self.road_map[incoming_road_id]
+                connecting_road = self.road_map[connecting_road_id]
+                
+                # Determine the actual from and to roads based on contactPoint
+                # When contactPoint=end, the connection is reversed
+                if contact_point == 'end':
+                    # The connection is from connecting road's successor to predecessor
+                    if connecting_road.successor and connecting_road.successor['elementType'] == 'road':
+                        actual_from_road_id = connecting_road.successor['elementId']
+                    else:
+                        continue
+                    if connecting_road.predecessor and connecting_road.predecessor['elementType'] == 'road':
+                        actual_to_road_id = connecting_road.predecessor['elementId']
+                    else:
+                        continue
+                else:
+                    # Normal: from incoming road to connecting road's successor
+                    actual_from_road_id = incoming_road_id
+                    if connecting_road.successor and connecting_road.successor['elementType'] == 'road':
+                        actual_to_road_id = connecting_road.successor['elementId']
+                    else:
+                        continue
                 
                 # Extract via points from connecting road geometry
-                via_points = self._extract_connecting_road_geometry(connecting_road, contact_point)
+                via_points = self._extract_via_points(connecting_road, contact_point)
                 
                 # Process lane links
                 for lane_link in conn.get('laneLinks', []):
                     from_lane_id = lane_link.get('from')
                     to_lane_id = lane_link.get('to')
                     
-                    # Determine edges and lanes
-                    from_edge, from_lane = self._get_incoming_edge_and_lane(incoming_road, junction_id, from_lane_id)
-                    to_edge, to_lane = self._get_outgoing_edge_and_lane(outgoing_road_id, junction_id, to_lane_id)
+                    # Get the correct edges
+                    # Use -1 (first driving lane) for simplicity
+                    from_edge, from_lane_idx = self._get_edge_and_lane(actual_from_road_id, -1, 'incoming', junction_id)
+                    to_edge, to_lane_idx = self._get_edge_and_lane(actual_to_road_id, -1, 'outgoing', junction_id)
                     
                     if from_edge and to_edge:
-                        # Verify edges connect at the junction
+                        # Verify that the edges actually connect at the same junction
+                        # Find the actual edges to check their nodes
                         from_edge_obj = next((e for e in self.edges if e.id == from_edge), None)
                         to_edge_obj = next((e for e in self.edges if e.id == to_edge), None)
                         
                         if from_edge_obj and to_edge_obj:
-                            # Both edges should connect to the same junction node
-                            junction_node_id = f"junction_{junction_id}"
-                            if (from_edge_obj.to_node == junction_node_id and 
-                                to_edge_obj.from_node == junction_node_id):
-                                
-                                self.connections.append(PlainConnection(
+                            # Check if they can connect (share a junction or adjacent nodes)
+                            # The from_edge should end at or near where to_edge starts
+                            can_connect = False
+                            
+                            # Check if from_edge's to_node contains junction_id in its name
+                            # and to_edge's from_node also contains junction_id
+                            if (f"junction_{junction_id}" in from_edge_obj.to_node or 
+                                f"to_junction_{junction_id}" in from_edge_obj.to_node):
+                                if (f"junction_{junction_id}" in to_edge_obj.from_node or 
+                                    f"from_junction_{junction_id}" in to_edge_obj.from_node):
+                                    can_connect = True
+                            
+                            # Also check if they connect at the actual junction node
+                            if from_edge_obj.to_node == f"junction_{junction_id}" or to_edge_obj.from_node == f"junction_{junction_id}":
+                                can_connect = True
+                            
+                            if can_connect:
+                                conn_obj = PlainConnection(
                                     from_edge=from_edge,
                                     to_edge=to_edge,
-                                    from_lane=from_lane,
-                                    to_lane=to_lane,
-                                    via=via_points  # Precise turning path
-                                ))
-                                logger.debug(f"Created connection: {from_edge}:{from_lane} -> {to_edge}:{to_lane}")
+                                    from_lane=from_lane_idx,
+                                    to_lane=to_lane_idx,
+                                    via=via_points  # Add via points
+                                )
+                                self.connections.append(conn_obj)
                             else:
-                                logger.debug(f"Edges don't connect at junction {junction_id}")
+                                logger.debug(f"Skipping connection {from_edge} -> {to_edge}: nodes don't match at junction {junction_id}")
         
         logger.info(f"Created {len(self.connections)} connections with via points")
-    
-    def _get_outgoing_road_from_connecting(self, connecting_road: OpenDriveRoad, contact_point: str) -> Optional[str]:
-        """Get the outgoing road ID from a connecting road"""
-        if contact_point == 'end':
-            # Reversed connection - outgoing is at predecessor
-            if connecting_road.predecessor and connecting_road.predecessor['elementType'] == 'road':
-                return connecting_road.predecessor['elementId']
-        else:
-            # Normal connection - outgoing is at successor
-            if connecting_road.successor and connecting_road.successor['elementType'] == 'road':
-                return connecting_road.successor['elementId']
-        return None
-    
-    def _get_incoming_edge_and_lane(self, incoming_road: OpenDriveRoad, junction_id: str, lane_id: int) -> Tuple[Optional[str], int]:
-        """Get edge and lane index for incoming road to junction"""
-        # Determine which edge based on road-junction relationship
-        if incoming_road.successor and incoming_road.successor.get('elementId') == junction_id:
-            # Road arrives at junction via successor
-            if lane_id < 0:  # Right lanes (driving direction)
-                edge_id = f"{incoming_road.id}_forward"
-                lane_idx = abs(lane_id) - 1
-            else:  # Left lanes (opposite direction)
-                edge_id = f"{incoming_road.id}_backward"
-                lane_idx = lane_id - 1
-        elif incoming_road.predecessor and incoming_road.predecessor.get('elementId') == junction_id:
-            # Road arrives at junction via predecessor (reversed)
-            if lane_id < 0:
-                edge_id = f"{incoming_road.id}_backward"
-                lane_idx = abs(lane_id) - 1
-            else:
-                edge_id = f"{incoming_road.id}_forward"
-                lane_idx = lane_id - 1
-        else:
-            return None, 0
-        
-        # Check if edge exists
-        if not any(e.id == edge_id for e in self.edges):
-            return None, 0
-        
-        return edge_id, lane_idx
-    
-    def _get_outgoing_edge_and_lane(self, outgoing_road_id: str, junction_id: str, lane_id: int) -> Tuple[Optional[str], int]:
-        """Get edge and lane index for outgoing road from junction"""
-        outgoing_road = self.road_map.get(outgoing_road_id)
-        if not outgoing_road:
-            return None, 0
-        
-        # Determine which edge based on road-junction relationship
-        if outgoing_road.predecessor and outgoing_road.predecessor.get('elementId') == junction_id:
-            # Road departs from junction via predecessor
-            if lane_id < 0:  # Right lanes
-                edge_id = f"{outgoing_road_id}_forward"
-                lane_idx = abs(lane_id) - 1
-            else:  # Left lanes
-                edge_id = f"{outgoing_road_id}_backward"
-                lane_idx = lane_id - 1
-        elif outgoing_road.successor and outgoing_road.successor.get('elementId') == junction_id:
-            # Road departs from junction via successor (reversed)
-            if lane_id < 0:
-                edge_id = f"{outgoing_road_id}_backward"
-                lane_idx = abs(lane_id) - 1
-            else:
-                edge_id = f"{outgoing_road_id}_forward"
-                lane_idx = lane_id - 1
-        else:
-            return None, 0
-        
-        # Check if edge exists
-        if not any(e.id == edge_id for e in self.edges):
-            return None, 0
-        
-        return edge_id, lane_idx
-    
-    def _extract_connecting_road_geometry(self, connecting_road: OpenDriveRoad, contact_point: str) -> Optional[List[Tuple[float, float]]]:
-        """Extract complete geometry from connecting road as via points"""
-        via_points = []
-        
-        # Generate all geometry points for the connecting road
-        for i, geom in enumerate(connecting_road.geometry):
-            current_x = geom['x']
-            current_y = geom['y']
-            current_hdg = geom['hdg']
-            length = geom['length']
-            
-            if geom['type'] == 'line':
-                # For straight lines, add end point
-                x_end = current_x + length * math.cos(current_hdg)
-                y_end = current_y + length * math.sin(current_hdg)
-                via_points.append((x_end, y_end))
-                
-            elif geom['type'] == 'arc' and 'curvature' in geom:
-                # For arcs, sample multiple points
-                curvature = geom['curvature']
-                if abs(curvature) > 0.0001:
-                    # Sample based on curvature
-                    num_samples = max(3, min(10, int(abs(length * curvature) * 5)))
-                    radius = 1.0 / abs(curvature)
-                    
-                    for j in range(1, num_samples + 1):
-                        t = j / num_samples
-                        angle_change = t * length * curvature
-                        
-                        if curvature > 0:
-                            # Left turn
-                            cx = current_x - radius * math.sin(current_hdg)
-                            cy = current_y + radius * math.cos(current_hdg)
-                            angle = current_hdg + angle_change
-                            x = cx + radius * math.sin(angle)
-                            y = cy - radius * math.cos(angle)
-                        else:
-                            # Right turn
-                            cx = current_x + radius * math.sin(current_hdg)
-                            cy = current_y - radius * math.cos(current_hdg)
-                            angle = current_hdg + angle_change
-                            x = cx - radius * math.sin(angle)
-                            y = cy + radius * math.cos(angle)
-                        
-                        via_points.append((x, y))
-                else:
-                    # Nearly straight, treat as line
-                    x_end = current_x + length * math.cos(current_hdg)
-                    y_end = current_y + length * math.sin(current_hdg)
-                    via_points.append((x_end, y_end))
-            else:
-                # Unsupported geometry, approximate with straight line
-                x_end = current_x + length * math.cos(current_hdg)
-                y_end = current_y + length * math.sin(current_hdg)
-                via_points.append((x_end, y_end))
-        
-        # Reverse points if contact_point is 'end'
-        if contact_point == 'end':
-            via_points = list(reversed(via_points))
-        
-        # Remove first and last points (junction boundaries)
-        if len(via_points) > 2:
-            return via_points[1:-1]
-        
-        return via_points if via_points else None
     
     def _extract_via_points(self, connecting_road: OpenDriveRoad, contact_point: str) -> Optional[List[Tuple[float, float]]]:
         """Extract via points from connecting road geometry
@@ -1146,51 +1087,25 @@ class OpenDriveToSumoConverter:
         logger.info(f"Written connections to {filename} (with via points)")
     
     def _run_netconvert(self, output_prefix: str) -> bool:
-        """Run netconvert to generate final network with optimized parameters"""
+        """Run netconvert to generate final network"""
         try:
             cmd = [
                 'netconvert',
                 '--node-files', f'{output_prefix}.nod.xml',
                 '--edge-files', f'{output_prefix}.edg.xml',
                 '--output-file', f'{output_prefix}.net.xml',
-                
-                # Junction handling - optimized for single-node junctions
+                '--no-turnarounds',
                 '--junctions.join', 'true',
-                '--junctions.join-dist', '10',  # Merge nodes within 10m
-                '--junctions.corner-detail', '5',  # Maximum corner detail
-                '--junctions.internal-link-detail', '5',  # Maximum internal link detail
-                '--junctions.limit-turn-speed', '5.5',  # Limit turning speed
-                
-                # Geometry processing
-                '--geometry.remove', 'false',  # Keep all geometry points
-                '--geometry.min-dist', '0.5',  # Minimum distance between geometry points
-                '--rectangular-lane-cut', 'true',  # Use rectangular lane cutting at junctions
-                
-                # Connection handling
-                '--no-turnarounds', 'true',  # Disable U-turns
-                '--no-internal-links', 'false',  # Generate internal links
-                '--check-lane-foes.all', 'true',  # Check all lane conflicts
-                
-                # Edge processing
-                '--edges.join', 'false',  # Don't join edges (we want to preserve our structure)
-                
-                # Output options
-                '--output.street-names', 'true',  # Preserve street names
-                '--output.original-names', 'true',  # Keep original IDs
+                '--junctions.join-dist', '10',
+                '--edges.join', 'true'
             ]
             
-            # Add connections file if it exists
+            # Add connections file (if exists)
             conn_file = f'{output_prefix}.con.xml'
             if os.path.exists(conn_file):
                 cmd.extend(['--connection-files', conn_file])
-                logger.info(f"Using connections file: {conn_file}")
-            
-            # Add verbose output if requested
-            if self.verbose:
-                cmd.append('--verbose')
             
             # Run netconvert
-            logger.info("Running netconvert with optimized parameters...")
             result = subprocess.run(cmd, capture_output=True, text=True)
             
             if result.returncode == 0:
@@ -1201,24 +1116,15 @@ class OpenDriveToSumoConverter:
                     tree = ET.parse(f'{output_prefix}.net.xml')
                     root = tree.getroot()
                     
-                    # Count elements
-                    junctions = root.findall('.//junction')
-                    regular_junctions = [j for j in junctions if j.get('type') != 'internal']
-                    edges = root.findall('.//edge')
-                    regular_edges = [e for e in edges if not e.get('id', '').startswith(':')]
-                    internal_edges = [e for e in edges if e.get('id', '').startswith(':')]
-                    connections = root.findall('.//connection')
+                    junctions = len(root.findall('.//junction'))
+                    edges = len([e for e in root.findall('.//edge') if not e.get('id', '').startswith(':')])
+                    connections = len(root.findall('.//connection'))
                     
-                    logger.info(f"Network statistics:")
-                    logger.info(f"  Junctions: {len(regular_junctions)} regular, {len(junctions) - len(regular_junctions)} internal")
-                    logger.info(f"  Edges: {len(regular_edges)} regular, {len(internal_edges)} internal")
-                    logger.info(f"  Connections: {len(connections)}")
+                    logger.info(f"Network statistics: {junctions} junctions, {edges} edges, {connections} connections")
                 
                 return True
             else:
-                logger.error(f"netconvert failed with return code {result.returncode}")
-                if result.stderr:
-                    logger.error(f"Error output: {result.stderr}")
+                logger.error(f"netconvert failed: {result.stderr}")
                 return False
                 
         except Exception as e:
