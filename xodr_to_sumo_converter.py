@@ -835,7 +835,7 @@ class OpenDriveToSumoConverter:
                     
                     # Determine edges and lanes
                     from_edge, from_lane = self._get_incoming_edge_and_lane(incoming_road, junction_id, from_lane_id)
-                    to_edge, to_lane = self._get_outgoing_edge_and_lane(outgoing_road_id, junction_id, to_lane_id)
+                    to_edge, to_lane = self._get_outgoing_edge_and_lane(outgoing_road_id, junction_id, to_lane_id, contact_point)
                     
                     if from_edge and to_edge:
                         # Verify edges connect at the junction
@@ -922,11 +922,24 @@ class OpenDriveToSumoConverter:
         
         return edge_id, lane_idx
     
-    def _get_outgoing_edge_and_lane(self, outgoing_road_id: str, junction_id: str, lane_id: int) -> Tuple[Optional[str], int]:
-        """Get edge and lane index for outgoing road from junction"""
+    def _get_outgoing_edge_and_lane(self, outgoing_road_id: str, junction_id: str, lane_id: int, contact_point: str = 'start') -> Tuple[Optional[str], int]:
+        """Get edge and lane index for outgoing road from junction
+        
+        Args:
+            outgoing_road_id: The outgoing road ID
+            junction_id: The junction ID
+            lane_id: The lane ID from the connecting road's laneLink
+            contact_point: 'start' or 'end' - if 'end', the connecting road is reversed
+        """
         outgoing_road = self.road_map.get(outgoing_road_id)
         if not outgoing_road:
             return None, 0
+        
+        # When contact_point='end', the connecting road is traversed in reverse
+        # This means the lane IDs are also reversed (positive becomes negative and vice versa)
+        if contact_point == 'end':
+            lane_id = -lane_id
+            logger.debug(f"Reversed lane_id for contact_point='end': {-lane_id} -> {lane_id}")
         
         # Determine which edge based on road-junction relationship
         if outgoing_road.predecessor and outgoing_road.predecessor.get('elementId') == junction_id:
