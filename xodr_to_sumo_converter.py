@@ -408,7 +408,54 @@ class OpenDriveToSumoConverter:
         return node_id
     
     def _calculate_junction_center(self, internal_road_ids: List[str]) -> Tuple[float, float]:
-        """Calculate junction center from all internal roads"""
+        """Calculate junction center from connected normal roads' endpoints"""
+        # First, find the junction ID from internal roads
+        junction_id = None
+        for road_id in internal_road_ids:
+            road = self.road_map.get(road_id)
+            if road and road.junction != '-1':
+                junction_id = road.junction
+                break
+        
+        if not junction_id:
+            # Fallback to original method
+            return self._calculate_junction_center_from_internal_roads(internal_road_ids)
+        
+        # Collect connection points from normal roads
+        connection_points = []
+        
+        # Find all normal roads that connect to this junction
+        for road_id, road in self.road_map.items():
+            if road.junction != '-1':  # Skip internal roads
+                continue
+            
+            # Check if road ends at this junction (via successor)
+            if road.successor and road.successor.get('elementType') == 'junction' and road.successor.get('elementId') == junction_id:
+                end_point = self._calculate_road_end(road)
+                if end_point:
+                    connection_points.append(end_point)
+                    logger.debug(f"Road {road_id} ends at junction {junction_id}: {end_point}")
+            
+            # Check if road starts from this junction (via predecessor)
+            if road.predecessor and road.predecessor.get('elementType') == 'junction' and road.predecessor.get('elementId') == junction_id:
+                if road.geometry:
+                    start_point = (road.geometry[0]['x'], road.geometry[0]['y'])
+                    connection_points.append(start_point)
+                    logger.debug(f"Road {road_id} starts from junction {junction_id}: {start_point}")
+        
+        # Use connection points if found
+        if connection_points:
+            center_x = sum(p[0] for p in connection_points) / len(connection_points)
+            center_y = sum(p[1] for p in connection_points) / len(connection_points)
+            logger.debug(f"Junction {junction_id} center from {len(connection_points)} connection points: ({center_x:.2f}, {center_y:.2f})")
+            return center_x, center_y
+        
+        # Fallback to internal roads method
+        logger.debug(f"No connection points found for junction {junction_id}, using internal roads")
+        return self._calculate_junction_center_from_internal_roads(internal_road_ids)
+    
+    def _calculate_junction_center_from_internal_roads(self, internal_road_ids: List[str]) -> Tuple[float, float]:
+        """Fallback method: Calculate junction center from internal roads"""
         points = []
         
         for road_id in internal_road_ids:
@@ -551,19 +598,21 @@ class OpenDriveToSumoConverter:
             elif geom['type'] == 'arc' and 'curvature' in geom:
                 # Sample arc with intermediate points
                 curvature = geom['curvature']
+                arc_length = geom['length']
+                
                 if abs(curvature) < 0.0001:
                     # Nearly straight, treat as line
                     x_start = geom['x']
                     y_start = geom['y']
-                    x_end = x_start + geom['length'] * math.cos(geom['hdg'])
-                    y_end = y_start + geom['length'] * math.sin(geom['hdg'])
+                    x_end = x_start + arc_length * math.cos(geom['hdg'])
+                    y_end = y_start + arc_length * math.sin(geom['hdg'])
                     if not shape_points:
                         shape_points.append((x_start, y_start))
                     shape_points.append((x_end, y_end))
                 else:
-                    # Sample arc with points
+                    # Sample arc with improved density
                     radius = 1.0 / abs(curvature)
-                    angle_change = geom['length'] * curvature
+                    angle_change = arc_length * curvature
                     
                     # Calculate center of arc
                     if curvature > 0:
@@ -573,9 +622,15 @@ class OpenDriveToSumoConverter:
                         cx = geom['x'] + radius * math.sin(geom['hdg'])
                         cy = geom['y'] - radius * math.cos(geom['hdg'])
                     
-                    # Sample points along arc
-                    # Use adaptive sampling based on curvature
-                    num_samples = max(3, int(abs(angle_change) * 10))  # More samples for sharper curves
+                    # Improved sampling strategy
+                    # 1. Based on arc length: one point every 2 meters
+                    # 2. Based on angle: one point every 5 degrees
+                    # 3. Minimum 3 points, maximum 50 points
+                    samples_by_length = arc_length / 2.0  # One point every 2 meters
+                    samples_by_angle = abs(angle_change) * 180.0 / math.pi / 5.0  # One point every 5 degrees
+                    num_samples = int(max(3, min(50, max(samples_by_length, samples_by_angle))))
+                    
+                    logger.debug(f"Arc sampling: length={arc_length:.2f}m, curvature={curvature:.4f}, samples={num_samples}")
                     
                     for i in range(num_samples + 1):
                         t = i / num_samples
@@ -588,9 +643,9 @@ class OpenDriveToSumoConverter:
                             x = cx - radius * math.sin(current_angle)
                             y = cy + radius * math.cos(current_angle)
                         
-                        # Avoid duplicates
-                        if not shape_points or (abs(x - shape_points[-1][0]) > 0.1 or 
-                                                abs(y - shape_points[-1][1]) > 0.1):
+                        # Avoid duplicates (with smaller tolerance for better precision)
+                        if not shape_points or (abs(x - shape_points[-1][0]) > 0.01 or 
+                                                abs(y - shape_points[-1][1]) > 0.01):
                             shape_points.append((x, y))
             else:
                 # Unsupported geometry type, use straight line approximation
@@ -705,7 +760,7 @@ class OpenDriveToSumoConverter:
                     speed=road.speed_limit,
                     name=road.name,
                     type=road.road_type,
-                    shape=shape_points if len(shape_points) > 2 else None
+                    shape=shape_points if len(shape_points) >= 2 else None
                 ))
                 logger.debug(f"Created forward edge {edge_id}: {from_node} -> {to_node}")
             
@@ -722,7 +777,7 @@ class OpenDriveToSumoConverter:
                     speed=road.speed_limit,
                     name=road.name,
                     type=road.road_type,
-                    shape=reversed_shape if reversed_shape and len(reversed_shape) > 2 else None
+                    shape=reversed_shape if reversed_shape and len(reversed_shape) >= 2 else None
                 ))
                 logger.debug(f"Created backward edge {edge_id}: {to_node} -> {from_node}")
         
@@ -730,9 +785,17 @@ class OpenDriveToSumoConverter:
     
     def _create_connections(self):
         """Create Plain XML connections using connecting road geometry as via points"""
+        total_connections = 0
+        successful_connections = 0
+        failed_connections = 0
+        
         # Process each junction in OpenDRIVE
         for junction_id, junction_connections in self.junction_connections.items():
+            logger.info(f"Processing junction {junction_id}: {len(junction_connections)} connections")
+            
             for conn in junction_connections:
+                total_connections += 1
+                
                 # Get connection details
                 incoming_road_id = conn.get('incomingRoad')
                 connecting_road_id = conn.get('connectingRoad')
@@ -744,18 +807,28 @@ class OpenDriveToSumoConverter:
                 
                 if not incoming_road or not connecting_road:
                     logger.warning(f"Missing roads for connection: {incoming_road_id} -> {connecting_road_id}")
+                    failed_connections += 1
                     continue
+                
+                # Special logging for road 107 issue
+                if connecting_road_id == "107":
+                    logger.info(f"Processing Road 107: incoming={incoming_road_id}, contact={contact_point}")
                 
                 # Determine the actual outgoing road
                 outgoing_road_id = self._get_outgoing_road_from_connecting(connecting_road, contact_point)
                 if not outgoing_road_id:
                     logger.warning(f"Cannot determine outgoing road for connecting road {connecting_road_id}")
+                    failed_connections += 1
                     continue
+                
+                if connecting_road_id == "107":
+                    logger.info(f"Road 107 outgoing road: {outgoing_road_id}")
                 
                 # Extract via points from connecting road geometry
                 via_points = self._extract_connecting_road_geometry(connecting_road, contact_point)
                 
                 # Process lane links
+                connection_created = False
                 for lane_link in conn.get('laneLinks', []):
                     from_lane_id = lane_link.get('from')
                     to_lane_id = lane_link.get('to')
@@ -783,19 +856,40 @@ class OpenDriveToSumoConverter:
                                     via=via_points  # Precise turning path
                                 ))
                                 logger.debug(f"Created connection: {from_edge}:{from_lane} -> {to_edge}:{to_lane}")
+                                connection_created = True
+                                successful_connections += 1
                             else:
-                                logger.debug(f"Edges don't connect at junction {junction_id}")
+                                logger.warning(f"Junction {junction_id} connection failed - nodes don't match:")
+                                logger.warning(f"  from_edge ({from_edge}): to_node={from_edge_obj.to_node}")
+                                logger.warning(f"  to_edge ({to_edge}): from_node={to_edge_obj.from_node}")
+                                logger.warning(f"  expected junction node: {junction_node_id}")
+                                failed_connections += 1
+                    else:
+                        if not from_edge:
+                            logger.debug(f"Could not find from_edge for road {incoming_road_id}")
+                        if not to_edge:
+                            logger.debug(f"Could not find to_edge for road {outgoing_road_id}")
+                        failed_connections += 1
+                
+                if not connection_created and connecting_road_id == "107":
+                    logger.warning(f"Road 107 connection was not created!")
         
+        logger.info(f"Connection statistics:")
+        logger.info(f"  Total connections in OpenDRIVE: {total_connections}")
+        logger.info(f"  Successfully created: {successful_connections}")
+        logger.info(f"  Failed: {failed_connections}")
         logger.info(f"Created {len(self.connections)} connections with via points")
     
     def _get_outgoing_road_from_connecting(self, connecting_road: OpenDriveRoad, contact_point: str) -> Optional[str]:
         """Get the outgoing road ID from a connecting road"""
         if contact_point == 'end':
-            # Reversed connection - outgoing is at predecessor
+            # Reversed connection - connecting road is traversed from end to start
+            # So the outgoing road is at the start (predecessor)
             if connecting_road.predecessor and connecting_road.predecessor['elementType'] == 'road':
                 return connecting_road.predecessor['elementId']
         else:
-            # Normal connection - outgoing is at successor
+            # Normal connection - connecting road is traversed from start to end
+            # So the outgoing road is at the end (successor)
             if connecting_road.successor and connecting_road.successor['elementType'] == 'road':
                 return connecting_road.successor['elementId']
         return None
@@ -1110,7 +1204,7 @@ class OpenDriveToSumoConverter:
                 edge_elem.set('type', edge.type)
             
             # Add shape if available
-            if edge.shape and len(edge.shape) > 2:
+            if edge.shape and len(edge.shape) >= 2:
                 shape_str = ' '.join([f"{x:.2f},{y:.2f}" for x, y in edge.shape])
                 edge_elem.set('shape', shape_str)
         
