@@ -344,23 +344,48 @@ class OpenDriveToSumoConverter:
     
     def _create_nodes(self):
         """Create Plain XML nodes - one node per junction, regular nodes for road endpoints"""
-        # First pass: Create nodes for normal road endpoints (not connected to junctions)
+        # Collect all junction IDs referenced by roads
+        referenced_junctions = set()
+        junction_road_endpoints = {}  # junction_id -> list of (x, y, road_id, position)
+        
+        # First pass: Identify junction connections and collect connection points
         for road_id, road in self.road_map.items():
             if road.junction != '-1':
                 continue  # Skip junction internal roads
             
-            # Create start node if not connected to junction
-            if not road.predecessor or road.predecessor['elementType'] != 'junction':
+            # Check predecessor
+            if road.predecessor and road.predecessor['elementType'] == 'junction':
+                junction_id = road.predecessor['elementId']
+                referenced_junctions.add(junction_id)
+                start_pos = self._calculate_road_start(road)
+                if start_pos:
+                    if junction_id not in junction_road_endpoints:
+                        junction_road_endpoints[junction_id] = []
+                    junction_road_endpoints[junction_id].append((start_pos[0], start_pos[1], road_id, 'start'))
+            else:
+                # Create regular start node
                 start_node = self._create_road_endpoint_node(road, 'start')
                 self.node_map[f"{road_id}_start"] = start_node
             
-            # Create end node if not connected to junction
-            if not road.successor or road.successor['elementType'] != 'junction':
+            # Check successor
+            if road.successor and road.successor['elementType'] == 'junction':
+                junction_id = road.successor['elementId']
+                referenced_junctions.add(junction_id)
+                end_pos = self._calculate_road_end(road)
+                if end_pos:
+                    if junction_id not in junction_road_endpoints:
+                        junction_road_endpoints[junction_id] = []
+                    junction_road_endpoints[junction_id].append((end_pos[0], end_pos[1], road_id, 'end'))
+            else:
+                # Create regular end node
                 end_node = self._create_road_endpoint_node(road, 'end')
                 self.node_map[f"{road_id}_end"] = end_node
         
-        # Second pass: Create single node for each junction
+        # Second pass: Create junction nodes from internal roads (if any)
         for junction_id, internal_road_ids in self.junction_roads.items():
+            if junction_id in referenced_junctions:
+                continue  # Already handled by road connections
+                
             # Calculate junction center from all internal roads
             center_x, center_y = self._calculate_junction_center(internal_road_ids)
             
@@ -379,7 +404,31 @@ class OpenDriveToSumoConverter:
             
             logger.debug(f"Created junction node {node_id} at ({center_x:.2f}, {center_y:.2f})")
         
-        logger.info(f"Created {len(self.nodes)} nodes ({len(self.junction_roads)} junctions)")
+        # Third pass: Create junction nodes from road connections
+        for junction_id in referenced_junctions:
+            if junction_id in self.node_map:
+                continue  # Already created
+                
+            # Calculate junction center from connecting road endpoints
+            if junction_id in junction_road_endpoints:
+                points = junction_road_endpoints[junction_id]
+                center_x = sum(p[0] for p in points) / len(points)
+                center_y = sum(p[1] for p in points) / len(points)
+                
+                # Create junction node
+                node_id = f"junction_{junction_id}"
+                self.nodes.append(PlainNode(
+                    id=node_id,
+                    x=center_x,
+                    y=center_y,
+                    type="priority"
+                ))
+                self.node_map[junction_id] = node_id
+                
+                logger.debug(f"Created junction node {node_id} at ({center_x:.2f}, {center_y:.2f}) from {len(points)} road connections")
+        
+        total_junctions = len(self.junction_roads) + len(referenced_junctions - set(self.junction_roads.keys()))
+        logger.info(f"Created {len(self.nodes)} nodes ({total_junctions} junctions)")
     
     def _create_road_endpoint_node(self, road: OpenDriveRoad, position: str) -> str:
         """Create a node for road endpoint (not connected to junction)"""
@@ -848,16 +897,23 @@ class OpenDriveToSumoConverter:
                             if (from_edge_obj.to_node == junction_node_id and 
                                 to_edge_obj.from_node == junction_node_id):
                                 
-                                self.connections.append(PlainConnection(
-                                    from_edge=from_edge,
-                                    to_edge=to_edge,
-                                    from_lane=from_lane,
-                                    to_lane=to_lane,
-                                    via=via_points  # Precise turning path
-                                ))
-                                logger.debug(f"Created connection: {from_edge}:{from_lane} -> {to_edge}:{to_lane}")
-                                connection_created = True
-                                successful_connections += 1
+                                # Validate lane indices exist
+                                if (from_lane < from_edge_obj.num_lanes and 
+                                    to_lane < to_edge_obj.num_lanes):
+                                    
+                                    self.connections.append(PlainConnection(
+                                        from_edge=from_edge,
+                                        to_edge=to_edge,
+                                        from_lane=from_lane,
+                                        to_lane=to_lane,
+                                        via=via_points  # Precise turning path
+                                    ))
+                                    logger.debug(f"Created connection: {from_edge}:{from_lane} -> {to_edge}:{to_lane}")
+                                    connection_created = True
+                                    successful_connections += 1
+                                else:
+                                    logger.debug(f"Invalid lane indices: {from_edge}:{from_lane} (max {from_edge_obj.num_lanes-1}) -> {to_edge}:{to_lane} (max {to_edge_obj.num_lanes-1})")
+                                    failed_connections += 1
                             else:
                                 logger.warning(f"Junction {junction_id} connection failed - nodes don't match:")
                                 logger.warning(f"  from_edge ({from_edge}): to_node={from_edge_obj.to_node}")
