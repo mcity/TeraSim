@@ -839,9 +839,10 @@ class OpenDriveToSumoConverter:
                 # SUMO: index 0 (rightmost) to index n-1 (leftmost)
                 for lane_info in sorted(road.lanes_right, key=lambda x: x['id']):  # Sort by ID ascending
                     lane_dict = {'width': lane_info.get('width', 3.2)}
-                    # Set restrictions for shoulder lanes
+                    # Set type and restrictions for shoulder lanes
                     if lane_info['type'] == 'shoulder':
-                        lane_dict['allow'] = 'emergency'
+                        lane_dict['type'] = 'shoulder'  # Set lane type
+                        lane_dict['disallow'] = 'all'   # Disallow all vehicles
                     lane_data.append(lane_dict)
                 
                 self.edges.append(PlainEdge(
@@ -866,9 +867,10 @@ class OpenDriveToSumoConverter:
                 lane_data = []
                 for lane_info in sorted(road.lanes_left, key=lambda x: x['id']):  # Sort by ID ascending
                     lane_dict = {'width': lane_info.get('width', 3.2)}
-                    # Set restrictions for shoulder lanes
+                    # Set type and restrictions for shoulder lanes
                     if lane_info['type'] == 'shoulder':
-                        lane_dict['allow'] = 'emergency'
+                        lane_dict['type'] = 'shoulder'  # Set lane type
+                        lane_dict['disallow'] = 'all'   # Disallow all vehicles
                     lane_data.append(lane_dict)
                 
                 self.edges.append(PlainEdge(
@@ -1542,8 +1544,12 @@ class OpenDriveToSumoConverter:
                     lane_elem.set('index', str(i))
                     if 'width' in lane_data:
                         lane_elem.set('width', str(lane_data['width']))
+                    if 'type' in lane_data:
+                        lane_elem.set('type', lane_data['type'])
                     if 'allow' in lane_data:
                         lane_elem.set('allow', lane_data['allow'])
+                    if 'disallow' in lane_data:
+                        lane_elem.set('disallow', lane_data['disallow'])
         
         tree = ET.ElementTree(root)
         ET.indent(tree, space='    ')
