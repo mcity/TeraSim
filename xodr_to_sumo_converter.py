@@ -41,6 +41,7 @@ class PlainEdge:
     type: str = ""
     name: str = ""
     shape: Optional[List[Tuple[float, float]]] = None  # Edge shape points
+    lane_data: Optional[List[Dict]] = None  # List of lane data with restrictions
     
 @dataclass
 class PlainConnection:
@@ -249,10 +250,12 @@ class OpenDriveToSumoConverter:
                 left = lane_section.find('.//left')
                 if left is not None:
                     for lane in left.findall('.//lane'):
-                        if lane.get('type') in ['driving', 'entry', 'exit', 'onRamp', 'offRamp']:
+                        lane_type = lane.get('type')
+                        # Include shoulder lanes as well as driving lanes
+                        if lane_type in ['driving', 'entry', 'exit', 'onRamp', 'offRamp', 'shoulder']:
                             road.lanes_left.append({
                                 'id': int(lane.get('id')),
-                                'type': lane.get('type'),
+                                'type': lane_type,
                                 'width': self._get_lane_width(lane)
                             })
                 
@@ -260,10 +263,12 @@ class OpenDriveToSumoConverter:
                 right = lane_section.find('.//right')
                 if right is not None:
                     for lane in right.findall('.//lane'):
-                        if lane.get('type') in ['driving', 'entry', 'exit', 'onRamp', 'offRamp']:
+                        lane_type = lane.get('type')
+                        # Include shoulder lanes as well as driving lanes
+                        if lane_type in ['driving', 'entry', 'exit', 'onRamp', 'offRamp', 'shoulder']:
                             road.lanes_right.append({
                                 'id': int(lane.get('id')),
-                                'type': lane.get('type'),
+                                'type': lane_type,
                                 'width': self._get_lane_width(lane)
                             })
         
@@ -289,10 +294,16 @@ class OpenDriveToSumoConverter:
         return road
     
     def _get_lane_width(self, lane_elem: ET.Element) -> float:
-        """Get lane width"""
-        width_elem = lane_elem.find('.//width')
-        if width_elem is not None:
-            return float(width_elem.get('a', 3.5))
+        """Get lane width - take the last width element which is the actual width"""
+        width_elems = lane_elem.findall('.//width')
+        if width_elems:
+            # Use the last width element (OpenDRIVE often has multiple with sOffset)
+            for width_elem in reversed(width_elems):
+                a_val = width_elem.get('a')
+                if a_val and float(a_val) > 0:
+                    return float(a_val)
+            # If all width elements have a=0, use default
+            return 3.5
         return 3.5
     
     def _determine_junction_type(self, junction_id: str, internal_road_ids: List[str]) -> str:
@@ -779,12 +790,32 @@ class OpenDriveToSumoConverter:
         
         return None
     
+    def _is_connecting_road(self, road_id: str) -> bool:
+        """Check if a road is used as a connecting road in any junction
+        
+        Args:
+            road_id: The road ID to check
+            
+        Returns:
+            True if the road is used as a connecting road in any junction connection
+        """
+        for junction_connections in self.junction_connections.values():
+            for conn in junction_connections:
+                if conn.get('connectingRoad') == road_id:
+                    return True
+        return False
+    
     def _create_edges(self):
         """Create Plain XML edges - only for normal roads, not junction internal roads"""
         for road_id, road in self.road_map.items():
             # Skip junction internal roads completely
             if road.junction != '-1':
                 logger.debug(f"Skipping junction internal road {road_id}")
+                continue
+            
+            # Check if this road is used as a connecting road
+            if self._is_connecting_road(road_id):
+                logger.info(f"Road {road_id} is used as a connecting road (junction=-1), will use its geometry for junction connections")
                 continue
             
             # Determine from and to nodes
@@ -801,6 +832,18 @@ class OpenDriveToSumoConverter:
             # Create forward edge for right lanes (OpenDRIVE right lanes have negative IDs)
             if road.lanes_right:
                 edge_id = f"{road_id}_forward"
+                # Prepare lane data with restrictions
+                lane_data = []
+                # Sort by ID ascending to map outer lanes to lower indices
+                # OpenDRIVE: -4 (outermost) to -1 (innermost)
+                # SUMO: index 0 (rightmost) to index n-1 (leftmost)
+                for lane_info in sorted(road.lanes_right, key=lambda x: x['id']):  # Sort by ID ascending
+                    lane_dict = {'width': lane_info.get('width', 3.2)}
+                    # Set restrictions for shoulder lanes
+                    if lane_info['type'] == 'shoulder':
+                        lane_dict['allow'] = 'emergency'
+                    lane_data.append(lane_dict)
+                
                 self.edges.append(PlainEdge(
                     id=edge_id,
                     from_node=from_node,
@@ -809,7 +852,8 @@ class OpenDriveToSumoConverter:
                     speed=road.speed_limit,
                     name=road.name,
                     type=road.road_type,
-                    shape=shape_points if len(shape_points) >= 2 else None
+                    shape=shape_points if len(shape_points) >= 2 else None,
+                    lane_data=lane_data
                 ))
                 logger.debug(f"Created forward edge {edge_id}: {from_node} -> {to_node}")
             
@@ -818,6 +862,15 @@ class OpenDriveToSumoConverter:
                 edge_id = f"{road_id}_backward"
                 # Reverse shape points for backward direction
                 reversed_shape = list(reversed(shape_points)) if shape_points else None
+                # Prepare lane data with restrictions
+                lane_data = []
+                for lane_info in sorted(road.lanes_left, key=lambda x: x['id']):  # Sort by ID ascending
+                    lane_dict = {'width': lane_info.get('width', 3.2)}
+                    # Set restrictions for shoulder lanes
+                    if lane_info['type'] == 'shoulder':
+                        lane_dict['allow'] = 'emergency'
+                    lane_data.append(lane_dict)
+                
                 self.edges.append(PlainEdge(
                     id=edge_id,
                     from_node=to_node,  # Note: direction is reversed
@@ -826,11 +879,26 @@ class OpenDriveToSumoConverter:
                     speed=road.speed_limit,
                     name=road.name,
                     type=road.road_type,
-                    shape=reversed_shape if reversed_shape and len(reversed_shape) >= 2 else None
+                    shape=reversed_shape if reversed_shape and len(reversed_shape) >= 2 else None,
+                    lane_data=lane_data
                 ))
                 logger.debug(f"Created backward edge {edge_id}: {to_node} -> {from_node}")
         
+        # Validation: Count roads and edges to ensure correctness
+        normal_roads = [r for r_id, r in self.road_map.items() if r.junction == '-1']
+        connecting_roads = [r for r in normal_roads if self._is_connecting_road(r.id)]
+        expected_max_edges = len(normal_roads) - len(connecting_roads)
+        
         logger.info(f"Created {len(self.edges)} edges (junction internal roads excluded)")
+        logger.info(f"  Total roads: {len(self.road_map)}")
+        logger.info(f"  Normal roads (junction=-1): {len(normal_roads)}")
+        logger.info(f"  Connecting roads: {len(connecting_roads)}")
+        logger.info(f"  Expected max edges: {expected_max_edges * 2}")  # *2 for forward/backward
+        
+        if len(self.edges) > expected_max_edges * 2:
+            logger.warning(f"Warning: More edges than expected! Possible junction explosion?")
+            logger.warning(f"  Created edges: {len(self.edges)}")
+            logger.warning(f"  Expected max: {expected_max_edges * 2}")
     
     def _create_connections(self):
         """Create Plain XML connections using connecting road geometry as via points"""
@@ -873,8 +941,17 @@ class OpenDriveToSumoConverter:
                 if connecting_road_id == "107":
                     logger.info(f"Road 107 outgoing road: {outgoing_road_id}")
                 
-                # Extract via points from connecting road geometry
-                via_points = self._extract_connecting_road_geometry(connecting_road, contact_point)
+                # Check if connecting road is a normal road or junction internal road
+                if connecting_road.junction == '-1':
+                    # This is a normal road being used as a connecting road
+                    # Use its FULL geometry as the junction internal path
+                    logger.debug(f"Connecting road {connecting_road_id} is a normal road (junction=-1), using full geometry")
+                    via_points = self._extract_full_road_geometry(connecting_road)
+                else:
+                    # This is a junction internal road
+                    # Extract via points from connecting road geometry
+                    logger.debug(f"Connecting road {connecting_road_id} is junction internal (junction={connecting_road.junction})")
+                    via_points = self._extract_connecting_road_geometry(connecting_road, contact_point)
                 
                 # Process lane links
                 connection_created = False
@@ -957,18 +1034,44 @@ class OpenDriveToSumoConverter:
             # Road arrives at junction via successor
             if lane_id < 0:  # Right lanes (driving direction)
                 edge_id = f"{incoming_road.id}_forward"
-                lane_idx = abs(lane_id) - 1
+                # Find the actual lane index in the sorted lanes list
+                sorted_lanes = sorted(incoming_road.lanes_right, key=lambda x: x['id'])
+                for idx, lane_info in enumerate(sorted_lanes):
+                    if lane_info['id'] == lane_id:
+                        lane_idx = idx
+                        break
+                else:
+                    return None, 0
             else:  # Left lanes (opposite direction)
                 edge_id = f"{incoming_road.id}_backward"
-                lane_idx = lane_id - 1
+                sorted_lanes = sorted(incoming_road.lanes_left, key=lambda x: x['id'])
+                for idx, lane_info in enumerate(sorted_lanes):
+                    if lane_info['id'] == lane_id:
+                        lane_idx = idx
+                        break
+                else:
+                    return None, 0
         elif incoming_road.predecessor and incoming_road.predecessor.get('elementId') == junction_id:
             # Road arrives at junction via predecessor (reversed)
             if lane_id < 0:
                 edge_id = f"{incoming_road.id}_backward"
-                lane_idx = abs(lane_id) - 1
+                # For backward edge, use same sorting as forward
+                sorted_lanes = sorted(incoming_road.lanes_right, key=lambda x: x['id'])
+                for idx, lane_info in enumerate(sorted_lanes):
+                    if lane_info['id'] == lane_id:
+                        lane_idx = idx
+                        break
+                else:
+                    return None, 0
             else:
                 edge_id = f"{incoming_road.id}_forward"
-                lane_idx = lane_id - 1
+                sorted_lanes = sorted(incoming_road.lanes_left, key=lambda x: x['id'])
+                for idx, lane_info in enumerate(sorted_lanes):
+                    if lane_info['id'] == lane_id:
+                        lane_idx = idx
+                        break
+                else:
+                    return None, 0
         else:
             return None, 0
         
@@ -1002,18 +1105,44 @@ class OpenDriveToSumoConverter:
             # Road departs from junction via predecessor
             if lane_id < 0:  # Right lanes
                 edge_id = f"{outgoing_road_id}_forward"
-                lane_idx = abs(lane_id) - 1
+                # Find the actual lane index in the sorted lanes list
+                sorted_lanes = sorted(outgoing_road.lanes_right, key=lambda x: x['id'])
+                for idx, lane_info in enumerate(sorted_lanes):
+                    if lane_info['id'] == lane_id:
+                        lane_idx = idx
+                        break
+                else:
+                    return None, 0
             else:  # Left lanes
                 edge_id = f"{outgoing_road_id}_backward"
-                lane_idx = lane_id - 1
+                sorted_lanes = sorted(outgoing_road.lanes_left, key=lambda x: x['id'])
+                for idx, lane_info in enumerate(sorted_lanes):
+                    if lane_info['id'] == lane_id:
+                        lane_idx = idx
+                        break
+                else:
+                    return None, 0
         elif outgoing_road.successor and outgoing_road.successor.get('elementId') == junction_id:
             # Road departs from junction via successor (reversed)
             if lane_id < 0:
                 edge_id = f"{outgoing_road_id}_backward"
-                lane_idx = abs(lane_id) - 1
+                # For backward edge, use same sorting as forward
+                sorted_lanes = sorted(outgoing_road.lanes_right, key=lambda x: x['id'])
+                for idx, lane_info in enumerate(sorted_lanes):
+                    if lane_info['id'] == lane_id:
+                        lane_idx = idx
+                        break
+                else:
+                    return None, 0
             else:
                 edge_id = f"{outgoing_road_id}_forward"
-                lane_idx = lane_id - 1
+                sorted_lanes = sorted(outgoing_road.lanes_left, key=lambda x: x['id'])
+                for idx, lane_info in enumerate(sorted_lanes):
+                    if lane_info['id'] == lane_id:
+                        lane_idx = idx
+                        break
+                else:
+                    return None, 0
         else:
             return None, 0
         
@@ -1089,6 +1218,82 @@ class OpenDriveToSumoConverter:
         
         return via_points if via_points else None
     
+    def _extract_full_road_geometry(self, road: OpenDriveRoad) -> Optional[List[Tuple[float, float]]]:
+        """Extract the full geometry of a road (used for normal roads acting as connecting roads)
+        
+        Args:
+            road: The road to extract geometry from
+            
+        Returns:
+            List of (x, y) tuples representing the complete road geometry
+        """
+        points = []
+        
+        for geom in road.geometry:
+            current_x = geom['x']
+            current_y = geom['y']
+            current_hdg = geom['hdg']
+            length = geom['length']
+            
+            if geom['type'] == 'line':
+                # For straight lines, add intermediate points for smooth path
+                num_samples = max(2, int(length / 10))  # One point every 10 meters
+                for i in range(num_samples):
+                    t = i / (num_samples - 1) if num_samples > 1 else 0
+                    x = current_x + t * length * math.cos(current_hdg)
+                    y = current_y + t * length * math.sin(current_hdg)
+                    points.append((x, y))
+                    
+            elif geom['type'] == 'arc' and 'curvature' in geom:
+                # For arcs, sample more points based on curvature
+                curvature = geom['curvature']
+                if abs(curvature) > 0.0001:
+                    num_samples = max(5, min(20, int(abs(length * curvature) * 10)))
+                    radius = 1.0 / abs(curvature)
+                    
+                    for i in range(num_samples):
+                        t = i / (num_samples - 1) if num_samples > 1 else 0
+                        angle_change = t * length * curvature
+                        
+                        if curvature > 0:
+                            # Left turn
+                            cx = current_x - radius * math.sin(current_hdg)
+                            cy = current_y + radius * math.cos(current_hdg)
+                            angle = current_hdg + angle_change
+                            x = cx + radius * math.sin(angle)
+                            y = cy - radius * math.cos(angle)
+                        else:
+                            # Right turn
+                            cx = current_x + radius * math.sin(current_hdg)
+                            cy = current_y - radius * math.cos(current_hdg)
+                            angle = current_hdg + angle_change
+                            x = cx - radius * math.sin(angle)
+                            y = cy + radius * math.cos(angle)
+                        
+                        points.append((x, y))
+                else:
+                    # Nearly straight, treat as line
+                    x_end = current_x + length * math.cos(current_hdg)
+                    y_end = current_y + length * math.sin(current_hdg)
+                    points.append((current_x, current_y))
+                    points.append((x_end, y_end))
+            else:
+                # Unsupported geometry type, approximate with line
+                x_end = current_x + length * math.cos(current_hdg)
+                y_end = current_y + length * math.sin(current_hdg)
+                points.append((current_x, current_y))
+                points.append((x_end, y_end))
+        
+        # Remove duplicate points
+        if points:
+            unique_points = [points[0]]
+            for p in points[1:]:
+                if abs(p[0] - unique_points[-1][0]) > 0.01 or abs(p[1] - unique_points[-1][1]) > 0.01:
+                    unique_points.append(p)
+            return unique_points if len(unique_points) >= 2 else None
+        
+        return None
+    
     def _extract_via_points(self, connecting_road: OpenDriveRoad, contact_point: str) -> Optional[List[Tuple[float, float]]]:
         """Extract via points from connecting road geometry
         
@@ -1132,26 +1337,53 @@ class OpenDriveToSumoConverter:
         if not road:
             return None, None
         
-        # For incoming roads, we need to determine which edge actually arrives at the junction
-        # For outgoing roads, we need to determine which edge departs from the junction
+        # Determine edge ID and calculate lane index
         if direction == 'incoming':
             # Check if this road's successor or predecessor is the junction
             if road.successor and road.successor.get('elementId') == junction_id:
                 # Road arrives at junction via successor - use forward edge for negative lanes
                 if lane_id < 0:
                     edge_id = f"{road_id}_forward"
-                    lane_idx = abs(lane_id) - 1
+                    # Find the actual lane index in the sorted lanes list
+                    # Sort ascending to match edge creation logic
+                    sorted_lanes = sorted(road.lanes_right, key=lambda x: x['id'])
+                    for idx, lane_info in enumerate(sorted_lanes):
+                        if lane_info['id'] == lane_id:
+                            lane_idx = idx
+                            break
+                    else:
+                        return None, None
                 else:
                     edge_id = f"{road_id}_backward"
-                    lane_idx = lane_id - 1
+                    sorted_lanes = sorted(road.lanes_left, key=lambda x: x['id'])
+                    for idx, lane_info in enumerate(sorted_lanes):
+                        if lane_info['id'] == lane_id:
+                            lane_idx = idx
+                            break
+                    else:
+                        return None, None
             elif road.predecessor and road.predecessor.get('elementId') == junction_id:
                 # Road arrives at junction via predecessor - use backward edge for negative lanes
                 if lane_id < 0:
                     edge_id = f"{road_id}_backward"
-                    lane_idx = abs(lane_id) - 1
+                    # For backward edge, right lanes are reversed
+                    # Sort ascending to match edge creation logic
+                    sorted_lanes = sorted(road.lanes_right, key=lambda x: x['id'])
+                    for idx, lane_info in enumerate(sorted_lanes):
+                        if lane_info['id'] == lane_id:
+                            lane_idx = idx
+                            break
+                    else:
+                        return None, None
                 else:
                     edge_id = f"{road_id}_forward"
-                    lane_idx = lane_id - 1
+                    sorted_lanes = sorted(road.lanes_left, key=lambda x: x['id'])
+                    for idx, lane_info in enumerate(sorted_lanes):
+                        if lane_info['id'] == lane_id:
+                            lane_idx = idx
+                            break
+                    else:
+                        return None, None
             else:
                 return None, None
         else:  # outgoing
@@ -1160,18 +1392,44 @@ class OpenDriveToSumoConverter:
                 # Road departs from junction via predecessor - use forward edge for negative lanes
                 if lane_id < 0:
                     edge_id = f"{road_id}_forward"
-                    lane_idx = abs(lane_id) - 1
+                    # Sort ascending to match edge creation logic
+                    sorted_lanes = sorted(road.lanes_right, key=lambda x: x['id'])
+                    for idx, lane_info in enumerate(sorted_lanes):
+                        if lane_info['id'] == lane_id:
+                            lane_idx = idx
+                            break
+                    else:
+                        return None, None
                 else:
                     edge_id = f"{road_id}_backward"
-                    lane_idx = lane_id - 1
+                    sorted_lanes = sorted(road.lanes_left, key=lambda x: x['id'])
+                    for idx, lane_info in enumerate(sorted_lanes):
+                        if lane_info['id'] == lane_id:
+                            lane_idx = idx
+                            break
+                    else:
+                        return None, None
             elif road.successor and road.successor.get('elementId') == junction_id:
                 # Road departs from junction via successor - use backward edge for negative lanes
                 if lane_id < 0:
                     edge_id = f"{road_id}_backward"
-                    lane_idx = abs(lane_id) - 1
+                    # Sort ascending to match edge creation logic
+                    sorted_lanes = sorted(road.lanes_right, key=lambda x: x['id'])
+                    for idx, lane_info in enumerate(sorted_lanes):
+                        if lane_info['id'] == lane_id:
+                            lane_idx = idx
+                            break
+                    else:
+                        return None, None
                 else:
                     edge_id = f"{road_id}_forward"
-                    lane_idx = lane_id - 1
+                    sorted_lanes = sorted(road.lanes_left, key=lambda x: x['id'])
+                    for idx, lane_info in enumerate(sorted_lanes):
+                        if lane_info['id'] == lane_id:
+                            lane_idx = idx
+                            break
+                    else:
+                        return None, None
             else:
                 return None, None
         
@@ -1276,6 +1534,16 @@ class OpenDriveToSumoConverter:
             if edge.shape and len(edge.shape) >= 2:
                 shape_str = ' '.join([f"{x:.2f},{y:.2f}" for x, y in edge.shape])
                 edge_elem.set('shape', shape_str)
+            
+            # Add lane-specific data if available
+            if edge.lane_data:
+                for i, lane_data in enumerate(edge.lane_data):
+                    lane_elem = ET.SubElement(edge_elem, 'lane')
+                    lane_elem.set('index', str(i))
+                    if 'width' in lane_data:
+                        lane_elem.set('width', str(lane_data['width']))
+                    if 'allow' in lane_data:
+                        lane_elem.set('allow', lane_data['allow'])
         
         tree = ET.ElementTree(root)
         ET.indent(tree, space='    ')
