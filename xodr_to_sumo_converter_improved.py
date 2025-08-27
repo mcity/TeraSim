@@ -400,10 +400,16 @@ class ImprovedOpenDriveToSumoConverter:
         return road
     
     def _get_lane_width(self, lane_elem: ET.Element) -> float:
-        """Get lane width"""
+        """Get lane width from lane element, preferring non-zero width definitions"""
         width_elems = lane_elem.findall('.//width')
         if width_elems:
-            # Take the last width element
+            # First try to find a width element with non-zero 'a' coefficient
+            for width_elem in width_elems:
+                a = float(width_elem.get('a', 0))
+                if abs(a) > 0.01:  # Consider widths greater than 1cm as valid
+                    return abs(a)
+            
+            # If all widths are near zero, take the last one (fallback)
             last_width = width_elems[-1]
             a = float(last_width.get('a', 3.5))
             return abs(a)  # Use absolute value
@@ -532,6 +538,24 @@ class ImprovedOpenDriveToSumoConverter:
                 # Calculate road shape
                 shape = self._calculate_road_shape(road)
                 
+                # Collect lane data 
+                # OpenDRIVE right lanes: -1 (innermost/closest to centerline) to -N (outermost)
+                # SUMO lanes: 0 (rightmost/outermost) to N-1 (leftmost/innermost/closest to centerline)
+                # Example mapping:
+                #   OpenDRIVE -4 (outermost) -> SUMO lane 0 (rightmost)
+                #   OpenDRIVE -3 -> SUMO lane 1
+                #   OpenDRIVE -2 -> SUMO lane 2
+                #   OpenDRIVE -1 (innermost) -> SUMO lane 3 (leftmost)
+                lane_data = []
+                # Sort lanes by ID in ascending order (most negative first: -4, -3, -2, -1)
+                sorted_lanes = sorted(road.lanes_right, key=lambda x: x['id'])
+                for lane in sorted_lanes:
+                    lane_data.append({
+                        'id': lane['id'],
+                        'type': lane['type'],
+                        'width': lane['width']
+                    })
+                
                 # Create edge
                 edge = PlainEdge(
                     id=road_id,
@@ -541,43 +565,98 @@ class ImprovedOpenDriveToSumoConverter:
                     speed=road.speed_limit,
                     priority=1,
                     name=road.name,
-                    shape=shape if len(shape) > 2 else None
+                    shape=shape if len(shape) > 2 else None,
+                    lane_data=lane_data if lane_data else None
                 )
                 
                 self.edges.append(edge)
         
         logger.info(f"Created {len(self.edges)} edges")
     
+    def _get_lane_type(self, road_data: Optional[OpenDriveRoad], lane_id: int) -> str:
+        """Get the type of a lane by its ID"""
+        if not road_data:
+            return "unknown"
+        
+        # Check right lanes (negative IDs)
+        if lane_id < 0:
+            for lane in road_data.lanes_right:
+                if lane['id'] == lane_id:
+                    return lane['type']
+        # Check left lanes (positive IDs)
+        elif lane_id > 0:
+            for lane in road_data.lanes_left:
+                if lane['id'] == lane_id:
+                    return lane['type']
+        
+        return "unknown"
+    
+    def _convert_to_sumo_lane_index(self, road_data: Optional[OpenDriveRoad], lane_id: int) -> int:
+        """Convert OpenDRIVE lane ID to SUMO lane index considering lane order"""
+        if not road_data or lane_id == 0:
+            return 0
+        
+        # For right lanes (negative IDs)
+        if lane_id < 0:
+            # Sort lanes by ID (most negative first)
+            sorted_lanes = sorted(road_data.lanes_right, key=lambda x: x['id'])
+            # Find the position of this lane
+            for idx, lane in enumerate(sorted_lanes):
+                if lane['id'] == lane_id:
+                    return idx
+        
+        return 0
+    
     def _create_connections(self):
-        """Create connections for junctions"""
+        """Create connections for junctions, excluding shoulder lanes"""
         logger.info("Creating connections...")
+        
+        shoulder_connections_skipped = 0
         
         for junction_id, connections in self.junction_connections.items():
             for conn in connections:
                 incoming_road = conn['incomingRoad']
                 connecting_road = conn['connectingRoad']
                 
-                # Get the actual target road
+                # Get road data for lane type checking
+                incoming_road_data = self.road_map.get(incoming_road)
                 connecting_road_data = self.road_map.get(connecting_road)
                 if not connecting_road_data:
                     continue
                 
                 # Find the target road based on successor/predecessor
                 target_road = None
+                target_road_data = None
                 if connecting_road_data.successor and \
                    connecting_road_data.successor['elementType'] == 'road':
                     target_road = connecting_road_data.successor['elementId']
+                    target_road_data = self.road_map.get(target_road)
                 elif connecting_road_data.predecessor and \
                      connecting_road_data.predecessor['elementType'] == 'road':
                     target_road = connecting_road_data.predecessor['elementId']
+                    target_road_data = self.road_map.get(target_road)
                 
                 if not target_road or target_road == incoming_road:
                     continue
                 
-                # Create connections for each lane link
+                # Create connections for each lane link, excluding shoulders
                 for lane_link in conn['laneLinks']:
-                    from_lane_idx = abs(lane_link['from']) - 1
-                    to_lane_idx = abs(lane_link['to']) - 1
+                    from_lane_id = lane_link['from']
+                    to_lane_id = lane_link['to']
+                    
+                    # Check if either lane is a shoulder
+                    from_lane_type = self._get_lane_type(incoming_road_data, from_lane_id)
+                    to_lane_type = self._get_lane_type(target_road_data, to_lane_id)
+                    
+                    # Skip connection if either lane is a shoulder
+                    if from_lane_type == 'shoulder' or to_lane_type == 'shoulder':
+                        shoulder_connections_skipped += 1
+                        logger.debug(f"Skipping shoulder connection: {incoming_road}:{from_lane_id} -> {target_road}:{to_lane_id}")
+                        continue
+                    
+                    # Convert to SUMO lane indices using proper mapping
+                    from_lane_idx = self._convert_to_sumo_lane_index(incoming_road_data, from_lane_id)
+                    to_lane_idx = self._convert_to_sumo_lane_index(target_road_data, to_lane_id)
                     
                     connection = PlainConnection(
                         from_edge=incoming_road,
@@ -589,6 +668,8 @@ class ImprovedOpenDriveToSumoConverter:
                     self.connections.append(connection)
         
         logger.info(f"Created {len(self.connections)} connections")
+        if shoulder_connections_skipped > 0:
+            logger.info(f"Skipped {shoulder_connections_skipped} shoulder lane connections")
     
     def _write_plain_xml(self, prefix: str):
         """Write Plain XML files"""
@@ -618,7 +699,7 @@ class ImprovedOpenDriveToSumoConverter:
         logger.info(f"Wrote {filename}")
     
     def _write_edges_file(self, filename: str):
-        """Write edges to Plain XML file"""
+        """Write edges to Plain XML file with lane-specific attributes"""
         root = ET.Element("edges")
         
         for edge in self.edges:
@@ -636,6 +717,39 @@ class ImprovedOpenDriveToSumoConverter:
             if edge.shape and len(edge.shape) > 2:
                 shape_str = " ".join([f"{x:.2f},{y:.2f}" for x, y in edge.shape])
                 edge_elem.set("shape", shape_str)
+            
+            # Add lane-specific data if available
+            if hasattr(edge, 'lane_data') and edge.lane_data:
+                for i, lane_info in enumerate(edge.lane_data):
+                    lane_elem = ET.SubElement(edge_elem, "lane")
+                    lane_elem.set("index", str(i))
+                    
+                    # Set lane type and permissions based on OpenDRIVE lane type
+                    lane_type = lane_info.get('type')
+                    
+                    # Set width for all lanes
+                    lane_elem.set("width", f"{lane_info.get('width', 3.2):.2f}")
+                    
+                    if lane_type == 'shoulder':
+                        # Shoulder lanes in SUMO
+                        lane_elem.set("type", "shoulder")
+                        # Shoulders typically allow emergency vehicles only
+                        lane_elem.set("allow", "emergency authority army vip")
+                    elif lane_type in ['driving', 'entry', 'exit', 'onRamp', 'offRamp']:
+                        # Regular driving lanes - no special type needed
+                        # Default allow is "all" so we don't need to set it explicitly
+                        pass
+                    elif lane_type == 'sidewalk':
+                        # Sidewalk lanes
+                        lane_elem.set("type", "sidewalk")
+                        lane_elem.set("allow", "pedestrian")
+                    elif lane_type == 'biking':
+                        # Bike lanes
+                        lane_elem.set("allow", "bicycle")
+                    
+                    # Set speed if different from edge default
+                    if 'speed' in lane_info:
+                        lane_elem.set("speed", f"{lane_info['speed']:.2f}")
         
         tree = ET.ElementTree(root)
         ET.indent(tree, space="    ")
