@@ -25,7 +25,13 @@ class TeraSim_Dataset:
     Dataset class for TeraSim data that provides iteration over the last N timesteps.
     Implements similar interface as Waymo dataset for compatibility.
     """
-    def __init__(self, terasim_record_root: Union[str, Path], timestep_start: int, timestep_end: int, av_id: str = "CAV"):
+    def __init__(self, 
+                 terasim_record_root: Union[str, Path], 
+                 path_to_fcd: Union[str, Path], 
+                 path_to_map: Union[str, Path], 
+                 timestep_start: int, 
+                 timestep_end: int, 
+                 av_id: str = "CAV"):
         """
         Initialize the TeraSim dataset.
         
@@ -36,11 +42,13 @@ class TeraSim_Dataset:
             av_id: ID of the AV vehicle (default: "CAV")
         """
         self.clip_id = terasim_record_root.stem
-        self.sumo_net_path = terasim_record_root / 'map.net.xml'
+        self.sumo_net_path = path_to_map
         if not self.sumo_net_path.exists():
-            self.sumo_net_path = terasim_record_root.parent.parent / 'map.net.xml'
+            raise FileNotFoundError(f"Sumo net file not found: {self.sumo_net_path}")
         self.sumo_net = sumolib.net.readNet(self.sumo_net_path, withInternal=True, withPedestrianConnections=True)
-        self.fcd_path = terasim_record_root / 'fcd_all.xml'
+        self.fcd_path = path_to_fcd
+        if not self.fcd_path.exists():
+            raise FileNotFoundError(f"FCD file not found: {self.fcd_path}")
         self.av_id = av_id
         
         # Parse XML data
@@ -627,6 +635,8 @@ def convert_terasim_bbox(output_root: Path, clip_id: str, dataset: TeraSim_Datas
 
 def convert_terasim_to_wds(
     terasim_record_root: Union[str, Path],
+    path_to_fcd: Union[str, Path],
+    path_to_map: Union[str, Path],
     output_wds_path: Union[str, Path],
     single_camera: bool = False,
     camera_setting_name: str = "default",
@@ -641,7 +651,7 @@ def convert_terasim_to_wds(
     if not terasim_record_path.exists():
         raise FileNotFoundError(f"Terasim record file not found: {terasim_record_path}")
     
-    dataset = TeraSim_Dataset(terasim_record_root, timestep_start, timestep_end, av_id=av_id)
+    dataset = TeraSim_Dataset(terasim_record_root, path_to_fcd, path_to_map, timestep_start, timestep_end, av_id=av_id)
 
     convert_terasim_pose(output_wds_path, clip_id, dataset, camera_setting_name)
     convert_terasim_hdmap(output_wds_path, clip_id, dataset)
