@@ -22,25 +22,37 @@
                 </center>
                 <right>
                     <lane id="-1" type="shoulder" level="false">
-                        <link/>
+                        <link>
+                            <predecessor id="-1"/>
+                            <successor id="-1"/>
+                        </link>
                         <width a="0" b="0" c="0" d="0" sOffset="0"/>
                         <width a="3.290301507269268" b="-0.00012223346801089766" c="0" d="0" sOffset="0"/>
                         <roadMark sOffset="0" type="solid" weight="standard" color="standard" height="0.02" width="0.1"/>
                     </lane>
                     <lane id="-2" type="driving" level="false">
-                        <link/>
+                        <link>
+                            <predecessor id="-2"/>
+                            <successor id="-2"/>
+                        </link>
                         <width a="0" b="0" c="0" d="0" sOffset="0"/>
                         <width a="3.5702112879612278" b="0.00030306501537575957" c="0" d="0" sOffset="0"/>
                         <roadMark sOffset="0" type="solid" weight="standard" color="standard" height="0.02" width="0.1"/>
                     </lane>
                     <lane id="-3" type="driving" level="false">
-                        <link/>
+                        <link>
+                            <predecessor id="-3"/>
+                            <successor id="-3"/>
+                        </link>
                         <width a="0" b="0" c="0" d="0" sOffset="0"/>
                         <width a="3.5751723189427222" b="0.0001974720521453238" c="0" d="0" sOffset="0"/>
                         <roadMark sOffset="0" type="solid" weight="standard" color="standard" height="0.02" width="0.1"/>
                     </lane>
                     <lane id="-4" type="driving" level="false">
-                        <link/>
+                        <link>
+                            <predecessor id="-4"/>
+                            <successor id="-4"/>
+                        </link>
                         <width a="0" b="0" c="0" d="0" sOffset="0"/>
                         <width a="3.7036775891762304" b="0.00018407425989609661" c="0" d="0" sOffset="0"/>
                         <roadMark sOffset="0" type="solid" weight="standard" color="standard" height="0.02" width="0.1"/>
@@ -49,7 +61,7 @@
             </laneSection>
         </lanes>
     </road>
-    <road rule="RHT" id="1" junction="-1" length="50.86098373005199">
+    <road rule="RHT" id="1" junction="3" length="50.86098373005199">
         <link>
             <predecessor elementType="road" elementId="13" contactPoint="end"/>
             <successor elementType="road" elementId="10" contactPoint="start"/>
@@ -70,25 +82,37 @@
                 </center>
                 <right>
                     <lane id="-1" type="shoulder" level="false">
-                        <link/>
+                        <link>
+                            <predecessor id="-1"/>
+                            <successor id="-1"/>
+                        </link>
                         <width a="0" b="0" c="0" d="0" sOffset="0"/>
                         <width a="3.460645782383461" b="-0.0003713071479285847" c="0" d="0" sOffset="0"/>
                         <roadMark sOffset="0" type="solid" weight="standard" color="standard" height="0.02" width="0.1"/>
                     </lane>
                     <lane id="-2" type="driving" level="false">
-                        <link/>
+                        <link>
+                            <predecessor id="-2"/>
+                            <successor id="-2"/>
+                        </link>
                         <width a="0" b="0" c="0" d="0" sOffset="0"/>
                         <width a="3.496900784360705" b="0.0033776841627927677" c="0" d="0" sOffset="0"/>
                         <roadMark sOffset="0" type="solid" weight="standard" color="standard" height="0.02" width="0.1"/>
                     </lane>
                     <lane id="-3" type="driving" level="false">
-                        <link/>
+                        <link>
+                            <predecessor id="-3"/>
+                            <successor id="-3"/>
+                        </link>
                         <width a="0" b="0" c="0" d="0" sOffset="0"/>
                         <width a="3.859446569733204" b="-0.003518139160756783" c="0" d="0" sOffset="0"/>
                         <roadMark sOffset="0" type="solid" weight="standard" color="standard" height="0.02" width="0.1"/>
                     </lane>
                     <lane id="-4" type="driving" level="false">
-                        <link/>
+                        <link>
+                            <predecessor id="-4"/>
+                            <successor id="-4"/>
+                        </link>
                         <width a="0" b="0" c="0" d="0" sOffset="0"/>
                         <width a="3.6257494797124394" b="-0.001649581408656894" c="0" d="0" sOffset="0"/>
                         <roadMark sOffset="0" type="solid" weight="standard" color="standard" height="0.02" width="0.1"/>
@@ -97,7 +121,7 @@
             </laneSection>
         </lanes>
     </road>
-    <road rule="RHT" id="2" junction="-1" length="78.34388814296938">
+    <road rule="RHT" id="2" junction="2" length="78.34388814296938">
         <link>
             <predecessor elementType="road" elementId="3" contactPoint="end"/>
             <successor elementType="road" elementId="12" contactPoint="start"/>
@@ -118,25 +142,37 @@
                 </center>
                 <right>
                     <lane id="-1" type="shoulder" level="false">
-                        <link/>
+                        <link>
+                            <predecessor id="-1"/>
+                            <successor id="-1"/>
+                        </link>
                         <width a="0" b="0" c="0" d="0" sOffset="0"/>
                         <width a="3.473929000679201" b="0.002885596397158922" c="0" d="0" sOffset="0"/>
                         <roadMark sOffset="0" type="solid" weight="standard" color="standard" height="0.02" width="0.1"/>
                     </lane>
                     <lane id="-2" type="driving" level="false">
-                        <link/>
+                        <link>
+                            <predecessor id="-2"/>
+                            <successor id="-2"/>
+                        </link>
                         <width a="0" b="0" c="0" d="0" sOffset="0"/>
                         <width a="3.559586617677827" b="-0.0004737501104178595" c="0" d="0" sOffset="0"/>
                         <roadMark sOffset="0" type="solid" weight="standard" color="standard" height="0.02" width="0.1"/>
                     </lane>
                     <lane id="-3" type="driving" level="false">
-                        <link/>
+                        <link>
+                            <predecessor id="-3"/>
+                            <successor id="-3"/>
+                        </link>
                         <width a="0" b="0" c="0" d="0" sOffset="0"/>
                         <width a="3.6544566232169293" b="0.0018836507254431033" c="0" d="0" sOffset="0"/>
                         <roadMark sOffset="0" type="solid" weight="standard" color="standard" height="0.02" width="0.1"/>
                     </lane>
                     <lane id="-4" type="driving" level="false">
-                        <link/>
+                        <link>
+                            <predecessor id="-4"/>
+                            <successor id="-4"/>
+                        </link>
                         <width a="0" b="0" c="0" d="0" sOffset="0"/>
                         <width a="3.818762420516208" b="-0.0026778684465169375" c="0" d="0" sOffset="0"/>
                         <roadMark sOffset="0" type="solid" weight="standard" color="standard" height="0.02" width="0.1"/>
@@ -295,7 +331,10 @@
                 </center>
                 <right>
                     <lane id="-1" type="driving" level="false">
-                        <link/>
+                        <link>
+                            <predecessor id="-1"/>
+                            <successor id="-4"/>
+                        </link>
                         <width a="0" b="0" c="0" d="0" sOffset="0"/>
                         <width a="4.632945301604519" b="-0.0035710281183171854" c="0" d="0" sOffset="0"/>
                         <width a="4.129773605010626" b="-0.004424969681010884" c="0" d="0" sOffset="140.90387415683747"/>
@@ -353,7 +392,7 @@
             </laneSection>
         </lanes>
     </road>
-    <road rule="RHT" id="7" junction="-1" length="51.15945995951602">
+    <road rule="RHT" id="7" junction="3" length="51.15945995951602">
         <link>
             <predecessor elementType="road" elementId="13" contactPoint="end"/>
             <successor elementType="road" elementId="6" contactPoint="start"/>
@@ -377,7 +416,10 @@
                 </center>
                 <right>
                     <lane id="-1" type="driving" level="false">
-                        <link/>
+                        <link>
+                            <predecessor id="-4"/>
+                            <successor id="-1"/>
+                        </link>
                         <width a="0" b="0" c="0" d="0" sOffset="0"/>
                         <width a="3.628579481911066" b="0.019922111595258682" c="0" d="0" sOffset="0"/>
                         <width a="4.342077424670053" b="0.01986248554857056" c="0" d="0" sOffset="35.81437335833387"/>
@@ -387,7 +429,7 @@
             </laneSection>
         </lanes>
     </road>
-    <road rule="RHT" id="8" junction="-1" length="78.5603968406298">
+    <road rule="RHT" id="8" junction="2" length="78.5603968406298">
         <link>
             <predecessor elementType="road" elementId="3" contactPoint="end"/>
         </link>
@@ -799,7 +841,7 @@
             </laneSection>
         </lanes>
     </road>
-    <road rule="RHT" id="14" junction="-1" length="117.59049903605221">
+    <road rule="RHT" id="14" junction="4" length="117.59049903605221">
         <link>
             <predecessor elementType="road" elementId="17" contactPoint="end"/>
         </link>
@@ -1014,7 +1056,7 @@
             </laneSection>
         </lanes>
     </road>
-    <road rule="RHT" id="15" junction="-1" length="117.98196035152381">
+    <road rule="RHT" id="15" junction="4" length="117.98196035152381">
         <link>
             <predecessor elementType="road" elementId="17" contactPoint="end"/>
         </link>
@@ -1396,19 +1438,8 @@
         </lanes>
     </road>
     <junction name="my junction" id="1" type="default">
-        <connection incomingRoad="16" id="0" contactPoint="end" connectingRoad="5">
-            <laneLink from="-1" to="-4"/>
-            <laneLink from="-2" to="-5"/>
-        </connection>
         <connection incomingRoad="4" id="1" contactPoint="start" connectingRoad="5">
             <laneLink from="-1" to="-1"/>
-            <laneLink from="-2" to="-2"/>
-        </connection>
-        <connection incomingRoad="16" id="2" contactPoint="end" connectingRoad="0">
-            <laneLink from="-1" to="-1"/>
-            <laneLink from="-2" to="-2"/>
-            <laneLink from="-3" to="-3"/>
-            <laneLink from="-4" to="-4"/>
         </connection>
         <connection incomingRoad="9" id="3" contactPoint="start" connectingRoad="0">
             <laneLink from="-1" to="-1"/>
@@ -1422,12 +1453,6 @@
             <laneLink from="-4" to="-1"/>
             <laneLink from="-5" to="-2"/>
         </connection>
-        <connection incomingRoad="12" id="1" contactPoint="end" connectingRoad="2">
-            <laneLink from="-1" to="-1"/>
-            <laneLink from="-2" to="-2"/>
-            <laneLink from="-3" to="-3"/>
-            <laneLink from="-4" to="-4"/>
-        </connection>
         <connection incomingRoad="3" id="2" contactPoint="start" connectingRoad="2">
             <laneLink from="-1" to="-1"/>
             <laneLink from="-2" to="-2"/>
@@ -1436,20 +1461,11 @@
         </connection>
     </junction>
     <junction name="my junction" id="3" type="default">
-        <connection incomingRoad="10" id="0" contactPoint="end" connectingRoad="1">
-            <laneLink from="-1" to="-1"/>
-            <laneLink from="-2" to="-2"/>
-            <laneLink from="-3" to="-3"/>
-            <laneLink from="-4" to="-4"/>
-        </connection>
         <connection incomingRoad="13" id="1" contactPoint="start" connectingRoad="1">
             <laneLink from="-1" to="-1"/>
             <laneLink from="-2" to="-2"/>
             <laneLink from="-3" to="-3"/>
             <laneLink from="-4" to="-4"/>
-        </connection>
-        <connection incomingRoad="6" id="2" contactPoint="end" connectingRoad="7">
-            <laneLink from="-1" to="-1"/>
         </connection>
         <connection incomingRoad="13" id="3" contactPoint="start" connectingRoad="7">
             <laneLink from="-4" to="-1"/>
