@@ -9,7 +9,7 @@ License: MIT
 
 import xml.etree.ElementTree as ET
 from dataclasses import dataclass, field
-from typing import Dict, List, Optional, Tuple, Set
+from typing import Dict, List, Optional, Tuple
 import math
 import os
 import subprocess
@@ -20,6 +20,24 @@ import logging
 # Setup logging
 logging.basicConfig(level=logging.INFO, format='%(levelname)s: %(message)s')
 logger = logging.getLogger(__name__)
+
+# Try to import pyOpenDRIVE
+try:
+    from pyOpenDRIVE.OpenDriveMap import PyOpenDriveMap
+    from pyOpenDRIVE.Road import PyRoad
+    from pyOpenDRIVE.Junction import PyJunction
+    from pyOpenDRIVE.Lane import PyLane
+    from pyOpenDRIVE.LaneSection import PyLaneSection
+    PYOPENDRIVE_AVAILABLE = True
+    logger.info("pyOpenDRIVE is available - enhanced geometry processing enabled")
+except ImportError as e:
+    PYOPENDRIVE_AVAILABLE = False
+    logger.warning(f"pyOpenDRIVE not available: {e}. Falling back to XML parsing.")
+    PyOpenDriveMap = None
+    PyRoad = None
+    PyJunction = None
+    PyLane = None
+    PyLaneSection = None
 
 @dataclass
 class PlainNode:
@@ -75,8 +93,9 @@ class OpenDriveToSumoConverter:
     Using Plain XML intermediate format, conforming to SUMO's official recommendations
     """
     
-    def __init__(self, verbose: bool = False):
+    def __init__(self, verbose: bool = False, use_pyopendrive: bool = True):
         self.verbose = verbose
+        self.use_pyopendrive = use_pyopendrive and PYOPENDRIVE_AVAILABLE
         self.nodes: List[PlainNode] = []
         self.edges: List[PlainEdge] = []
         self.connections: List[PlainConnection] = []
@@ -94,6 +113,17 @@ class OpenDriveToSumoConverter:
         # Node counter
         self.node_counter = 0
         
+        # pyOpenDRIVE specific
+        self.odr_map = None  # type: Optional[PyOpenDriveMap]
+        self.py_roads = {}  # type: Dict[str, PyRoad]
+        self.py_junctions = {}  # type: Dict[str, PyJunction]
+    
+    def _decode_if_bytes(self, value):
+        """将 bytes 转换为 str，如果已经是 str 则直接返回"""
+        if isinstance(value, bytes):
+            return value.decode('utf-8')
+        return value
+        
     def convert(self, xodr_file: str, output_prefix: str, use_netconvert: bool = True) -> bool:
         """
         Convert OpenDRIVE file to SUMO format
@@ -109,8 +139,14 @@ class OpenDriveToSumoConverter:
         try:
             # 1. Parse OpenDRIVE file
             logger.info(f"Parsing OpenDRIVE file: {xodr_file}")
-            if not self._parse_opendrive(xodr_file):
-                return False
+            if self.use_pyopendrive:
+                logger.info("Using pyOpenDRIVE for enhanced geometry processing")
+                if not self._parse_with_pyopendrive(xodr_file):
+                    return False
+            else:
+                logger.info("Using XML parsing (fallback mode)")
+                if not self._parse_opendrive(xodr_file):
+                    return False
             
             # 2. Convert to Plain XML elements
             logger.info("Converting to Plain XML format...")
@@ -322,6 +358,115 @@ class OpenDriveToSumoConverter:
         
         return road
     
+    def _parse_with_pyopendrive(self, xodr_file: str) -> bool:
+        """Parse OpenDRIVE file using pyOpenDRIVE library for enhanced geometry processing"""
+        try:
+            # Load the OpenDRIVE map with pyOpenDRIVE
+            self.odr_map = PyOpenDriveMap(xodr_file.encode())
+            
+            # Get all roads from pyOpenDRIVE
+            py_roads = self.odr_map.get_roads()
+            logger.info(f"Found {len(py_roads)} roads using pyOpenDRIVE")
+            
+            # Convert PyRoad objects to our internal format and store PyRoad references
+            for py_road in py_roads:
+                road_id = self._decode_if_bytes(py_road.id)
+                self.py_roads[road_id] = py_road
+                
+                # Create OpenDriveRoad object compatible with existing code
+                road = OpenDriveRoad(
+                    id=road_id,
+                    name=self._decode_if_bytes(py_road.name) if hasattr(py_road, 'name') else '',
+                    junction=self._decode_if_bytes(py_road.junction),
+                    length=py_road.length
+                )
+                
+                # Get road links (predecessor/successor)
+                if hasattr(py_road, 'predecessor') and py_road.predecessor:
+                    road.predecessor = {
+                        'elementId': self._decode_if_bytes(py_road.predecessor.id),
+                        'elementType': 'road' if py_road.predecessor.type == 0 else 'junction',
+                        'contactPoint': 'start' if py_road.predecessor.contact_point == 0 else 'end'
+                    }
+                
+                if hasattr(py_road, 'successor') and py_road.successor:
+                    road.successor = {
+                        'elementId': self._decode_if_bytes(py_road.successor.id),
+                        'elementType': 'road' if py_road.successor.type == 0 else 'junction',
+                        'contactPoint': 'start' if py_road.successor.contact_point == 0 else 'end'
+                    }
+                
+                # Parse lanes using pyOpenDRIVE
+                lane_sections = py_road.get_lanesections()
+                for lane_section in lane_sections:
+                    lanes = lane_section.get_lanes()
+                    for lane in lanes:
+                        lane_data = {
+                            'id': lane.id,
+                            'type': lane.type if hasattr(lane, 'type') else 'driving',
+                            's_start': lane_section.s0,
+                            's_end': py_road.get_lanesection_end(lane_section)
+                        }
+                        
+                        if lane.id < 0:  # Right lanes
+                            road.lanes_right.append(lane_data)
+                        elif lane.id > 0:  # Left lanes
+                            road.lanes_left.append(lane_data)
+                        # Skip center lane (id == 0)
+                
+                self.road_map[road_id] = road
+                
+                # Record junction internal roads
+                if road.junction != '-1':
+                    if road.junction not in self.junction_roads:
+                        self.junction_roads[road.junction] = []
+                    self.junction_roads[road.junction].append(road_id)
+            
+            # Get all junctions from pyOpenDRIVE
+            py_junctions = self.odr_map.get_junctions()
+            logger.info(f"Found {len(py_junctions)} junctions using pyOpenDRIVE")
+            
+            for py_junction in py_junctions:
+                junction_id = self._decode_if_bytes(py_junction.id)
+                self.py_junctions[junction_id] = py_junction
+                
+                junction_data = {
+                    'id': junction_id,
+                    'connections': []
+                }
+                self.junction_connections[junction_id] = []
+                
+                # Parse connections using pyOpenDRIVE's junction connection information
+                connections_dict = py_junction.id_to_connection
+                for conn_id, py_connection in connections_dict.items():
+                    connection = {
+                        'id': self._decode_if_bytes(conn_id),
+                        'incomingRoad': self._decode_if_bytes(py_connection.incoming_road),
+                        'connectingRoad': self._decode_if_bytes(py_connection.connecting_road),
+                        'contactPoint': 'start' if py_connection.contact_point == 0 else 'end',
+                        'laneLinks': []
+                    }
+                    
+                    # Parse lane links
+                    for lane_link in py_connection.lane_links:
+                        connection['laneLinks'].append({
+                            'from': lane_link.frm,  # Note: pyOpenDRIVE uses 'frm' not 'from'
+                            'to': lane_link.to
+                        })
+                    
+                    self.junction_connections[junction_id].append(connection)
+                    junction_data['connections'].append(connection)
+                
+                self.junctions.append(junction_data)
+            
+            logger.info("Successfully parsed OpenDRIVE file using pyOpenDRIVE")
+            return True
+            
+        except Exception as e:
+            logger.error(f"Failed to parse OpenDRIVE with pyOpenDRIVE: {e}")
+            logger.info("Falling back to XML parsing...")
+            return self._parse_opendrive(xodr_file)
+    
     def _get_lane_width(self, lane_elem: ET.Element) -> float:
         """Get lane width - take the last width element which is the actual width"""
         width_elems = lane_elem.findall('.//width')
@@ -467,7 +612,33 @@ class OpenDriveToSumoConverter:
                 
                 logger.debug(f"Created junction node {node_id} at ({center_x:.2f}, {center_y:.2f}) from {len(points)} road connections")
         
+        # Fourth pass: Handle junctions from pyOpenDRIVE if using pyOpenDRIVE
+        if self.use_pyopendrive and self.py_junctions:
+            pyopendrive_junctions_created = 0
+            for junction_id, py_junction in self.py_junctions.items():
+                if junction_id not in self.node_map:  # Avoid duplicate creation
+                    # Get junction center from pyOpenDRIVE
+                    center_x, center_y = self._get_junction_center_from_pyopendrive(py_junction, junction_id)
+                    
+                    # Create junction node
+                    node_id = f"junction_{junction_id}"
+                    self.nodes.append(PlainNode(
+                        id=node_id,
+                        x=center_x,
+                        y=center_y,
+                        type="priority"
+                    ))
+                    self.node_map[junction_id] = node_id
+                    pyopendrive_junctions_created += 1
+                    
+                    logger.debug(f"Created pyOpenDRIVE junction node {node_id} at ({center_x:.2f}, {center_y:.2f})")
+            
+            if pyopendrive_junctions_created > 0:
+                logger.info(f"Created {pyopendrive_junctions_created} additional junction nodes from pyOpenDRIVE")
+        
         total_junctions = len(self.junction_roads) + len(referenced_junctions - set(self.junction_roads.keys()))
+        if self.use_pyopendrive:
+            total_junctions += len([j for j in self.py_junctions.keys() if j not in self.node_map or j not in self.junction_roads])
         logger.info(f"Created {len(self.nodes)} nodes ({total_junctions} junctions)")
     
     def _create_road_endpoint_node(self, road: OpenDriveRoad, position: str) -> str:
@@ -567,6 +738,83 @@ class OpenDriveToSumoConverter:
         
         logger.warning(f"No geometry found for junction internal roads, using origin")
         return 0.0, 0.0
+    
+    def _get_junction_center_from_pyopendrive(self, py_junction, junction_id: str) -> Tuple[float, float]:
+        """Get junction center coordinates from pyOpenDRIVE PyJunction object"""
+        try:
+            # Try to get junction bounding box or center from pyOpenDRIVE
+            if hasattr(py_junction, 'bounding_box') and py_junction.bounding_box:
+                # Use bounding box center
+                bbox = py_junction.bounding_box
+                center_x = (bbox.min_x + bbox.max_x) / 2.0
+                center_y = (bbox.min_y + bbox.max_y) / 2.0
+                logger.debug(f"Junction {junction_id} center from bounding box: ({center_x:.2f}, {center_y:.2f})")
+                return center_x, center_y
+            
+        except Exception as e:
+            logger.debug(f"Could not get bounding box for junction {junction_id}: {e}")
+        
+        # Fallback: calculate center from connected roads' endpoints
+        connection_points = []
+        
+        # Find all roads that connect to this junction
+        for road_id, road in self.road_map.items():
+            if road.junction != '-1':  # Skip internal roads
+                continue
+            
+            # Check if road connects to this junction
+            if (road.predecessor and road.predecessor.get('elementType') == 'junction' 
+                and road.predecessor.get('elementId') == junction_id):
+                if road.geometry:
+                    start_point = (road.geometry[0]['x'], road.geometry[0]['y'])
+                    connection_points.append(start_point)
+            
+            if (road.successor and road.successor.get('elementType') == 'junction' 
+                and road.successor.get('elementId') == junction_id):
+                end_point = self._calculate_road_end(road)
+                if end_point:
+                    connection_points.append(end_point)
+        
+        # Calculate average position from connection points
+        if connection_points:
+            center_x = sum(p[0] for p in connection_points) / len(connection_points)
+            center_y = sum(p[1] for p in connection_points) / len(connection_points)
+            logger.debug(f"Junction {junction_id} center from {len(connection_points)} connection points: ({center_x:.2f}, {center_y:.2f})")
+            return center_x, center_y
+        
+        # Final fallback: use origin if no connection points found
+        logger.warning(f"Could not determine center for junction {junction_id}, using origin")
+        return 0.0, 0.0
+    
+    def _find_junction_for_connecting_road(self, connecting_road_id: str) -> Optional[str]:
+        """Find which junction contains the given connecting road"""
+        logger.debug(f"Looking for junction for connecting road: {connecting_road_id}")
+        
+        # First check if this is a junction internal road
+        connecting_road = self.road_map.get(connecting_road_id)
+        if connecting_road and connecting_road.junction != '-1':
+            logger.debug(f"Found connecting road {connecting_road_id} is junction internal road of junction {connecting_road.junction}")
+            return connecting_road.junction
+        
+        # If using pyOpenDRIVE, check junction connections
+        if self.use_pyopendrive and self.py_junctions:
+            for junction_id, py_junction in self.py_junctions.items():
+                # Check if this road is used as a connecting road in any junction connection
+                connections_dict = py_junction.id_to_connection
+                for conn_id, py_connection in connections_dict.items():
+                    connecting_road_in_conn = self._decode_if_bytes(py_connection.connecting_road)
+                    if connecting_road_in_conn == connecting_road_id:
+                        logger.debug(f"Found connecting road {connecting_road_id} in junction {junction_id}")
+                        return junction_id
+        
+        # Fallback: check if connecting_road_id is actually a junction ID
+        if self.use_pyopendrive and connecting_road_id in self.py_junctions:
+            logger.debug(f"Connecting road ID {connecting_road_id} is actually a junction ID")
+            return connecting_road_id
+        
+        # No junction found
+        logger.debug(f"No junction found for connecting road {connecting_road_id}")
+        return None
     
     def _get_or_create_node(self, road: OpenDriveRoad, position: str) -> str:
         """Get or create node - maintaining precise geometry"""
@@ -753,7 +1001,11 @@ class OpenDriveToSumoConverter:
         """Get the from node for a road"""
         if road.predecessor:
             if road.predecessor['elementType'] == 'junction':
-                # Road starts from a junction
+                # Road starts from a junction - need to find which actual junction
+                junction_id = self._find_junction_for_connecting_road(road.predecessor['elementId'])
+                if junction_id:
+                    return f"junction_{junction_id}"
+                # Fallback: use the elementId directly (might be junction ID)
                 return f"junction_{road.predecessor['elementId']}"
             elif road.predecessor['elementType'] == 'road':
                 # Road connects to another road - use stored node
@@ -765,7 +1017,11 @@ class OpenDriveToSumoConverter:
         """Get the to node for a road"""
         if road.successor:
             if road.successor['elementType'] == 'junction':
-                # Road ends at a junction
+                # Road ends at a junction - need to find which actual junction
+                junction_id = self._find_junction_for_connecting_road(road.successor['elementId'])
+                if junction_id:
+                    return f"junction_{junction_id}"
+                # Fallback: use the elementId directly (might be junction ID)
                 return f"junction_{road.successor['elementId']}"
             elif road.successor['elementType'] == 'road':
                 # Road connects to another road - use stored node
@@ -856,11 +1112,18 @@ class OpenDriveToSumoConverter:
                 continue
             
             # Generate shape points from road geometry
-            shape_points = self._generate_road_shape(road)
+            if self.use_pyopendrive:
+                # Use pyOpenDRIVE for enhanced geometry
+                shape_points = self._get_road_centerline_pyopendrive(road_id, eps=0.5)
+                if not shape_points:
+                    logger.warning(f"pyOpenDRIVE geometry failed for road {road_id}, falling back to XML geometry")
+                    shape_points = self._generate_road_shape(road)
+            else:
+                shape_points = self._generate_road_shape(road)
             
             # Create forward edge for right lanes (OpenDRIVE right lanes have negative IDs)
             if road.lanes_right:
-                edge_id = f"{road_id}_forward"
+                edge_id = f"{road_id}.0"
                 # Prepare lane data with restrictions
                 lane_data = []
                 # Sort by ID ascending to map outer lanes to lower indices
@@ -896,7 +1159,7 @@ class OpenDriveToSumoConverter:
             
             # Create backward edge for left lanes (OpenDRIVE left lanes have positive IDs)
             if road.lanes_left:
-                edge_id = f"{road_id}_backward"
+                edge_id = f"{road_id}.1"
                 # Reverse shape points for backward direction
                 reversed_shape = list(reversed(shape_points)) if shape_points else None
                 # Prepare lane data with restrictions
@@ -995,12 +1258,25 @@ class OpenDriveToSumoConverter:
                     # This is a normal road being used as a connecting road
                     # Use its FULL geometry as the junction internal path
                     logger.debug(f"Connecting road {connecting_road_id} is a normal road (junction=-1), using full geometry")
-                    via_points = self._extract_full_road_geometry(connecting_road)
+                    if self.use_pyopendrive:
+                        via_points = self._get_road_centerline_pyopendrive(connecting_road_id, eps=0.3)
+                        if not via_points:
+                            logger.warning(f"pyOpenDRIVE geometry failed for connecting road {connecting_road_id}, using XML fallback")
+                            via_points = self._extract_full_road_geometry(connecting_road)
+                    else:
+                        via_points = self._extract_full_road_geometry(connecting_road)
                 else:
                     # This is a junction internal road
                     # Extract via points from connecting road geometry
                     logger.debug(f"Connecting road {connecting_road_id} is junction internal (junction={connecting_road.junction})")
-                    via_points = self._extract_connecting_road_geometry(connecting_road, contact_point)
+                    if self.use_pyopendrive:
+                        # For junction internal roads, also try pyOpenDRIVE first
+                        via_points = self._get_road_centerline_pyopendrive(connecting_road_id, eps=0.3)
+                        if not via_points:
+                            logger.warning(f"pyOpenDRIVE geometry failed for junction internal road {connecting_road_id}, using XML fallback")
+                            via_points = self._extract_connecting_road_geometry(connecting_road, contact_point)
+                    else:
+                        via_points = self._extract_connecting_road_geometry(connecting_road, contact_point)
                 
                 # Process lane links
                 connection_created = False
@@ -1423,6 +1699,116 @@ class OpenDriveToSumoConverter:
             return None, 0
         
         return edge_id, lane_idx
+    
+    def _get_lane_geometry(self, road_id: str, lane_section, lane, eps: float = 0.5) -> Optional[List[Tuple[float, float]]]:
+        """
+        Extract lane geometry using pyOpenDRIVE
+        
+        Args:
+            road_id: Road ID
+            lane_section: PyLaneSection object
+            lane: PyLane object
+            eps: Sampling precision (smaller = more points)
+            
+        Returns:
+            List of (x, y) tuples representing lane centerline
+        """
+        if not self.use_pyopendrive or road_id not in self.py_roads:
+            return None
+            
+        try:
+            py_road = self.py_roads[road_id]
+            
+            # Get lane mesh from pyOpenDRIVE
+            lane_mesh = py_road.get_lane_mesh(lane, eps)
+            
+            if not lane_mesh or not hasattr(lane_mesh, 'vertices'):
+                logger.warning(f"Failed to get mesh for lane {lane.id} on road {road_id}")
+                return None
+            
+            # Extract centerline coordinates from mesh vertices
+            # Note: lane mesh vertices include both boundaries and internal points
+            # We need to extract a representative centerline
+            vertices = lane_mesh.vertices
+            
+            if not vertices:
+                return None
+            
+            # Simple approach: take every nth vertex to create a centerline
+            # This may need refinement based on pyOpenDRIVE mesh structure
+            step = max(1, len(vertices) // 50)  # Limit to ~50 points for performance
+            centerline_points = []
+            
+            for i in range(0, len(vertices), step):
+                vertex = vertices[i]
+                if hasattr(vertex, 'array'):
+                    # Vec3D objects have .array attribute
+                    coords = vertex.array
+                    centerline_points.append((coords[0], coords[1]))
+                elif isinstance(vertex, (list, tuple)) and len(vertex) >= 2:
+                    # Direct coordinate tuples
+                    centerline_points.append((float(vertex[0]), float(vertex[1])))
+                else:
+                    logger.warning(f"Unknown vertex format in lane mesh: {type(vertex)}")
+                    continue
+            
+            if not centerline_points:
+                logger.warning(f"No valid coordinates extracted for lane {lane.id} on road {road_id}")
+                return None
+                
+            return centerline_points
+            
+        except Exception as e:
+            logger.warning(f"Error extracting geometry for lane {lane.id} on road {road_id}: {e}")
+            return None
+    
+    def _get_road_centerline_pyopendrive(self, road_id: str, eps: float = 0.5) -> Optional[List[Tuple[float, float]]]:
+        """
+        Get road centerline using pyOpenDRIVE coordinate transformation
+        
+        Args:
+            road_id: Road ID
+            eps: Step size for sampling along the road
+            
+        Returns:
+            List of (x, y) tuples representing road centerline
+        """
+        if not self.use_pyopendrive or road_id not in self.py_roads:
+            return None
+            
+        try:
+            py_road = self.py_roads[road_id]
+            road_length = py_road.length
+            
+            # Sample points along the road centerline
+            centerline_points = []
+            s_step = eps
+            current_s = 0.0
+            
+            while current_s <= road_length:
+                # Get global coordinates for this s position at the road center (t=0)
+                xyz = py_road.get_xyz(current_s, 0.0, 0.0)
+                
+                if hasattr(xyz, 'array'):
+                    coords = xyz.array
+                    centerline_points.append((coords[0], coords[1]))
+                else:
+                    logger.warning(f"Unexpected coordinate format from get_xyz: {type(xyz)}")
+                
+                current_s += s_step
+            
+            # Ensure we get the end point
+            if current_s - s_step < road_length:
+                xyz = py_road.get_xyz(road_length, 0.0, 0.0)
+                if hasattr(xyz, 'array'):
+                    coords = xyz.array
+                    centerline_points.append((coords[0], coords[1]))
+            
+            return centerline_points if centerline_points else None
+            
+        except Exception as e:
+            logger.warning(f"Error extracting centerline for road {road_id}: {e}")
+            return None
     
     def _extract_connecting_road_geometry(self, connecting_road: OpenDriveRoad, contact_point: str) -> Optional[List[Tuple[float, float]]]:
         """Extract complete geometry from connecting road as via points"""
@@ -1937,10 +2323,16 @@ def main():
     parser = argparse.ArgumentParser(
         description='Convert OpenDRIVE to SUMO using Plain XML format (SUMO recommended method)'
     )
-    parser.add_argument('input', help='Input OpenDRIVE file (.xodr)')
-    parser.add_argument('output', nargs='?', help='Output prefix (default: based on input name)')
+    parser.add_argument('--input', '-i',
+                     help='Input OpenDRIVE file (.xodr)',
+                     default="examples/xodr_sumo_maps/test_map_merge_split.xodr")
+    parser.add_argument('--output', '-o',
+                     help='Output prefix (default: based on input name)',
+                     default="test")
     parser.add_argument('--no-netconvert', action='store_true', 
                        help='Only generate Plain XML files without running netconvert')
+    parser.add_argument('--no-pyopendrive', action='store_true', 
+                       help='Disable pyOpenDRIVE enhanced geometry processing (use XML parsing only)')
     parser.add_argument('--verbose', '-v', action='store_true', help='Verbose output')
     
     args = parser.parse_args()
@@ -1958,8 +2350,12 @@ def main():
         logging.getLogger().setLevel(logging.DEBUG)
     
     # Execute conversion
-    converter = OpenDriveToSumoConverter(verbose=args.verbose)
-    
+    use_pyopendrive = not args.no_pyopendrive  # Invert the flag
+    converter = OpenDriveToSumoConverter(verbose=args.verbose, use_pyopendrive=use_pyopendrive)
+
+    if use_pyopendrive and not PYOPENDRIVE_AVAILABLE:
+        raise ImportError("pyOpenDRIVE is not installed. Please install it or run with --no-pyopendrive.")
+
     print("="*60)
     print("OpenDRIVE to SUMO Converter")
     print("Using SUMO Official Plain XML Method")
