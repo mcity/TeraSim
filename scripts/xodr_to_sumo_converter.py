@@ -93,6 +93,16 @@ class OpenDriveToSumoConverter:
     Using Plain XML intermediate format, conforming to SUMO's official recommendations
     """
     
+    # OpenDRIVE RoadLink Type enumeration values (from libOpenDRIVE)
+    ROADLINK_TYPE_NONE = 0
+    ROADLINK_TYPE_ROAD = 1
+    ROADLINK_TYPE_JUNCTION = 2
+    
+    # OpenDRIVE RoadLink ContactPoint enumeration values
+    CONTACT_POINT_NONE = 0
+    CONTACT_POINT_START = 1
+    CONTACT_POINT_END = 2
+    
     def __init__(self, verbose: bool = False, use_pyopendrive: bool = True):
         self.verbose = verbose
         self.use_pyopendrive = use_pyopendrive and PYOPENDRIVE_AVAILABLE
@@ -166,7 +176,9 @@ class OpenDriveToSumoConverter:
             return True
             
         except Exception as e:
+            import traceback
             logger.error(f"Conversion failed: {e}")
+            traceback.print_exc()
             return False
     
     def _parse_opendrive(self, xodr_file: str) -> bool:
@@ -382,19 +394,43 @@ class OpenDriveToSumoConverter:
                 )
                 
                 # Get road links (predecessor/successor)
-                if hasattr(py_road, 'predecessor') and py_road.predecessor:
-                    road.predecessor = {
-                        'elementId': self._decode_if_bytes(py_road.predecessor.id),
-                        'elementType': 'road' if py_road.predecessor.type == 0 else 'junction',
-                        'contactPoint': 'start' if py_road.predecessor.contact_point == 0 else 'end'
-                    }
+                if hasattr(py_road, 'predecessor') and py_road.predecessor and py_road.predecessor.type != self.ROADLINK_TYPE_NONE:
+                    # Determine element type based on correct enumeration values
+                    if py_road.predecessor.type == self.ROADLINK_TYPE_ROAD:
+                        element_type = 'road'
+                    elif py_road.predecessor.type == self.ROADLINK_TYPE_JUNCTION:
+                        element_type = 'junction'
+                    else:
+                        logger.warning(f"Unknown predecessor type {py_road.predecessor.type} for road {road_id}")
+                        element_type = None
+                    
+                    if element_type:
+                        road.predecessor = {
+                            'elementId': self._decode_if_bytes(py_road.predecessor.id),
+                            'elementType': element_type,
+                            'contactPoint': 'start' if py_road.predecessor.contact_point == self.CONTACT_POINT_START else 'end'
+                        }
+                else:
+                    road.predecessor = None
                 
-                if hasattr(py_road, 'successor') and py_road.successor:
-                    road.successor = {
-                        'elementId': self._decode_if_bytes(py_road.successor.id),
-                        'elementType': 'road' if py_road.successor.type == 0 else 'junction',
-                        'contactPoint': 'start' if py_road.successor.contact_point == 0 else 'end'
-                    }
+                if hasattr(py_road, 'successor') and py_road.successor and py_road.successor.type != self.ROADLINK_TYPE_NONE:
+                    # Determine element type based on correct enumeration values
+                    if py_road.successor.type == self.ROADLINK_TYPE_ROAD:
+                        element_type = 'road'
+                    elif py_road.successor.type == self.ROADLINK_TYPE_JUNCTION:
+                        element_type = 'junction'
+                    else:
+                        logger.warning(f"Unknown successor type {py_road.successor.type} for road {road_id}")
+                        element_type = None
+                    
+                    if element_type:
+                        road.successor = {
+                            'elementId': self._decode_if_bytes(py_road.successor.id),
+                            'elementType': element_type,
+                            'contactPoint': 'start' if py_road.successor.contact_point == self.CONTACT_POINT_START else 'end'
+                        }
+                else:
+                    road.successor = None
                 
                 # Parse lanes using pyOpenDRIVE
                 lane_sections = py_road.get_lanesections()
@@ -413,6 +449,9 @@ class OpenDriveToSumoConverter:
                         elif lane.id > 0:  # Left lanes
                             road.lanes_left.append(lane_data)
                         # Skip center lane (id == 0)
+                
+                # Add geometry data from pyOpenDRIVE
+                road.geometry = self._extract_geometry_from_pyopendrive(py_road)
                 
                 self.road_map[road_id] = road
                 
@@ -466,6 +505,40 @@ class OpenDriveToSumoConverter:
             logger.error(f"Failed to parse OpenDRIVE with pyOpenDRIVE: {e}")
             logger.info("Falling back to XML parsing...")
             return self._parse_opendrive(xodr_file)
+    
+    def _extract_geometry_from_pyopendrive(self, py_road) -> List[Dict]:
+        """Extract geometry data from pyOpenDRIVE road object"""
+        geometry = []
+        
+        try:
+            # Sample points along the road centerline
+            # For most use cases, we need start point, some intermediate points, and end point
+            num_samples = max(5, int(py_road.length / 10))  # At least 5 points, or one every 10 meters
+            
+            for i in range(num_samples + 1):
+                s = (i / num_samples) * py_road.length
+                
+                # Get coordinates at (s, t=0, h=0) for centerline
+                xyz = py_road.get_xyz(s, 0, 0)
+                coords = xyz.array
+                
+                # Store in format compatible with existing code
+                geom_data = {
+                    'x': coords[0],
+                    'y': coords[1], 
+                    'hdg': 0,  # We'll calculate heading if needed
+                    's': s,
+                    'length': py_road.length / num_samples if i < num_samples else 0,
+                    'type': 'line'  # Assume line segments for now
+                }
+                geometry.append(geom_data)
+            
+        except Exception as e:
+            logger.warning(f"Failed to extract geometry from pyOpenDRIVE road {py_road.id}: {e}")
+            # Return empty geometry, will fall back to (0, 0) coordinates
+            return []
+        
+        return geometry
     
     def _get_lane_width(self, lane_elem: ET.Element) -> float:
         """Get lane width - take the last width element which is the actual width"""
@@ -1008,10 +1081,31 @@ class OpenDriveToSumoConverter:
                 # Fallback: use the elementId directly (might be junction ID)
                 return f"junction_{road.predecessor['elementId']}"
             elif road.predecessor['elementType'] == 'road':
-                # Road connects to another road - use stored node
-                return self.node_map.get(f"{road.id}_start")
-        # Road has no predecessor - use stored endpoint node
-        return self.node_map.get(f"{road.id}_start")
+                # Road connects to another road - find the shared connection point
+                pred_road_id = road.predecessor['elementId']
+                contact_point = road.predecessor.get('contactPoint', 'start')
+                if contact_point == 'end':
+                    shared_node_key = f"{pred_road_id}_end"
+                else:
+                    shared_node_key = f"{pred_road_id}_start"
+                
+                # Use the shared node from the predecessor road
+                shared_node = self.node_map.get(shared_node_key)
+                if not shared_node:
+                    # If the shared node doesn't exist, create it based on the predecessor road
+                    pred_road = self.road_map.get(pred_road_id)
+                    if pred_road:
+                        position = 'end' if contact_point == 'end' else 'start'
+                        shared_node = self._create_road_endpoint_node(pred_road, position)
+                        self.node_map[shared_node_key] = shared_node
+                return shared_node
+        # Road has no predecessor - use stored endpoint node (ensure it exists and is unique)
+        node_key = f"{road.id}_start"
+        if node_key not in self.node_map:
+            # Create endpoint node if it doesn't exist
+            start_node = self._create_road_endpoint_node(road, 'start')
+            self.node_map[node_key] = start_node
+        return self.node_map.get(node_key)
     
     def _get_road_to_node(self, road: OpenDriveRoad) -> Optional[str]:
         """Get the to node for a road"""
@@ -1024,10 +1118,31 @@ class OpenDriveToSumoConverter:
                 # Fallback: use the elementId directly (might be junction ID)
                 return f"junction_{road.successor['elementId']}"
             elif road.successor['elementType'] == 'road':
-                # Road connects to another road - use stored node
-                return self.node_map.get(f"{road.id}_end")
-        # Road has no successor - use stored endpoint node
-        return self.node_map.get(f"{road.id}_end")
+                # Road connects to another road - find the shared connection point
+                succ_road_id = road.successor['elementId']
+                contact_point = road.successor.get('contactPoint', 'start')
+                if contact_point == 'end':
+                    shared_node_key = f"{succ_road_id}_end"
+                else:
+                    shared_node_key = f"{succ_road_id}_start"
+                
+                # Use the shared node from the successor road
+                shared_node = self.node_map.get(shared_node_key)
+                if not shared_node:
+                    # If the shared node doesn't exist, create it based on the successor road
+                    succ_road = self.road_map.get(succ_road_id)
+                    if succ_road:
+                        position = 'end' if contact_point == 'end' else 'start'
+                        shared_node = self._create_road_endpoint_node(succ_road, position)
+                        self.node_map[shared_node_key] = shared_node
+                return shared_node
+        # Road has no successor - use stored endpoint node (ensure it exists and is unique)
+        node_key = f"{road.id}_end"
+        if node_key not in self.node_map:
+            # Create endpoint node if it doesn't exist
+            end_node = self._create_road_endpoint_node(road, 'end')
+            self.node_map[node_key] = end_node
+        return self.node_map.get(node_key)
     
     # Note: _create_junction_edges is no longer needed since we use via points instead
     # Junction internal roads are not created as explicit edges in the new approach
