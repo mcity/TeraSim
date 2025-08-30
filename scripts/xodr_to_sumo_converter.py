@@ -1074,11 +1074,7 @@ class OpenDriveToSumoConverter:
         """Get the from node for a road"""
         if road.predecessor:
             if road.predecessor['elementType'] == 'junction':
-                # Road starts from a junction - need to find which actual junction
-                junction_id = self._find_junction_for_connecting_road(road.predecessor['elementId'])
-                if junction_id:
-                    return f"junction_{junction_id}"
-                # Fallback: use the elementId directly (might be junction ID)
+                # Road starts from a junction - elementId is the junction ID directly
                 return f"junction_{road.predecessor['elementId']}"
             elif road.predecessor['elementType'] == 'road':
                 # Road connects to another road - find the shared connection point
@@ -1111,11 +1107,7 @@ class OpenDriveToSumoConverter:
         """Get the to node for a road"""
         if road.successor:
             if road.successor['elementType'] == 'junction':
-                # Road ends at a junction - need to find which actual junction
-                junction_id = self._find_junction_for_connecting_road(road.successor['elementId'])
-                if junction_id:
-                    return f"junction_{junction_id}"
-                # Fallback: use the elementId directly (might be junction ID)
+                # Road ends at a junction - elementId is the junction ID directly
                 return f"junction_{road.successor['elementId']}"
             elif road.successor['elementType'] == 'road':
                 # Road connects to another road - find the shared connection point
