@@ -154,10 +154,9 @@ class OpenDriveToSumoConverter:
                 if not self._parse_with_pyopendrive(xodr_file):
                     return False
             else:
-                raise ValueError("pyOpenDRIVE is not available. Please install pyOpenDRIVE.")
-                # logger.info("Using XML parsing (fallback mode)")
-                # if not self._parse_opendrive(xodr_file):
-                #     return False
+                logger.info("Using XML parsing (fallback mode)")
+                if not self._parse_opendrive(xodr_file):
+                    return False
             
             # 2. Convert to Plain XML elements
             logger.info("Converting to Plain XML format...")
@@ -1339,10 +1338,6 @@ class OpenDriveToSumoConverter:
                 # Get road objects
                 incoming_road = self.road_map.get(incoming_road_id)
                 connecting_road = self.road_map.get(connecting_road_id)
-
-
-                if incoming_road_id == "13" and connecting_road_id == "1":
-                    print("aaa")
                 
                 if not incoming_road or not connecting_road:
                     logger.warning(f"Missing roads for connection: {incoming_road_id} -> {connecting_road_id}")
@@ -1407,10 +1402,10 @@ class OpenDriveToSumoConverter:
                     outgoing_lane_id = self._get_outgoing_lane_from_connecting_road(
                         connecting_road, connecting_lane_id, contact_point)
                     
-                    # if outgoing_lane_id is None:
-                    #     # 使用fallback映射
-                    #     outgoing_lane_id = self._fallback_lane_mapping(
-                    #         connecting_road, connecting_lane_id, outgoing_road_id, contact_point)
+                    if outgoing_lane_id is None:
+                        # 使用fallback映射
+                        outgoing_lane_id = self._fallback_lane_mapping(
+                            connecting_road, connecting_lane_id, outgoing_road_id, contact_point)
                     
                     if outgoing_lane_id is None:
                         logger.warning(f"Cannot map connecting road {connecting_road_id} lane {connecting_lane_id} to outgoing road {outgoing_road_id}")
@@ -1483,8 +1478,16 @@ class OpenDriveToSumoConverter:
     
     def _get_outgoing_road_from_connecting(self, connecting_road: OpenDriveRoad, contact_point: str) -> Optional[str]:
         """Get the outgoing road ID from a connecting road"""
-        if connecting_road.successor and connecting_road.successor['elementType'] == 'road':
-            return connecting_road.successor['elementId']
+        if contact_point == 'end':
+            # Reversed connection - connecting road is traversed from end to start
+            # So the outgoing road is at the start (predecessor)
+            if connecting_road.predecessor and connecting_road.predecessor['elementType'] == 'road':
+                return connecting_road.predecessor['elementId']
+        else:
+            # Normal connection - connecting road is traversed from start to end
+            # So the outgoing road is at the end (successor)
+            if connecting_road.successor and connecting_road.successor['elementType'] == 'road':
+                return connecting_road.successor['elementId']
         return None
 
     def _get_sumo_lane_index(self, road_id: str, lane_id: int, direction: str = 'forward') -> Optional[Tuple[str, int]]:
