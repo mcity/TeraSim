@@ -439,7 +439,7 @@ class OpenDriveToSumoConverter:
                     for lane in lanes:
                         lane_data = {
                             'id': lane.id,
-                            'type': lane.type if hasattr(lane, 'type') else 'driving',
+                            'type': self._decode_if_bytes(lane.type) if hasattr(lane, 'type') else 'driving',
                             's_start': lane_section.s0,
                             's_end': py_road.get_lanesection_end(lane_section)
                         }
@@ -1248,7 +1248,8 @@ class OpenDriveToSumoConverter:
                 for sumo_index, lane_info in enumerate(sorted_right_lanes):
                     lane_dict = {'width': lane_info.get('width', 3.2)}
                     # Set type and restrictions for shoulder lanes
-                    if lane_info['type'] == 'shoulder':
+                    lane_type = self._decode_if_bytes(lane_info['type'])
+                    if lane_type == 'shoulder':
                         lane_dict['type'] = 'shoulder'  # Set lane type
                         lane_dict['disallow'] = 'all'   # Disallow all vehicles
                     lane_data.append(lane_dict)
@@ -1283,7 +1284,8 @@ class OpenDriveToSumoConverter:
                 for sumo_index, lane_info in enumerate(sorted_left_lanes):
                     lane_dict = {'width': lane_info.get('width', 3.2)}
                     # Set type and restrictions for shoulder lanes
-                    if lane_info['type'] == 'shoulder':
+                    lane_type = self._decode_if_bytes(lane_info['type'])
+                    if lane_type == 'shoulder':
                         lane_dict['type'] = 'shoulder'  # Set lane type
                         lane_dict['disallow'] = 'all'   # Disallow all vehicles
                     lane_data.append(lane_dict)
