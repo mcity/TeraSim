@@ -442,7 +442,9 @@ class OpenDriveToSumoConverter:
                             'id': lane.id,
                             'type': self._decode_if_bytes(lane.type) if hasattr(lane, 'type') else 'driving',
                             's_start': lane_section.s0,
-                            's_end': py_road.get_lanesection_end(lane_section)
+                            's_end': py_road.get_lanesection_end(lane_section),
+                            'predecessor': lane.predecessor,
+                            'successor': lane.successor
                         }
                         
                         if lane.id < 0:  # Right lanes
@@ -1517,7 +1519,7 @@ class OpenDriveToSumoConverter:
         Args:
             connecting_road: The connecting road object
             connecting_lane_id: Lane ID in the connecting road
-            contact_point: 'start' or 'end' - connection direction
+            contact_point: 'start' or 'end' - connection direction (not used as successor is always outgoing)
             
         Returns:
             Lane ID in the outgoing road, or None if not found
@@ -1535,28 +1537,11 @@ class OpenDriveToSumoConverter:
             logger.warning(f"Lane {connecting_lane_id} not found in connecting road {connecting_road.id}")
             return None
         
-        # Get the lane links based on contact point
-        if contact_point == 'end':
-            # Reversed connection: use predecessor link
-            lane_links = target_lane.get('predecessor', [])
-            if isinstance(lane_links, dict):
-                lane_links = [lane_links]
-        else:
-            # Normal connection: use successor link
-            lane_links = target_lane.get('successor', [])
-            if isinstance(lane_links, dict):
-                lane_links = [lane_links]
+        # For connecting roads, the outgoing road is always the successor
+        # So we always use the successor lane link
+        outgoing_road_id = target_lane.get('successor', None)
         
-        # Return the first valid lane link
-        for link in lane_links:
-            if isinstance(link, dict) and 'id' in link:
-                outgoing_lane_id = int(link['id'])
-                logger.debug(f"Connecting road {connecting_road.id} lane {connecting_lane_id} -> outgoing lane {outgoing_lane_id}")
-                return outgoing_lane_id
-        
-        # If no explicit link found, try fallback mapping
-        logger.warning(f"No lane link found for connecting road {connecting_road.id} lane {connecting_lane_id}")
-        return None
+        return outgoing_road_id
     
     def _fallback_lane_mapping(self, connecting_road: OpenDriveRoad, connecting_lane_id: int, outgoing_road_id: str, contact_point: str) -> Optional[int]:
         """
