@@ -556,6 +556,53 @@ class OpenDriveToSumoConverter:
             return 3.5
         return 3.5
     
+    def _is_highway_merge(self, junction_id: str, internal_road_ids: List[str]) -> bool:
+        """
+        Check if a junction represents a highway merge scenario
+        
+        Highway merge criteria:
+        1. Exactly 2 incoming roads (main line + ramp)
+        2. Exactly 1 outgoing road (merged highway)
+        3. Connecting road length > 150m (sufficient merge distance)
+        
+        Returns:
+            True if this is a highway merge, False otherwise
+        """
+        incoming_roads = set()
+        outgoing_roads = set()
+        max_connecting_length = 0
+        
+        for road_id in internal_road_ids:
+            if road_id not in self.road_map:
+                continue
+                
+            road = self.road_map[road_id]
+            
+            # Track maximum connecting road length
+            max_connecting_length = max(max_connecting_length, road.length)
+            
+            # Collect incoming roads (predecessors of connecting roads)
+            if road.predecessor and road.predecessor['elementType'] == 'road':
+                incoming_roads.add(road.predecessor['elementId'])
+            
+            # Collect outgoing roads (successors of connecting roads)
+            if road.successor and road.successor['elementType'] == 'road':
+                outgoing_roads.add(road.successor['elementId'])
+        
+        # Check highway merge criteria
+        is_merge = (
+            len(incoming_roads) == 2 and 
+            len(outgoing_roads) == 1 and 
+            max_connecting_length > 150
+        )
+        
+        if is_merge:
+            logger.info(f"Junction {junction_id} identified as highway merge: "
+                       f"incoming={incoming_roads}, outgoing={outgoing_roads}, "
+                       f"max_length={max_connecting_length:.1f}m")
+        
+        return is_merge
+    
     def _determine_junction_type(self, junction_id: str, internal_road_ids: List[str]) -> str:
         """
         Determine junction type based on junction complexity
@@ -646,6 +693,13 @@ class OpenDriveToSumoConverter:
         for junction_id, internal_road_ids in self.junction_roads.items():
             if junction_id in referenced_junctions:
                 continue  # Already handled by road connections
+            
+            # Check if this is a highway merge
+            if self._is_highway_merge(junction_id, internal_road_ids):
+                # Handle highway merge specially - will create edges instead of junction
+                logger.info(f"Skipping junction node for highway merge {junction_id}")
+                self._handle_highway_merge(junction_id, internal_road_ids)
+                continue
                 
             # Calculate junction center from all internal roads
             center_x, center_y = self._calculate_junction_center(internal_road_ids)
@@ -669,6 +723,12 @@ class OpenDriveToSumoConverter:
         for junction_id in referenced_junctions:
             if junction_id in self.node_map:
                 continue  # Already created
+            
+            # Check if this is a highway merge
+            if junction_id in self.junction_roads and self._is_highway_merge(junction_id, self.junction_roads[junction_id]):
+                logger.info(f"Skipping junction node for highway merge {junction_id} (referenced)")
+                self._handle_highway_merge(junction_id, self.junction_roads[junction_id])
+                continue
                 
             # Calculate junction center from connecting road endpoints
             if junction_id in junction_road_endpoints:
@@ -814,6 +874,148 @@ class OpenDriveToSumoConverter:
         
         logger.warning(f"No geometry found for junction internal roads, using origin")
         return 0.0, 0.0
+    
+    def _handle_highway_merge(self, junction_id: str, internal_road_ids: List[str]):
+        """
+        Handle highway merge by creating edges instead of junction
+        Creates: Junction A (merge start) -> Merge Edge (4 lanes) -> Junction B (merge end)
+        """
+        logger.info(f"Handling highway merge for junction {junction_id}")
+        
+        # Analyze the merge configuration
+        merge_info = self._analyze_merge_roads(junction_id, internal_road_ids)
+        if not merge_info:
+            logger.error(f"Failed to analyze merge roads for junction {junction_id}")
+            return
+        
+        # Create Junction A (merge start)
+        junction_a = self._create_merge_start_junction(junction_id, merge_info)
+        if junction_a:
+            self.nodes.append(junction_a)
+            self.node_map[f"merge_start_{junction_id}"] = junction_a.id
+        
+        # Create Junction B (merge end)
+        junction_b = self._create_merge_end_junction(junction_id, merge_info)
+        if junction_b:
+            self.nodes.append(junction_b)
+            self.node_map[f"merge_end_{junction_id}"] = junction_b.id
+        
+        # Mark junction as handled - but we need to be smarter about the mapping
+        # Incoming roads (main and ramp) should map to merge start
+        # Outgoing road should map to merge end
+        
+        # For roads ending at this junction (incoming), use merge start
+        for road_id, road in self.road_map.items():
+            if road.successor and road.successor.get('elementId') == junction_id:
+                # This road ends at the junction - it's an incoming road
+                # It should connect to the merge start node
+                pass  # Will be handled by the updated _get_road_to_node logic
+            if road.predecessor and road.predecessor.get('elementId') == junction_id:
+                # This road starts from the junction - it's an outgoing road
+                # It should connect to the merge end node
+                pass  # Will be handled by the updated _get_road_from_node logic
+        
+        # Store a special marker for this junction
+        self.node_map[junction_id] = f"merge_zone_{junction_id}"
+        
+        # Also store specific mappings for incoming and outgoing
+        self.highway_merges = getattr(self, 'highway_merges', {})
+        self.highway_merges[junction_id] = {
+            'start_node': junction_a.id if junction_a else None,
+            'end_node': junction_b.id if junction_b else None,
+            'merge_info': merge_info
+        }
+        
+        logger.info(f"Created merge zone for junction {junction_id}: "
+                   f"{junction_a.id if junction_a else 'None'} -> merge_zone_{junction_id} -> "
+                   f"{junction_b.id if junction_b else 'None'}")
+    
+    def _analyze_merge_roads(self, junction_id: str, internal_road_ids: List[str]) -> Optional[dict]:
+        """
+        Analyze the roads involved in the highway merge
+        Returns dict with main_road, ramp_road, outgoing_road, and connecting_roads info
+        """
+        incoming_roads = {}
+        outgoing_road = None
+        connecting_roads = {}
+        
+        for road_id in internal_road_ids:
+            if road_id not in self.road_map:
+                continue
+            
+            road = self.road_map[road_id]
+            connecting_roads[road_id] = road
+            
+            # Find incoming roads
+            if road.predecessor and road.predecessor['elementType'] == 'road':
+                incoming_id = road.predecessor['elementId']
+                if incoming_id not in incoming_roads:
+                    incoming_roads[incoming_id] = self.road_map.get(incoming_id)
+            
+            # Find outgoing road
+            if road.successor and road.successor['elementType'] == 'road':
+                outgoing_id = road.successor['elementId']
+                if outgoing_id in self.road_map:
+                    outgoing_road = self.road_map[outgoing_id]
+        
+        if len(incoming_roads) != 2:
+            logger.warning(f"Junction {junction_id} has {len(incoming_roads)} incoming roads, expected 2")
+            return None
+        
+        # Identify main road and ramp based on lane count
+        roads = list(incoming_roads.values())
+        road1_lanes = len(roads[0].lanes_right) if roads[0] else 0
+        road2_lanes = len(roads[1].lanes_right) if roads[1] else 0
+        
+        if road1_lanes > road2_lanes:
+            main_road = roads[0]
+            ramp_road = roads[1]
+        else:
+            main_road = roads[1]
+            ramp_road = roads[0]
+        
+        return {
+            'main_road': main_road,
+            'ramp_road': ramp_road,
+            'outgoing_road': outgoing_road,
+            'connecting_roads': connecting_roads
+        }
+    
+    def _create_merge_start_junction(self, junction_id: str, merge_info: dict) -> Optional[PlainNode]:
+        """Create the junction node at the merge start (where main road and ramp meet)"""
+        main_road = merge_info['main_road']
+        
+        # Use main road's end position as junction location
+        if main_road.successor and main_road.successor['elementType'] == 'junction':
+            end_pos = self._calculate_road_end(main_road)
+            if end_pos:
+                return PlainNode(
+                    id=f"j_merge_start_{junction_id}",
+                    x=end_pos[0],
+                    y=end_pos[1],
+                    type="priority"
+                )
+        
+        logger.warning(f"Could not determine merge start position for junction {junction_id}")
+        return None
+    
+    def _create_merge_end_junction(self, junction_id: str, merge_info: dict) -> Optional[PlainNode]:
+        """Create the junction node at the merge end (where merge zone meets outgoing road)"""
+        outgoing_road = merge_info['outgoing_road']
+        
+        # Use outgoing road's start position as junction location
+        if outgoing_road and outgoing_road.predecessor and outgoing_road.predecessor['elementType'] == 'junction':
+            start_pos = self._calculate_road_start(outgoing_road)
+            if start_pos:
+                return PlainNode(
+                    id=f"j_merge_end_{junction_id}",
+                    x=start_pos[0],
+                    y=start_pos[1],
+                    type="zipper"  # Use zipper type for merge end
+                )
+        
+        logger.warning(f"Could not determine merge end position for junction {junction_id}")
+        return None
     
     def _get_junction_center_from_pyopendrive(self, py_junction, junction_id: str) -> Tuple[float, float]:
         """Get junction center coordinates from pyOpenDRIVE PyJunction object"""
@@ -1078,7 +1280,23 @@ class OpenDriveToSumoConverter:
         if road.predecessor:
             if road.predecessor['elementType'] == 'junction':
                 # Road starts from a junction - elementId is the junction ID directly
-                return f"junction_{road.predecessor['elementId']}"
+                junction_id = road.predecessor['elementId']
+                
+                # Check if this is a highway merge junction
+                if hasattr(self, 'highway_merges') and junction_id in self.highway_merges:
+                    # This road is outgoing from a merge - use the merge end node
+                    return self.highway_merges[junction_id]['end_node']
+                
+                # Check if this junction has been converted to merge nodes
+                if junction_id in self.node_map:
+                    mapped_node = self.node_map[junction_id]
+                    # If it's a merge zone marker, this shouldn't happen
+                    if mapped_node and mapped_node.startswith("merge_zone_"):
+                        logger.warning(f"Road {road.id} references junction {junction_id} which is a merge zone")
+                        # Fallback to junction node
+                        return f"junction_{junction_id}"
+                    return mapped_node
+                return f"junction_{junction_id}"
             elif road.predecessor['elementType'] == 'road':
                 # Road connects to another road - find the shared connection point
                 pred_road_id = road.predecessor['elementId']
@@ -1111,7 +1329,23 @@ class OpenDriveToSumoConverter:
         if road.successor:
             if road.successor['elementType'] == 'junction':
                 # Road ends at a junction - elementId is the junction ID directly
-                return f"junction_{road.successor['elementId']}"
+                junction_id = road.successor['elementId']
+                
+                # Check if this is a highway merge junction
+                if hasattr(self, 'highway_merges') and junction_id in self.highway_merges:
+                    # This road is incoming to a merge - use the merge start node
+                    return self.highway_merges[junction_id]['start_node']
+                
+                # Check if this junction has been converted to merge nodes
+                if junction_id in self.node_map:
+                    mapped_node = self.node_map[junction_id]
+                    # If it's a merge zone marker, this shouldn't happen
+                    if mapped_node and mapped_node.startswith("merge_zone_"):
+                        logger.warning(f"Road {road.id} references junction {junction_id} which is a merge zone")
+                        # Fallback to junction node
+                        return f"junction_{junction_id}"
+                    return mapped_node
+                return f"junction_{junction_id}"
             elif road.successor['elementType'] == 'road':
                 # Road connects to another road - find the shared connection point
                 succ_road_id = road.successor['elementId']
@@ -1319,6 +1553,97 @@ class OpenDriveToSumoConverter:
             logger.warning(f"Warning: More edges than expected! Possible junction explosion?")
             logger.warning(f"  Created edges: {len(self.edges)}")
             logger.warning(f"  Expected max: {expected_max_edges * 2}")
+        
+        # Create merge edges for highway merges
+        self._create_merge_edges()
+    
+    def _create_merge_edges(self):
+        """Create edges for highway merge zones"""
+        for junction_id, internal_road_ids in self.junction_roads.items():
+            # Only process highway merges
+            if not self._is_highway_merge(junction_id, internal_road_ids):
+                continue
+            
+            logger.info(f"Creating merge edge for highway merge junction {junction_id}")
+            
+            # Get merge configuration
+            merge_info = self._analyze_merge_roads(junction_id, internal_road_ids)
+            if not merge_info:
+                logger.error(f"Failed to create merge edge for junction {junction_id}")
+                continue
+            
+            # Find the main connecting road (usually the longer one)
+            main_connecting = None
+            max_length = 0
+            for road_id, road in merge_info['connecting_roads'].items():
+                if road.length > max_length:
+                    max_length = road.length
+                    main_connecting = road
+            
+            if not main_connecting:
+                logger.error(f"No connecting road found for merge zone {junction_id}")
+                continue
+            
+            # Create 4-lane merge edge
+            merge_edge = self._build_merge_edge(junction_id, main_connecting, merge_info)
+            if merge_edge:
+                self.edges.append(merge_edge)
+                logger.info(f"Created merge edge {merge_edge.id} with {merge_edge.num_lanes} lanes")
+    
+    def _build_merge_edge(self, junction_id: str, main_connecting: OpenDriveRoad, merge_info: dict) -> Optional[PlainEdge]:
+        """Build a 4-lane merge edge from connecting road geometry"""
+        # Determine nodes
+        from_node = f"j_merge_start_{junction_id}"
+        to_node = f"j_merge_end_{junction_id}"
+        
+        # Check if nodes exist
+        if from_node not in [n.id for n in self.nodes] or to_node not in [n.id for n in self.nodes]:
+            logger.error(f"Merge nodes not found for junction {junction_id}")
+            return None
+        
+        # Get geometry from main connecting road
+        if self.use_pyopendrive and main_connecting.id in self.py_roads:
+            shape_points = self._get_road_centerline_pyopendrive(main_connecting.id, eps=0.5)
+        else:
+            shape_points = self._generate_road_shape(main_connecting)
+        
+        # Prepare lane data for 4 lanes (3 main + 1 acceleration)
+        lane_data = []
+        
+        # Main lanes (from main road configuration)
+        main_road = merge_info['main_road']
+        main_lanes = [l for l in main_road.lanes_right if self._decode_if_bytes(l.get('type', 'driving')) == 'driving']
+        
+        # Add main lanes (typically 3)
+        for i, lane in enumerate(main_lanes[:3]):  # Limit to 3 main lanes
+            lane_data.append({
+                'width': lane.get('width', 3.6),
+                'speed': main_road.speed_limit,
+                'index': i
+            })
+        
+        # Add acceleration lane (from ramp)
+        ramp_road = merge_info['ramp_road']
+        lane_data.append({
+            'width': 4.0,  # Wider for acceleration
+            'speed': main_road.speed_limit * 0.9,  # Slightly lower speed
+            'index': 3,
+            'acceleration': True
+        })
+        
+        # Create merge edge
+        edge_id = f"merge_zone_{junction_id}"
+        return PlainEdge(
+            id=edge_id,
+            from_node=from_node,
+            to_node=to_node,
+            num_lanes=4,
+            speed=main_road.speed_limit,
+            name=f"Merge zone {junction_id}",
+            type="highway_merge",
+            shape=shape_points if len(shape_points) >= 2 else None,
+            lane_data=lane_data
+        )
     
     def _create_connections(self):
         """Create Plain XML connections using connecting road geometry as via points"""
@@ -1328,6 +1653,12 @@ class OpenDriveToSumoConverter:
         
         # Process each junction in OpenDRIVE
         for junction_id, junction_connections in self.junction_connections.items():
+            # Skip highway merges - they have special handling
+            if junction_id in self.junction_roads and self._is_highway_merge(junction_id, self.junction_roads[junction_id]):
+                logger.info(f"Skipping normal connections for highway merge junction {junction_id}")
+                self._create_merge_connections(junction_id)
+                continue
+            
             logger.info(f"Processing junction {junction_id}: {len(junction_connections)} connections")
             
             for conn in junction_connections:
@@ -1482,6 +1813,92 @@ class OpenDriveToSumoConverter:
         logger.info(f"  Successfully created: {successful_connections}")
         logger.info(f"  Failed: {failed_connections}")
         logger.info(f"Created {len(self.connections)} connections with via points")
+    
+    def _create_merge_connections(self, junction_id: str):
+        """Create connections for highway merge zones"""
+        logger.info(f"Creating merge connections for junction {junction_id}")
+        
+        # Get merge configuration
+        if junction_id not in self.junction_roads:
+            logger.error(f"No junction roads found for merge {junction_id}")
+            return
+        
+        merge_info = self._analyze_merge_roads(junction_id, self.junction_roads[junction_id])
+        if not merge_info:
+            logger.error(f"Failed to analyze merge for connections {junction_id}")
+            return
+        
+        main_road = merge_info['main_road']
+        ramp_road = merge_info['ramp_road']
+        outgoing_road = merge_info['outgoing_road']
+        
+        # Create connections for Junction A (merge start)
+        # Main road connections (3 lanes straight through)
+        main_edge = f"{main_road.id}.0"
+        merge_edge = f"merge_zone_{junction_id}"
+        
+        # Check if main edge exists
+        main_edge_obj = next((e for e in self.edges if e.id == main_edge), None)
+        if main_edge_obj:
+            # Connect main road lanes to merge zone lanes 0-2
+            for lane_idx in range(min(3, main_edge_obj.num_lanes)):
+                self.connections.append(PlainConnection(
+                    from_edge=main_edge,
+                    to_edge=merge_edge,
+                    from_lane=lane_idx,
+                    to_lane=lane_idx,
+                    dir='s',  # straight
+                    state='M'  # major road
+                ))
+                logger.debug(f"Connected main road: {main_edge}:{lane_idx} -> {merge_edge}:{lane_idx}")
+        
+        # Ramp road connection (1 lane to acceleration lane)
+        ramp_edge = f"{ramp_road.id}.0"
+        ramp_edge_obj = next((e for e in self.edges if e.id == ramp_edge), None)
+        if ramp_edge_obj:
+            # Connect ramp to merge zone lane 3 (acceleration lane)
+            self.connections.append(PlainConnection(
+                from_edge=ramp_edge,
+                to_edge=merge_edge,
+                from_lane=0,
+                to_lane=3,
+                dir='r',  # right merge
+                state='m'  # minor road
+            ))
+            logger.debug(f"Connected ramp: {ramp_edge}:0 -> {merge_edge}:3")
+        
+        # Create connections for Junction B (merge end)
+        # Merge zone to outgoing road (4 lanes to 3 lanes)
+        if outgoing_road:
+            outgoing_edge = f"{outgoing_road.id}.0"
+            outgoing_edge_obj = next((e for e in self.edges if e.id == outgoing_edge), None)
+            
+            if outgoing_edge_obj:
+                # Main lanes straight through
+                for lane_idx in range(min(3, outgoing_edge_obj.num_lanes)):
+                    self.connections.append(PlainConnection(
+                        from_edge=merge_edge,
+                        to_edge=outgoing_edge,
+                        from_lane=lane_idx,
+                        to_lane=lane_idx,
+                        dir='s',
+                        state='M'
+                    ))
+                    logger.debug(f"Connected merge to outgoing: {merge_edge}:{lane_idx} -> {outgoing_edge}:{lane_idx}")
+                
+                # Acceleration lane must merge to rightmost main lane
+                if outgoing_edge_obj.num_lanes >= 3:
+                    self.connections.append(PlainConnection(
+                        from_edge=merge_edge,
+                        to_edge=outgoing_edge,
+                        from_lane=3,  # acceleration lane
+                        to_lane=2,    # rightmost main lane
+                        dir='l',      # left merge
+                        state='m'
+                    ))
+                    logger.debug(f"Connected acceleration lane: {merge_edge}:3 -> {outgoing_edge}:2 (zipper)")
+        
+        logger.info(f"Created merge connections for junction {junction_id}")
     
     def _get_outgoing_road_from_connecting(self, connecting_road: OpenDriveRoad, contact_point: str) -> Optional[str]:
         """Get the outgoing road ID from a connecting road"""

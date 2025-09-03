@@ -1,3 +1,16 @@
+check_gcc_gpp() {
+    log_info "Checking for gcc and g++ compilers..."
+    if ! check_command gcc; then
+        log_error "gcc compiler not found. Please install gcc before proceeding."
+        exit 1
+    fi
+    if ! check_command g++; then
+        log_error "g++ compiler not found. Please install g++ before proceeding."
+        exit 1
+    fi
+    log_info "gcc version: $(gcc --version | head -n1)"
+    log_info "g++ version: $(g++ --version | head -n1)"
+}
 #!/bin/bash
 # TeraSim Monorepo Environment Setup Script (improved from original version)
 
@@ -47,20 +60,6 @@ check_python() {
     fi
 }
 
-check_uv() {
-    log_info "Checking uv..."
-    if ! check_command uv; then
-        log_warning "uv not installed. Installing now..."
-        curl -LsSf https://astral.sh/uv/install.sh | sh
-        export PATH="$HOME/.cargo/bin:$PATH"
-        
-        if ! check_command uv; then
-            log_error "uv installation failed. Please install manually: https://docs.astral.sh/uv/"
-            exit 1
-        fi
-    fi
-    log_info "uv version: $(uv --version)"
-}
 
 check_redis() {
     log_info "Checking Redis service..."
@@ -114,8 +113,8 @@ check_redis() {
 }
 
 setup_monorepo() {
-    log_info "Setting up TeraSim monorepo with uv..."
-    
+    log_info "Setting up TeraSim monorepo..."
+
     # Initialize workspace and install dependencies
     log_info "Installing workspace packages..."
     # Install packages explicitly for conda compatibility
@@ -125,10 +124,10 @@ setup_monorepo() {
     pip install -e packages/terasim-envgen
     pip install -e packages/terasim-datazoo
     pip install -e packages/terasim-vis
-    
+
     # Install development dependencies
     pip install "pytest>=7.4.0" "pytest-cov>=4.1.0" "black>=23.7.0" "ruff>=0.1.0" "mypy>=1.5.1" "isort>=5.12.0"
-    
+
     # Build Cython extensions
     if [ -d "packages/terasim-nde-nade" ]; then
         log_info "Building Cython extensions for NDE-NADE..."
@@ -136,7 +135,7 @@ setup_monorepo() {
         python setup.py build_ext --inplace
         cd ../..
     fi
-    
+
     # Verify installation
     log_info "Testing installation..."
     python -c "
@@ -210,7 +209,7 @@ main() {
     log_info "Starting TeraSim monorepo setup..."
     
     check_python
-    check_uv
+    check_gcc_gpp
     check_redis
     setup_sumo_tools
     setup_monorepo
@@ -244,9 +243,9 @@ for pkg_name, description in packages:
     
     echo
     echo "Development commands:"
-    echo "  uv run pytest                          # Run tests"
-    echo "  uv run black .                         # Format code"
-    echo "  uv run python                          # Start Python shell"
+    echo "  pytest                                 # Run tests"
+    echo "  black .                                # Format code"
+    echo "  python                                 # Start Python shell"
     echo
 }
 
