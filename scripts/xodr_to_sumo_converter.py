@@ -154,10 +154,9 @@ class OpenDriveToSumoConverter:
                 if not self._parse_with_pyopendrive(xodr_file):
                     return False
             else:
-                raise ValueError("pyOpenDRIVE is not available. Please install pyOpenDRIVE.")
-                # logger.info("Using XML parsing (fallback mode)")
-                # if not self._parse_opendrive(xodr_file):
-                #     return False
+                logger.info("Using XML parsing (fallback mode)")
+                if not self._parse_opendrive(xodr_file):
+                    return False
             
             # 2. Convert to Plain XML elements
             logger.info("Converting to Plain XML format...")
@@ -1475,7 +1474,7 @@ class OpenDriveToSumoConverter:
                 # SUMO: index 0 (rightmost) to index n-1 (leftmost)
                 sorted_right_lanes = sorted(road.lanes_right, key=lambda x: x['id'])
                 for sumo_index, lane_info in enumerate(sorted_right_lanes):
-                    lane_dict = {'width': lane_info.get('width', 3.2)}
+                    lane_dict = {'width': lane_info.get('width', 3.66)}
                     # Set type and restrictions for shoulder lanes
                     lane_type = self._decode_if_bytes(lane_info['type'])
                     if lane_type == 'shoulder':
@@ -1511,7 +1510,7 @@ class OpenDriveToSumoConverter:
                 lane_data = []
                 sorted_left_lanes = sorted(road.lanes_left, key=lambda x: x['id'])
                 for sumo_index, lane_info in enumerate(sorted_left_lanes):
-                    lane_dict = {'width': lane_info.get('width', 3.2)}
+                    lane_dict = {'width': lane_info.get('width', 3.66)}
                     # Set type and restrictions for shoulder lanes
                     lane_type = self._decode_if_bytes(lane_info['type'])
                     if lane_type == 'shoulder':
@@ -1572,13 +1571,20 @@ class OpenDriveToSumoConverter:
                 logger.error(f"Failed to create merge edge for junction {junction_id}")
                 continue
             
-            # Find the main connecting road (usually the longer one)
+            # Find the main connecting road (the one from main road, not ramp)
+            # We should use the connecting road that comes from the main road (higher lane count)
             main_connecting = None
-            max_length = 0
+            main_road = merge_info.get('main_road')
+            
+            # Try to find the connecting road that follows the main road
             for road_id, road in merge_info['connecting_roads'].items():
-                if road.length > max_length:
-                    max_length = road.length
-                    main_connecting = road
+                # Check if this connecting road comes from the main road
+                if road.predecessor and main_road:
+                    pred_id = road.predecessor.get('elementId')
+                    if pred_id == main_road.id:
+                        main_connecting = road
+                        logger.debug(f"Selected connecting road {road_id} from main road {main_road.id}")
+                        break
             
             if not main_connecting:
                 logger.error(f"No connecting road found for merge zone {junction_id}")
@@ -1607,6 +1613,37 @@ class OpenDriveToSumoConverter:
         else:
             shape_points = self._generate_road_shape(main_connecting)
         
+        # Adjust shape for the additional lane on the right
+        # When adding a lane on the right side, the center line needs to shift right
+        # to keep the left lanes (main road) in their original position
+        if shape_points and len(shape_points) >= 2:
+            # Calculate the shift amount (half of new lane width)
+            # We're adding a lane on the right, so we need to shift the centerline right
+            # to keep the main lanes (left side) in the same position
+            new_lane_width = 3.66  # Width of acceleration lane 12 ft
+            shift_amount = new_lane_width  # Shift right by half the new lane width
+            
+            # Calculate the direction perpendicular to the road
+            # For simplicity, use the first segment direction
+            dx = shape_points[1][0] - shape_points[0][0]
+            dy = shape_points[1][1] - shape_points[0][1]
+            length = math.sqrt(dx*dx + dy*dy)
+            
+            if length > 0:
+                # Perpendicular vector (rotate 90 degrees right)
+                perp_x = dy / length
+                perp_y = -dx / length
+                
+                # Shift all points to the right
+                adjusted_shape = []
+                for x, y in shape_points:
+                    adjusted_x = x + perp_x * shift_amount
+                    adjusted_y = y + perp_y * shift_amount
+                    adjusted_shape.append((adjusted_x, adjusted_y))
+                
+                shape_points = adjusted_shape
+                logger.debug(f"Adjusted merge zone centerline by {shift_amount}m to the right")
+        
         # Prepare lane data for 4 lanes (3 main + 1 acceleration)
         lane_data = []
         
@@ -1617,7 +1654,7 @@ class OpenDriveToSumoConverter:
         # Add main lanes (typically 3)
         for i, lane in enumerate(main_lanes[:3]):  # Limit to 3 main lanes
             lane_data.append({
-                'width': lane.get('width', 3.6),
+                'width': lane.get('width', 3.66),
                 'speed': main_road.speed_limit,
                 'index': i
             })
@@ -1625,7 +1662,7 @@ class OpenDriveToSumoConverter:
         # Add acceleration lane (from ramp)
         ramp_road = merge_info['ramp_road']
         lane_data.append({
-            'width': 4.0,  # Wider for acceleration
+            'width': 3.66,  # Wider for acceleration
             'speed': main_road.speed_limit * 0.9,  # Slightly lower speed
             'index': 3,
             'acceleration': True
@@ -1840,32 +1877,33 @@ class OpenDriveToSumoConverter:
         # Check if main edge exists
         main_edge_obj = next((e for e in self.edges if e.id == main_edge), None)
         if main_edge_obj:
-            # Connect main road lanes to merge zone lanes 0-2
+            # Connect main road lanes to merge zone lanes 1-3 (offset by 1)
+            # Lane 0 is reserved for the ramp
             for lane_idx in range(min(3, main_edge_obj.num_lanes)):
                 self.connections.append(PlainConnection(
                     from_edge=main_edge,
                     to_edge=merge_edge,
                     from_lane=lane_idx,
-                    to_lane=lane_idx,
+                    to_lane=lane_idx + 1,  # Offset by 1: lanes 1,2,3
                     dir='s',  # straight
                     state='M'  # major road
                 ))
-                logger.debug(f"Connected main road: {main_edge}:{lane_idx} -> {merge_edge}:{lane_idx}")
+                logger.debug(f"Connected main road: {main_edge}:{lane_idx} -> {merge_edge}:{lane_idx + 1}")
         
-        # Ramp road connection (1 lane to acceleration lane)
+        # Ramp road connection (1 lane to rightmost lane)
         ramp_edge = f"{ramp_road.id}.0"
         ramp_edge_obj = next((e for e in self.edges if e.id == ramp_edge), None)
         if ramp_edge_obj:
-            # Connect ramp to merge zone lane 3 (acceleration lane)
+            # Connect ramp to merge zone lane 0 (rightmost/acceleration lane)
             self.connections.append(PlainConnection(
                 from_edge=ramp_edge,
                 to_edge=merge_edge,
                 from_lane=0,
-                to_lane=3,
+                to_lane=0,  # Rightmost lane for merging
                 dir='r',  # right merge
                 state='m'  # minor road
             ))
-            logger.debug(f"Connected ramp: {ramp_edge}:0 -> {merge_edge}:3")
+            logger.debug(f"Connected ramp: {ramp_edge}:0 -> {merge_edge}:0")
         
         # Create connections for Junction B (merge end)
         # Merge zone to outgoing road (4 lanes to 3 lanes)
@@ -1874,29 +1912,45 @@ class OpenDriveToSumoConverter:
             outgoing_edge_obj = next((e for e in self.edges if e.id == outgoing_edge), None)
             
             if outgoing_edge_obj:
-                # Main lanes straight through
+                # Main lanes straight through (lanes 1,2,3 -> 0,1,2)
                 for lane_idx in range(min(3, outgoing_edge_obj.num_lanes)):
                     self.connections.append(PlainConnection(
                         from_edge=merge_edge,
                         to_edge=outgoing_edge,
-                        from_lane=lane_idx,
-                        to_lane=lane_idx,
+                        from_lane=lane_idx + 1,  # From lanes 1,2,3
+                        to_lane=lane_idx,        # To lanes 0,1,2
                         dir='s',
                         state='M'
                     ))
-                    logger.debug(f"Connected merge to outgoing: {merge_edge}:{lane_idx} -> {outgoing_edge}:{lane_idx}")
+                    logger.debug(f"Connected merge to outgoing: {merge_edge}:{lane_idx + 1} -> {outgoing_edge}:{lane_idx}")
                 
-                # Acceleration lane must merge to rightmost main lane
+                # Acceleration lane (lane 0) must merge to rightmost driving lane
+                # Need to find the rightmost non-shoulder lane in outgoing road
+                rightmost_driving_lane = 0
                 if outgoing_edge_obj.num_lanes >= 3:
+                    # Check if there are shoulder lanes
+                    outgoing_road_obj = merge_info.get('outgoing_road')
+                    if outgoing_road_obj and outgoing_road_obj.lanes_right:
+                        # Find the rightmost driving lane (skip shoulders)
+                        for i, lane in enumerate(outgoing_road_obj.lanes_right):
+                            lane_type = self._decode_if_bytes(lane.get('type', 'driving'))
+                            if lane_type != 'shoulder':
+                                rightmost_driving_lane = i
+                                break
+                    
+                    # Default to lane 1 if we couldn't determine (assuming lane 0 might be shoulder)
+                    if rightmost_driving_lane == 0 and outgoing_edge_obj.num_lanes > 1:
+                        rightmost_driving_lane = 1
+                    
                     self.connections.append(PlainConnection(
                         from_edge=merge_edge,
                         to_edge=outgoing_edge,
-                        from_lane=3,  # acceleration lane
-                        to_lane=2,    # rightmost main lane
-                        dir='l',      # left merge
+                        from_lane=0,  # acceleration lane (rightmost)
+                        to_lane=rightmost_driving_lane,    # rightmost driving lane in outgoing
+                        dir='l',      # left merge (from right lane to main)
                         state='m'
                     ))
-                    logger.debug(f"Connected acceleration lane: {merge_edge}:3 -> {outgoing_edge}:2 (zipper)")
+                    logger.debug(f"Connected acceleration lane: {merge_edge}:0 -> {outgoing_edge}:{rightmost_driving_lane} (zipper)")
         
         logger.info(f"Created merge connections for junction {junction_id}")
     
@@ -1956,9 +2010,13 @@ class OpenDriveToSumoConverter:
         
         # For connecting roads, the outgoing road is always the successor
         # So we always use the successor lane link
-        outgoing_road_id = target_lane.get('successor', None)
+        successor = target_lane.get('successor', None)
         
-        return outgoing_road_id
+        if successor and isinstance(successor, dict):
+            # Return the lane ID from the successor
+            return successor.get('id', None)
+        
+        return successor
     
     def _fallback_lane_mapping(self, connecting_road: OpenDriveRoad, connecting_lane_id: int, outgoing_road_id: str, contact_point: str) -> Optional[int]:
         """
