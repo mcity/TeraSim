@@ -1023,7 +1023,7 @@ class OpenDriveToSumoConverter:
                     id=f"j_merge_end_{junction_id}",
                     x=start_pos[0],
                     y=start_pos[1],
-                    type="zipper"  # Use zipper type for merge end
+                    type="priority"
                 )
         
         logger.warning(f"Could not determine merge end position for junction {junction_id}")
