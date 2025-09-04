@@ -1628,6 +1628,26 @@ class OpenDriveToSumoConverter:
             shape_points = self._get_road_centerline_pyopendrive(main_connecting.id, eps=0.5)
         else:
             shape_points = self._generate_road_shape(main_connecting)
+
+        # Trim 10m from start and end of shape_points if possible
+        trim_distance = 50.0
+        if shape_points and len(shape_points) > 2:
+            def trim_shape(points, trim_dist):
+                # Calculate cumulative distances
+                cum_dist = [0.0]
+                for i in range(1, len(points)):
+                    dx = points[i][0] - points[i-1][0]
+                    dy = points[i][1] - points[i-1][1]
+                    cum_dist.append(cum_dist[-1] + math.hypot(dx, dy))
+                total_dist = cum_dist[-1]
+                # Find indices for trimming
+                start_idx = next((i for i, d in enumerate(cum_dist) if d >= trim_dist), 0)
+                end_idx = next((i for i, d in enumerate(cum_dist) if d >= total_dist - trim_dist), len(points)-1)
+                # Ensure at least two points remain
+                if end_idx > start_idx and end_idx - start_idx >= 1:
+                    return points[start_idx:end_idx+1]
+                return points
+            shape_points = trim_shape(shape_points, trim_distance)
         
         # Adjust shape for the additional lane on the right
         # When adding a lane on the right side, the center line needs to shift right
