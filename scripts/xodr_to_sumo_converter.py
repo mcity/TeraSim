@@ -1694,7 +1694,7 @@ class OpenDriveToSumoConverter:
                                         to_edge=to_edge,
                                         from_lane=from_lane,
                                         to_lane=to_lane,
-                                        via=via_points  # Precise turning path
+                                        # via=via_points  # Precise turning path
                                     ))
                                     logger.debug(f"Created connection: {from_edge}:{from_lane} -> {to_edge}:{to_lane}")
                                     connection_created = True
@@ -2806,23 +2806,7 @@ class OpenDriveToSumoConverter:
                 '--output.street-names', 'true',  # Preserve street names
                 '--output.original-names', 'true',  # Keep original IDs
             ]
-            
-            # Add projection if available
-            # Note: OpenDRIVE coordinates are already in projected coordinate system (UTM)
-            # So we should NOT use --proj which expects lat/lon input
-            # Instead, we can use --proj.plain-geo to indicate the coordinates are already projected
-            if self.geo_reference:
-                # The OpenDRIVE coordinates are already in projected coordinate system (UTM)
-                logger.info(f"OpenDRIVE uses projection: {self.geo_reference}")
-                
-                # Since the coordinates are already projected (UTM), we have two options:
-                # Option 1: Don't use any projection parameter - SUMO will use the coordinates as-is
-                # Option 2: Use --proj.plain-geo to indicate coordinates are already geo-referenced
-                
-                # We'll use option 2 to preserve the geo-reference information
-                cmd.extend(['--proj', '+proj=utm +zone=14 +datum=WGS84 +units=m +no_defs'])
-                logger.info("Coordinates are already in projected system (UTM)")
-                logger.info("Using --proj.plain-geo to preserve geo-reference metadata")
+        
             
             # Add connections file if it exists
             conn_file = f'{output_prefix}.con.xml'
