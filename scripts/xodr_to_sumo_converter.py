@@ -972,12 +972,25 @@ class OpenDriveToSumoConverter:
         else:
             main_road = roads[1]
             ramp_road = roads[0]
+
+        main_connecting_road = None
+        for road_id, road in connecting_roads.items():
+            if road.predecessor and road.predecessor['elementId'] == main_road.id:
+                main_connecting_road = road
+                break
+        ramp_connecting_road = None
+        for road_id, road in connecting_roads.items():
+            if road.predecessor and road.predecessor['elementId'] == ramp_road.id:
+                ramp_connecting_road = road
+                break
         
         return {
             'main_road': main_road,
             'ramp_road': ramp_road,
             'outgoing_road': outgoing_road,
-            'connecting_roads': connecting_roads
+            'connecting_roads': connecting_roads,
+            'main_connecting_road': main_connecting_road,
+            'ramp_connecting_road': ramp_connecting_road
         }
     
     def _create_merge_start_junction(self, junction_id: str, merge_info: dict) -> Optional[PlainNode]:
@@ -1595,6 +1608,9 @@ class OpenDriveToSumoConverter:
             if merge_edge:
                 self.edges.append(merge_edge)
                 logger.info(f"Created merge edge {merge_edge.id} with {merge_edge.num_lanes} lanes")
+                
+                # # Create lane mappings for junction internal roads to merge zone
+                # self._create_merge_zone_lane_mappings(junction_id, merge_info)
     
     def _build_merge_edge(self, junction_id: str, main_connecting: OpenDriveRoad, merge_info: dict) -> Optional[PlainEdge]:
         """Build a 4-lane merge edge from connecting road geometry"""
@@ -1616,65 +1632,82 @@ class OpenDriveToSumoConverter:
         # Adjust shape for the additional lane on the right
         # When adding a lane on the right side, the center line needs to shift right
         # to keep the left lanes (main road) in their original position
-        if shape_points and len(shape_points) >= 2:
-            # Calculate the shift amount (half of new lane width)
-            # We're adding a lane on the right, so we need to shift the centerline right
-            # to keep the main lanes (left side) in the same position
-            new_lane_width = 3.66  # Width of acceleration lane 12 ft
-            shift_amount = new_lane_width  # Shift right by half the new lane width
+        # if shape_points and len(shape_points) >= 2:
+        #     # Calculate the shift amount (half of new lane width)
+        #     # We're adding a lane on the right, so we need to shift the centerline right
+        #     # to keep the main lanes (left side) in the same position
+        #     new_lane_width = 3.66  # Width of acceleration lane 12 ft
+        #     shift_amount = new_lane_width  # Shift right by half the new lane width
             
-            # Calculate the direction perpendicular to the road
-            # For simplicity, use the first segment direction
-            dx = shape_points[1][0] - shape_points[0][0]
-            dy = shape_points[1][1] - shape_points[0][1]
-            length = math.sqrt(dx*dx + dy*dy)
+        #     # Calculate the direction perpendicular to the road
+        #     # For simplicity, use the first segment direction
+        #     dx = shape_points[1][0] - shape_points[0][0]
+        #     dy = shape_points[1][1] - shape_points[0][1]
+        #     length = math.sqrt(dx*dx + dy*dy)
             
-            if length > 0:
-                # Perpendicular vector (rotate 90 degrees right)
-                perp_x = dy / length
-                perp_y = -dx / length
+        #     if length > 0:
+        #         # Perpendicular vector (rotate 90 degrees right)
+        #         perp_x = dy / length
+        #         perp_y = -dx / length
                 
-                # Shift all points to the right
-                adjusted_shape = []
-                for x, y in shape_points:
-                    adjusted_x = x + perp_x * shift_amount
-                    adjusted_y = y + perp_y * shift_amount
-                    adjusted_shape.append((adjusted_x, adjusted_y))
+        #         # Shift all points to the right
+        #         adjusted_shape = []
+        #         for x, y in shape_points:
+        #             adjusted_x = x + perp_x * shift_amount
+        #             adjusted_y = y + perp_y * shift_amount
+        #             adjusted_shape.append((adjusted_x, adjusted_y))
                 
-                shape_points = adjusted_shape
-                logger.debug(f"Adjusted merge zone centerline by {shift_amount}m to the right")
+        #         shape_points = adjusted_shape
+        #         logger.debug(f"Adjusted merge zone centerline by {shift_amount}m to the right")
         
         # Prepare lane data for 4 lanes (3 main + 1 acceleration)
         lane_data = []
+        edge_id = f"merge_zone_{junction_id}"
+        
+        # Add acceleration lane (from ramp), this will be the rightmost lane and set lane index to 0
+        lane_data.append({
+            'width': 3.66,  # Wider for acceleration
+            # 'speed': main_road.speed_limit * 0.9,  # Slightly lower speed
+            # 'index': 0,
+            'acceleration': True
+        })
+        road_id = merge_info['ramp_connecting_road'].id
+        opendrive_lane_id = -1 # rightmost lane
+        mapping_key = (road_id, opendrive_lane_id, 'forward')
+        self.lane_mapping[mapping_key] = (edge_id, 0)
         
         # Main lanes (from main road configuration)
         main_road = merge_info['main_road']
-        main_lanes = [l for l in main_road.lanes_right if self._decode_if_bytes(l.get('type', 'driving')) == 'driving']
         
+        main_lanes = [l for l in main_road.lanes_right]
+        # main_connecting_road = 
+        road_id = merge_info['main_connecting_road'].id
         # Add main lanes (typically 3)
-        for i, lane in enumerate(main_lanes[:3]):  # Limit to 3 main lanes
-            lane_data.append({
+        for i, lane in enumerate(main_lanes):  # Limit to 3 main lanes
+            lane_dict = {
                 'width': lane.get('width', 3.66),
-                'speed': main_road.speed_limit,
-                'index': i
-            })
+                # 'speed': main_road.speed_limit,
+                # 'index': i+1,
+                # 'type': lane.get('type', 'driving')
+            }
+            lane_type = self._decode_if_bytes(lane['type'])
+            if lane_type == 'shoulder':
+                lane_dict['type'] = 'shoulder'  # Set lane type
+                lane_dict['disallow'] = 'all'
+            lane_data.append(lane_dict)
+            opendrive_lane_id = lane['id']
+            mapping_key = (road_id, opendrive_lane_id, 'forward')
+            self.lane_mapping[mapping_key] = (edge_id, i+1)
+
         
-        # Add acceleration lane (from ramp)
-        ramp_road = merge_info['ramp_road']
-        lane_data.append({
-            'width': 3.66,  # Wider for acceleration
-            'speed': main_road.speed_limit * 0.9,  # Slightly lower speed
-            'index': 3,
-            'acceleration': True
-        })
         
         # Create merge edge
-        edge_id = f"merge_zone_{junction_id}"
+        
         return PlainEdge(
             id=edge_id,
             from_node=from_node,
             to_node=to_node,
-            num_lanes=4,
+            num_lanes=len(lane_data),
             speed=main_road.speed_limit,
             name=f"Merge zone {junction_id}",
             type="highway_merge",
@@ -1851,8 +1884,89 @@ class OpenDriveToSumoConverter:
         logger.info(f"  Failed: {failed_connections}")
         logger.info(f"Created {len(self.connections)} connections with via points")
     
+    def _build_junction_connection_chains(self, junction_id: str) -> Dict[str, List[Dict]]:
+        """
+        Build complete connection chains for a junction
+        Returns a mapping of incoming_road_id -> list of connection chains
+        Each chain contains: incoming_road, connecting_road, outgoing_road, and lane mappings
+        """
+        connection_chains = {}
+        
+        # Get all connections for this junction
+        junction_conns = self.junction_connections.get(junction_id, [])
+        
+        for conn in junction_conns:
+            incoming_road_id = conn.get('incomingRoad')
+            connecting_road_id = conn.get('connectingRoad')
+            
+            # Get the connecting road
+            connecting_road = self.road_map.get(connecting_road_id)
+            if not connecting_road:
+                logger.warning(f"Connecting road {connecting_road_id} not found")
+                continue
+            
+            # Determine the outgoing road from the connecting road
+            # For junction internal roads, the successor is the outgoing road
+            outgoing_road_id = None
+            if connecting_road.successor:
+                if connecting_road.successor.get('elementType') == 'road':
+                    outgoing_road_id = connecting_road.successor.get('elementId')
+            
+            # Build chain for each lane link
+            for lane_link in conn.get('laneLinks', []):
+                from_lane = lane_link.get('from')
+                to_lane = lane_link.get('to')
+                
+                # Trace the final lane through the connecting road
+                final_lane = self._trace_lane_successor(connecting_road, to_lane)
+                
+                chain = {
+                    'incoming_road': incoming_road_id,
+                    'connecting_road': connecting_road_id,
+                    'outgoing_road': outgoing_road_id,
+                    'from_lane': from_lane,
+                    'connecting_lane': to_lane,
+                    'final_lane': final_lane
+                }
+                
+                if incoming_road_id not in connection_chains:
+                    connection_chains[incoming_road_id] = []
+                connection_chains[incoming_road_id].append(chain)
+                
+                logger.debug(f"Connection chain: Road {incoming_road_id} lane {from_lane} -> "
+                           f"Road {connecting_road_id} lane {to_lane} -> "
+                           f"Road {outgoing_road_id} lane {final_lane}")
+        
+        return connection_chains
+    
+    def _trace_lane_successor(self, road: OpenDriveRoad, lane_id: int) -> Optional[int]:
+        """
+        Trace the successor lane ID through a connecting road
+        Returns the final lane ID that this lane connects to
+        """
+        # Find the lane in the road
+        target_lane = None
+        for lane_info in road.lanes_left + road.lanes_right:
+            if lane_info['id'] == lane_id:
+                target_lane = lane_info
+                break
+        
+        if not target_lane:
+            logger.warning(f"Lane {lane_id} not found in road {road.id}")
+            return None
+        
+        # Get the successor lane ID
+        successor = target_lane.get('successor')
+        if successor and isinstance(successor, dict):
+            return successor.get('id')
+        elif successor:
+            return successor
+        
+        # If no explicit successor, return the same lane ID (direct mapping)
+        return lane_id
+    
     def _create_merge_connections(self, junction_id: str):
-        """Create connections for highway merge zones"""
+        """Create connections for highway merge zones using OpenDRIVE definitions"""
         logger.info(f"Creating merge connections for junction {junction_id}")
         
         # Get merge configuration
@@ -1869,88 +1983,103 @@ class OpenDriveToSumoConverter:
         ramp_road = merge_info['ramp_road']
         outgoing_road = merge_info['outgoing_road']
         
-        # Create connections for Junction A (merge start)
-        # Main road connections (3 lanes straight through)
-        main_edge = f"{main_road.id}.0"
+        # Build connection chains from OpenDRIVE data
+        connection_chains = self._build_junction_connection_chains(junction_id)
+        
+        # Create merge zone edge reference
         merge_edge = f"merge_zone_{junction_id}"
         
-        # Check if main edge exists
-        main_edge_obj = next((e for e in self.edges if e.id == main_edge), None)
-        if main_edge_obj:
-            # Connect main road lanes to merge zone lanes 1-3 (offset by 1)
-            # Lane 0 is reserved for the ramp
-            for lane_idx in range(min(3, main_edge_obj.num_lanes)):
-                self.connections.append(PlainConnection(
-                    from_edge=main_edge,
-                    to_edge=merge_edge,
-                    from_lane=lane_idx,
-                    to_lane=lane_idx + 1,  # Offset by 1: lanes 1,2,3
-                    dir='s',  # straight
-                    state='M'  # major road
-                ))
-                logger.debug(f"Connected main road: {main_edge}:{lane_idx} -> {merge_edge}:{lane_idx + 1}")
-        
-        # Ramp road connection (1 lane to rightmost lane)
-        ramp_edge = f"{ramp_road.id}.0"
-        ramp_edge_obj = next((e for e in self.edges if e.id == ramp_edge), None)
-        if ramp_edge_obj:
-            # Connect ramp to merge zone lane 0 (rightmost/acceleration lane)
-            self.connections.append(PlainConnection(
-                from_edge=ramp_edge,
-                to_edge=merge_edge,
-                from_lane=0,
-                to_lane=0,  # Rightmost lane for merging
-                dir='r',  # right merge
-                state='m'  # minor road
-            ))
-            logger.debug(f"Connected ramp: {ramp_edge}:0 -> {merge_edge}:0")
-        
-        # Create connections for Junction B (merge end)
-        # Merge zone to outgoing road (4 lanes to 3 lanes)
-        if outgoing_road:
-            outgoing_edge = f"{outgoing_road.id}.0"
-            outgoing_edge_obj = next((e for e in self.edges if e.id == outgoing_edge), None)
+        # Process connections using established lane mappings
+        for incoming_road_id, chains in connection_chains.items():
+            # Get the incoming edge
+            incoming_edge_id = f"{incoming_road_id}.0"
+            incoming_edge_obj = next((e for e in self.edges if e.id == incoming_edge_id), None)
             
-            if outgoing_edge_obj:
-                # Main lanes straight through (lanes 1,2,3 -> 0,1,2)
-                for lane_idx in range(min(3, outgoing_edge_obj.num_lanes)):
-                    self.connections.append(PlainConnection(
-                        from_edge=merge_edge,
-                        to_edge=outgoing_edge,
-                        from_lane=lane_idx + 1,  # From lanes 1,2,3
-                        to_lane=lane_idx,        # To lanes 0,1,2
-                        dir='s',
-                        state='M'
-                    ))
-                    logger.debug(f"Connected merge to outgoing: {merge_edge}:{lane_idx + 1} -> {outgoing_edge}:{lane_idx}")
+            if not incoming_edge_obj:
+                logger.warning(f"Incoming edge {incoming_edge_id} not found for merge connections")
+                continue
+            
+            for chain in chains:
+                from_lane_id = chain['from_lane']
+                connecting_road_id = chain['connecting_road']
+                connecting_lane_id = chain['connecting_lane']
                 
-                # Acceleration lane (lane 0) must merge to rightmost driving lane
-                # Need to find the rightmost non-shoulder lane in outgoing road
-                rightmost_driving_lane = 0
-                if outgoing_edge_obj.num_lanes >= 3:
-                    # Check if there are shoulder lanes
-                    outgoing_road_obj = merge_info.get('outgoing_road')
-                    if outgoing_road_obj and outgoing_road_obj.lanes_right:
-                        # Find the rightmost driving lane (skip shoulders)
-                        for i, lane in enumerate(outgoing_road_obj.lanes_right):
-                            lane_type = self._decode_if_bytes(lane.get('type', 'driving'))
-                            if lane_type != 'shoulder':
-                                rightmost_driving_lane = i
-                                break
-                    
-                    # Default to lane 1 if we couldn't determine (assuming lane 0 might be shoulder)
-                    if rightmost_driving_lane == 0 and outgoing_edge_obj.num_lanes > 1:
-                        rightmost_driving_lane = 1
-                    
-                    self.connections.append(PlainConnection(
-                        from_edge=merge_edge,
-                        to_edge=outgoing_edge,
-                        from_lane=0,  # acceleration lane (rightmost)
-                        to_lane=rightmost_driving_lane,    # rightmost driving lane in outgoing
-                        dir='l',      # left merge (from right lane to main)
-                        state='m'
-                    ))
-                    logger.debug(f"Connected acceleration lane: {merge_edge}:0 -> {outgoing_edge}:{rightmost_driving_lane} (zipper)")
+                # Get lane mappings using the established system
+                # 1. From incoming road to connecting road (via normal mapping)
+                from_mapping = self._get_sumo_lane_index(incoming_road_id, from_lane_id, 'forward')
+                
+                # 2. From connecting road to merge zone (via our new mapping)
+                to_mapping = self._get_sumo_lane_index(connecting_road_id, connecting_lane_id, 'forward')
+                
+                if not from_mapping:
+                    logger.error(f"No lane mapping found for incoming road {incoming_road_id} lane {from_lane_id}")
+                    continue
+                
+                if not to_mapping:
+                    logger.error(f"No lane mapping found for connecting road {connecting_road_id} lane {connecting_lane_id}")
+                    continue
+                
+                from_edge, from_lane_idx = from_mapping
+                to_edge, to_lane_idx = to_mapping
+                
+                # Verify the to_edge is our merge zone
+                if to_edge != merge_edge:
+                    logger.error(f"Expected merge zone edge {merge_edge}, but got {to_edge}")
+                    continue
+                
+                # Determine connection direction
+                incoming_road = self.road_map.get(incoming_road_id)
+                main_road = merge_info['main_road']
+                
+                
+                # Create the connection
+                self.connections.append(PlainConnection(
+                    from_edge=from_edge,
+                    to_edge=to_edge,
+                    from_lane=from_lane_idx,
+                    to_lane=to_lane_idx,
+                    # dir=direction,
+                    # state=state
+                ))
+                logger.debug(f"Connected via mapping: {from_edge}:{from_lane_idx} -> {to_edge}:{to_lane_idx} "
+                           f"(Road {incoming_road_id} lane {from_lane_id} -> Road {connecting_road_id} lane {connecting_lane_id})")
+        
+            # Create connections for Junction B (merge end)
+            # Merge zone to outgoing road (4 lanes to 3 lanes)
+            if outgoing_road:
+                outgoing_edge = f"{outgoing_road.id}.0"
+                outgoing_edge_obj = next((e for e in self.edges if e.id == outgoing_edge), None)
+                
+                if outgoing_edge_obj:
+                    for chain in chains:
+
+                        connecting_road_id = chain['connecting_road']
+                        connecting_lane_id = chain['connecting_lane']
+                        outgoing_road_id = chain['outgoing_road']
+                        outgoing_lane_id = chain['final_lane']
+                        from_mapping = self._get_sumo_lane_index(connecting_road_id, connecting_lane_id, 'forward')
+                        to_mapping = self._get_sumo_lane_index(outgoing_road_id, outgoing_lane_id, 'forward')
+
+                        if incoming_road and incoming_road.id == main_road.id:
+                            # Main road - straight
+                            direction = 's'
+                            state = 'M'
+                        else:
+                            # Ramp - right merge
+                            direction = 'r'
+                            state = 'm'
+
+                        from_edge, from_lane_idx = from_mapping
+                        to_edge, to_lane_idx = to_mapping
+                        self.connections.append(PlainConnection(
+                            from_edge=from_edge,
+                            to_edge=to_edge,
+                            from_lane=from_lane_idx,  # From lanes 1,2,3
+                            to_lane=to_lane_idx,        # To lanes 0,1,2
+                            dir=direction,
+                            state=state
+                        ))
+                        logger.debug(f"Connected merge to outgoing: {from_edge}:{from_lane_idx} -> {to_edge}:{to_lane_idx}")
         
         logger.info(f"Created merge connections for junction {junction_id}")
     
