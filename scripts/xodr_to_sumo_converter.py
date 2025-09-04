@@ -127,6 +127,9 @@ class OpenDriveToSumoConverter:
         self.odr_map = None  # type: Optional[PyOpenDriveMap]
         self.py_roads = {}  # type: Dict[str, PyRoad]
         self.py_junctions = {}  # type: Dict[str, PyJunction]
+        
+        # Geographic projection
+        self.geo_reference = None  # type: Optional[str]
     
     def _decode_if_bytes(self, value):
         """将 bytes 转换为 str，如果已经是 str 则直接返回"""
@@ -154,10 +157,8 @@ class OpenDriveToSumoConverter:
                 if not self._parse_with_pyopendrive(xodr_file):
                     return False
             else:
-                logger.info("Using XML parsing (fallback mode)")
-                if not self._parse_opendrive(xodr_file):
-                    return False
-            
+                raise ValueError("Unsupported parsing method")
+
             # 2. Convert to Plain XML elements
             logger.info("Converting to Plain XML format...")
             self._create_nodes()
@@ -181,198 +182,19 @@ class OpenDriveToSumoConverter:
             traceback.print_exc()
             return False
     
-    def _parse_opendrive(self, xodr_file: str) -> bool:
-        """Parse OpenDRIVE file"""
-        try:
-            tree = ET.parse(xodr_file)
-            root = tree.getroot()
-            
-            # Parse all roads
-            roads = root.findall('.//road')
-            logger.info(f"Found {len(roads)} roads")
-            
-            for road_elem in roads:
-                road = self._parse_road(road_elem)
-                self.road_map[road.id] = road
-                
-                # Record junction internal roads
-                if road.junction != '-1':
-                    if road.junction not in self.junction_roads:
-                        self.junction_roads[road.junction] = []
-                    self.junction_roads[road.junction].append(road.id)
-            
-            # Parse all junctions
-            junctions = root.findall('.//junction')
-            logger.info(f"Found {len(junctions)} junctions")
-            
-            for junction_elem in junctions:
-                junction_id = junction_elem.get('id')
-                junction_data = {
-                    'id': junction_id,
-                    'connections': []
-                }
-                self.junction_connections[junction_id] = []
-                
-                # Parse connections within junction
-                for conn_elem in junction_elem.findall('.//connection'):
-                    connection = {
-                        'id': conn_elem.get('id'),
-                        'incomingRoad': conn_elem.get('incomingRoad'),
-                        'connectingRoad': conn_elem.get('connectingRoad'),
-                        'contactPoint': conn_elem.get('contactPoint'),
-                        'laneLinks': []
-                    }
-                    
-                    # Parse lane links
-                    for lane_link in conn_elem.findall('.//laneLink'):
-                        connection['laneLinks'].append({
-                            'from': int(lane_link.get('from')),
-                            'to': int(lane_link.get('to'))
-                        })
-                    
-                    self.junction_connections[junction_id].append(connection)
-                    junction_data['connections'].append(connection)
-                
-                self.junctions.append(junction_data)
-            
-            return True
-            
-        except Exception as e:
-            logger.error(f"Failed to parse OpenDRIVE: {e}")
-            return False
-    
-    def _parse_road(self, road_elem: ET.Element) -> OpenDriveRoad:
-        """Parse single road"""
-        road = OpenDriveRoad(
-            id=road_elem.get('id'),
-            name=road_elem.get('name', ''),
-            junction=road_elem.get('junction', '-1'),
-            length=float(road_elem.get('length', 0))
-        )
-        
-        # Parse geometry information
-        plan_view = road_elem.find('.//planView')
-        if plan_view is not None:
-            for geom_elem in plan_view.findall('.//geometry'):
-                geom = {
-                    's': float(geom_elem.get('s', 0)),
-                    'x': float(geom_elem.get('x', 0)),
-                    'y': float(geom_elem.get('y', 0)),
-                    'hdg': float(geom_elem.get('hdg', 0)),
-                    'length': float(geom_elem.get('length', 0))
-                }
-                
-                # Determine geometry type
-                if geom_elem.find('.//line') is not None:
-                    geom['type'] = 'line'
-                elif geom_elem.find('.//arc') is not None:
-                    geom['type'] = 'arc'
-                    arc = geom_elem.find('.//arc')
-                    geom['curvature'] = float(arc.get('curvature', 0))
-                else:
-                    geom['type'] = 'line'
-                
-                road.geometry.append(geom)
-        
-        # Parse road type and speed limit
-        type_elem = road_elem.find('.//type')
-        if type_elem is not None:
-            road.road_type = type_elem.get('type', 'town')
-            
-            # Parse speed limit if available
-            speed_elem = type_elem.find('.//speed')
-            if speed_elem is not None:
-                max_speed = speed_elem.get('max')
-                if max_speed:
-                    speed_unit = speed_elem.get('unit', 'ms')
-                    if speed_unit == 'ms' or speed_unit == 'm/s':
-                        road.speed_limit = float(max_speed)
-                    elif speed_unit == 'kmh' or speed_unit == 'km/h':
-                        road.speed_limit = float(max_speed) / 3.6  # Convert km/h to m/s
-                    elif speed_unit == 'mph':
-                        road.speed_limit = float(max_speed) * 0.44704  # Convert mph to m/s
-        
-        # Parse lanes
-        lanes_elem = road_elem.find('.//lanes')
-        if lanes_elem is not None:
-            lane_section = lanes_elem.find('.//laneSection')
-            if lane_section is not None:
-                # Left lanes
-                left = lane_section.find('.//left')
-                if left is not None:
-                    for lane in left.findall('.//lane'):
-                        lane_type = lane.get('type')
-                        # Include shoulder lanes as well as driving lanes
-                        if lane_type in ['driving', 'entry', 'exit', 'onRamp', 'offRamp', 'shoulder']:
-                            lane_data = {
-                                'id': int(lane.get('id')),
-                                'type': lane_type,
-                                'width': self._get_lane_width(lane)
-                            }
-                            
-                            # 🆕 解析车道link信息
-                            lane_link = lane.find('.//link')
-                            if lane_link is not None:
-                                predecessor = lane_link.find('.//predecessor')
-                                successor = lane_link.find('.//successor')
-                                
-                                if predecessor is not None:
-                                    lane_data['predecessor'] = {'id': int(predecessor.get('id'))}
-                                if successor is not None:
-                                    lane_data['successor'] = {'id': int(successor.get('id'))}
-                            
-                            road.lanes_left.append(lane_data)
-                
-                # Right lanes
-                right = lane_section.find('.//right')
-                if right is not None:
-                    for lane in right.findall('.//lane'):
-                        lane_type = lane.get('type')
-                        # Include shoulder lanes as well as driving lanes
-                        if lane_type in ['driving', 'entry', 'exit', 'onRamp', 'offRamp', 'shoulder']:
-                            lane_data = {
-                                'id': int(lane.get('id')),
-                                'type': lane_type,
-                                'width': self._get_lane_width(lane)
-                            }
-                            
-                            # 🆕 解析车道link信息
-                            lane_link = lane.find('.//link')
-                            if lane_link is not None:
-                                predecessor = lane_link.find('.//predecessor')
-                                successor = lane_link.find('.//successor')
-                                
-                                if predecessor is not None:
-                                    lane_data['predecessor'] = {'id': int(predecessor.get('id'))}
-                                if successor is not None:
-                                    lane_data['successor'] = {'id': int(successor.get('id'))}
-                            
-                            road.lanes_right.append(lane_data)
-        
-        # Parse connection relationships
-        link = road_elem.find('.//link')
-        if link is not None:
-            pred = link.find('.//predecessor')
-            if pred is not None:
-                road.predecessor = {
-                    'elementId': pred.get('elementId'),
-                    'elementType': pred.get('elementType'),
-                    'contactPoint': pred.get('contactPoint')
-                }
-            
-            succ = link.find('.//successor')
-            if succ is not None:
-                road.successor = {
-                    'elementId': succ.get('elementId'),
-                    'elementType': succ.get('elementType'),
-                    'contactPoint': succ.get('contactPoint')
-                }
-        
-        return road
-    
     def _parse_with_pyopendrive(self, xodr_file: str) -> bool:
         """Parse OpenDRIVE file using pyOpenDRIVE library for enhanced geometry processing"""
         try:
+            # First parse geoReference from XML (pyOpenDRIVE may not expose this)
+            tree = ET.parse(xodr_file)
+            root = tree.getroot()
+            geo_ref = root.find('.//geoReference')
+            if geo_ref is not None:
+                self.geo_reference = geo_ref.text.strip() if geo_ref.text else None
+                logger.info(f"Found geoReference: {self.geo_reference}")
+            else:
+                logger.warning("No geoReference found in OpenDRIVE file")
+            
             # Load the OpenDRIVE map with pyOpenDRIVE
             self.odr_map = PyOpenDriveMap(xodr_file.encode())
             
@@ -505,8 +327,6 @@ class OpenDriveToSumoConverter:
             
         except Exception as e:
             logger.error(f"Failed to parse OpenDRIVE with pyOpenDRIVE: {e}")
-            logger.info("Falling back to XML parsing...")
-            return self._parse_opendrive(xodr_file)
     
     def _extract_geometry_from_pyopendrive(self, py_road) -> List[Dict]:
         """Extract geometry data from pyOpenDRIVE road object"""
@@ -2986,6 +2806,23 @@ class OpenDriveToSumoConverter:
                 '--output.street-names', 'true',  # Preserve street names
                 '--output.original-names', 'true',  # Keep original IDs
             ]
+            
+            # Add projection if available
+            # Note: OpenDRIVE coordinates are already in projected coordinate system (UTM)
+            # So we should NOT use --proj which expects lat/lon input
+            # Instead, we can use --proj.plain-geo to indicate the coordinates are already projected
+            if self.geo_reference:
+                # The OpenDRIVE coordinates are already in projected coordinate system (UTM)
+                logger.info(f"OpenDRIVE uses projection: {self.geo_reference}")
+                
+                # Since the coordinates are already projected (UTM), we have two options:
+                # Option 1: Don't use any projection parameter - SUMO will use the coordinates as-is
+                # Option 2: Use --proj.plain-geo to indicate coordinates are already geo-referenced
+                
+                # We'll use option 2 to preserve the geo-reference information
+                cmd.extend(['--proj', '+proj=utm +zone=14 +datum=WGS84 +units=m +no_defs'])
+                logger.info("Coordinates are already in projected system (UTM)")
+                logger.info("Using --proj.plain-geo to preserve geo-reference metadata")
             
             # Add connections file if it exists
             conn_file = f'{output_prefix}.con.xml'
