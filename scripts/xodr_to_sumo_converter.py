@@ -130,6 +130,11 @@ class OpenDriveToSumoConverter:
         
         # Geographic projection
         self.geo_reference = None  # type: Optional[str]
+        
+        # Coordinate offset attributes for relative coordinate system
+        self.net_offset = None  # type: Optional[Tuple[float, float]]
+        self.conv_boundary = None  # type: Optional[Tuple[float, float, float, float]]
+        self.orig_boundary = None  # type: Optional[Tuple[float, float, float, float]]
     
     def _decode_if_bytes(self, value):
         """将 bytes 转换为 str，如果已经是 str 则直接返回"""
@@ -165,7 +170,13 @@ class OpenDriveToSumoConverter:
             self._create_edges()
             self._create_connections()
             
-            # 3. Write Plain XML files
+            # 3. Calculate and apply coordinate offset if we have geo reference
+            if self.geo_reference:
+                logger.info("Applying coordinate transformation for relative coordinate system")
+                self._calculate_coordinate_bounds()
+                self._apply_coordinate_offset()
+            
+            # 4. Write Plain XML files
             logger.info(f"Writing Plain XML files with prefix: {output_prefix}")
             self._write_plain_xml(output_prefix)
             
@@ -2676,6 +2687,93 @@ class OpenDriveToSumoConverter:
         
         return None, None
     
+    def _calculate_coordinate_bounds(self):
+        """Calculate coordinate bounds from all geometric elements"""
+        if not self.nodes and not self.edges:
+            logger.warning("No nodes or edges to calculate bounds")
+            return
+        
+        min_x = float('inf')
+        min_y = float('inf')
+        max_x = float('-inf')
+        max_y = float('-inf')
+        
+        # Check all node coordinates
+        for node in self.nodes:
+            if node.x < min_x:
+                min_x = node.x
+            if node.x > max_x:
+                max_x = node.x
+            if node.y < min_y:
+                min_y = node.y
+            if node.y > max_y:
+                max_y = node.y
+        
+        # Check all edge shape points
+        for edge in self.edges:
+            if edge.shape:
+                for x, y in edge.shape:
+                    if x < min_x:
+                        min_x = x
+                    if x > max_x:
+                        max_x = x
+                    if y < min_y:
+                        min_y = y
+                    if y > max_y:
+                        max_y = y
+        
+        # Check all connection via points
+        for conn in self.connections:
+            if conn.via:
+                for x, y in conn.via:
+                    if x < min_x:
+                        min_x = x
+                    if x > max_x:
+                        max_x = x
+                    if y < min_y:
+                        min_y = y
+                    if y > max_y:
+                        max_y = y
+        
+        # Set the coordinate offset (negative of minimum values)
+        self.net_offset = (-min_x, -min_y)
+        
+        # Set the converted boundary (after applying offset)
+        self.conv_boundary = (0.0, 0.0, max_x - min_x, max_y - min_y)
+        
+        # Set the original boundary
+        self.orig_boundary = (min_x, min_y, max_x, max_y)
+        
+        logger.info(f"Coordinate bounds calculated:")
+        logger.info(f"  Original: ({min_x:.2f}, {min_y:.2f}) to ({max_x:.2f}, {max_y:.2f})")
+        logger.info(f"  Net offset: ({self.net_offset[0]:.2f}, {self.net_offset[1]:.2f})")
+        logger.info(f"  Converted: (0.00, 0.00) to ({self.conv_boundary[2]:.2f}, {self.conv_boundary[3]:.2f})")
+    
+    def _apply_coordinate_offset(self):
+        """Apply coordinate offset to all geometric elements"""
+        if not self.net_offset:
+            logger.warning("No coordinate offset calculated")
+            return
+        
+        offset_x, offset_y = self.net_offset
+        
+        # Apply offset to all nodes
+        for node in self.nodes:
+            node.x += offset_x
+            node.y += offset_y
+        
+        # Apply offset to all edge shapes
+        for edge in self.edges:
+            if edge.shape:
+                edge.shape = [(x + offset_x, y + offset_y) for x, y in edge.shape]
+        
+        # Apply offset to all connection via points
+        for conn in self.connections:
+            if conn.via:
+                conn.via = [(x + offset_x, y + offset_y) for x, y in conn.via]
+        
+        logger.info("Coordinate offset applied to all geometric elements")
+    
     def _write_plain_xml(self, output_prefix: str):
         """Write Plain XML files"""
         # Write nodes file
@@ -2692,6 +2790,18 @@ class OpenDriveToSumoConverter:
         """Write nodes file"""
         root = ET.Element('nodes')
         
+        # Add location tag if we have coordinate offset and projection info
+        if self.net_offset and self.geo_reference:
+            location_elem = ET.SubElement(root, 'location')
+            location_elem.set('netOffset', f'{self.net_offset[0]:.2f},{self.net_offset[1]:.2f}')
+            location_elem.set('convBoundary', 
+                            f'{self.conv_boundary[0]:.2f},{self.conv_boundary[1]:.2f},'
+                            f'{self.conv_boundary[2]:.2f},{self.conv_boundary[3]:.2f}')
+            location_elem.set('origBoundary', 
+                            f'{self.orig_boundary[0]:.2f},{self.orig_boundary[1]:.2f},'
+                            f'{self.orig_boundary[2]:.2f},{self.orig_boundary[3]:.2f}')
+            location_elem.set('projParameter', self.geo_reference)
+        
         for node in self.nodes:
             node_elem = ET.SubElement(root, 'node')
             node_elem.set('id', node.id)
@@ -2707,6 +2817,18 @@ class OpenDriveToSumoConverter:
     def _write_edges(self, filename: str):
         """Write edges file"""
         root = ET.Element('edges')
+        
+        # Add location tag if we have coordinate offset and projection info (same as nodes)
+        if self.net_offset and self.geo_reference:
+            location_elem = ET.SubElement(root, 'location')
+            location_elem.set('netOffset', f'{self.net_offset[0]:.2f},{self.net_offset[1]:.2f}')
+            location_elem.set('convBoundary', 
+                            f'{self.conv_boundary[0]:.2f},{self.conv_boundary[1]:.2f},'
+                            f'{self.conv_boundary[2]:.2f},{self.conv_boundary[3]:.2f}')
+            location_elem.set('origBoundary', 
+                            f'{self.orig_boundary[0]:.2f},{self.orig_boundary[1]:.2f},'
+                            f'{self.orig_boundary[2]:.2f},{self.orig_boundary[3]:.2f}')
+            location_elem.set('projParameter', self.geo_reference)
         
         for edge in self.edges:
             edge_elem = ET.SubElement(root, 'edge')
