@@ -1,6 +1,9 @@
 <?xml version='1.0' encoding='utf-8'?>
 <OpenDRIVE>
     <header name="test_map" revMajor="1" revMinor="5" date="2025-08-25 18:57:51.500849" north="0.0" south="0.0" east="0.0" west="0.0"/>
+    <geoReference>
+        <![CDATA[+proj=utm +zone=14 +datum=WGS84 +units=m +no_defs]]>
+    </geoReference>
     <road rule="RHT" id="0" junction="1" length="227.4891746961183">
         <link>
             <predecessor elementType="road" elementId="9" contactPoint="end"/>
