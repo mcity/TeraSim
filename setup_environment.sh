@@ -164,6 +164,37 @@ print(f'TeraSim version: 0.2.0')
 "
 }
 
+setup_pyopendrive() {
+    log_info "Setting up pyOpenDRIVE for OpenDRIVE map parsing..."
+    
+    if [ ! -d "pyOpenDRIVE" ]; then
+        log_info "Cloning pyOpenDRIVE repository..."
+        if ! check_command git; then
+            log_error "Git not found. Please install git first"
+            exit 1
+        fi
+        git clone https://github.com/SaferDrive-AI/pyOpenDRIVE.git
+    else
+        log_info "Updating pyOpenDRIVE repository..."
+        cd pyOpenDRIVE
+        git pull origin master || git pull origin main || log_warning "Failed to update pyOpenDRIVE (not critical)"
+        cd ..
+    fi
+    
+    # Install pyOpenDRIVE
+    log_info "Installing pyOpenDRIVE..."
+    pip install -e pyOpenDRIVE/
+    
+    # Verify installation
+    python -c "
+try:
+    from pyOpenDRIVE.OpenDriveMap import PyOpenDriveMap
+    print('✅ pyOpenDRIVE installed successfully')
+except ImportError:
+    print('⚠️  pyOpenDRIVE installation failed')
+"
+}
+
 setup_sumo_tools() {
     log_info "Setting up SUMO tools..."
     
@@ -213,6 +244,7 @@ main() {
     check_redis
     setup_sumo_tools
     setup_monorepo
+    setup_pyopendrive
     create_output_directories
     
     log_info "🎉 Setup complete!"
@@ -230,7 +262,8 @@ packages = [
     ('terasim_vis', 'Visualization tools'),
     ('terasim_envgen', 'Environment generation tools'),
     ('terasim_datazoo', 'Data processing tools'),
-    ('terasim_service', 'Service API')
+    ('terasim_service', 'Service API'),
+    ('pyOpenDRIVE', 'OpenDRIVE map parser')
 ]
 
 for pkg_name, description in packages:
