@@ -154,44 +154,38 @@ class OpenDriveToSumoConverter:
         Returns:
             Whether conversion was successful
         """
-        try:
-            # 1. Parse OpenDRIVE file
-            logger.info(f"Parsing OpenDRIVE file: {xodr_file}")
-            if self.use_pyopendrive:
-                logger.info("Using pyOpenDRIVE for enhanced geometry processing")
-                if not self._parse_with_pyopendrive(xodr_file):
-                    return False
-            else:
-                raise ValueError("Unsupported parsing method")
+        # 1. Parse OpenDRIVE file
+        logger.info(f"Parsing OpenDRIVE file: {xodr_file}")
+        if self.use_pyopendrive:
+            logger.info("Using pyOpenDRIVE for enhanced geometry processing")
+            if not self._parse_with_pyopendrive(xodr_file):
+                return False
+        else:
+            raise ValueError("Unsupported parsing method")
 
-            # 2. Convert to Plain XML elements
-            logger.info("Converting to Plain XML format...")
-            self._create_nodes()
-            self._create_edges()
-            self._create_connections()
-            
-            # 3. Calculate and apply coordinate offset if we have geo reference
-            if self.geo_reference:
-                logger.info("Applying coordinate transformation for relative coordinate system")
-                self._calculate_coordinate_bounds()
-                self._apply_coordinate_offset()
-            
-            # 4. Write Plain XML files
-            logger.info(f"Writing Plain XML files with prefix: {output_prefix}")
-            self._write_plain_xml(output_prefix)
-            
-            # 4. Use netconvert to generate final network
-            if use_netconvert:
-                logger.info("Running netconvert to generate final network...")
-                return self._run_netconvert(output_prefix)
-            
-            return True
-            
-        except Exception as e:
-            import traceback
-            logger.error(f"Conversion failed: {e}")
-            traceback.print_exc()
-            return False
+        # 2. Convert to Plain XML elements
+        logger.info("Converting to Plain XML format...")
+        self._create_nodes()
+        self._create_edges()
+        self._create_connections()
+        
+        # 3. Calculate and apply coordinate offset if we have geo reference
+        if self.geo_reference:
+            logger.info("Applying coordinate transformation for relative coordinate system")
+            self._calculate_coordinate_bounds()
+            self._apply_coordinate_offset()
+        
+        # 4. Write Plain XML files
+        logger.info(f"Writing Plain XML files with prefix: {output_prefix}")
+        self._write_plain_xml(output_prefix)
+        
+        # 4. Use netconvert to generate final network
+        if use_netconvert:
+            logger.info("Running netconvert to generate final network...")
+            return self._run_netconvert(output_prefix)
+        
+        return True
+
     
     def _parse_with_pyopendrive(self, xodr_file: str) -> bool:
         """Parse OpenDRIVE file using pyOpenDRIVE library for enhanced geometry processing"""
@@ -1919,6 +1913,10 @@ class OpenDriveToSumoConverter:
                             # Ramp - right merge
                             direction = 'r'
                             state = 'm'
+                        
+                        if from_mapping is None or to_mapping is None:
+                            logger.error(f"Missing lane mapping for merge end: from {connecting_road_id} lane {connecting_lane_id} or to {outgoing_road_id} lane {outgoing_lane_id}")
+                            continue
 
                         from_edge, from_lane_idx = from_mapping
                         to_edge, to_lane_idx = to_mapping
@@ -2983,7 +2981,7 @@ def main():
     )
     parser.add_argument('--input', '-i',
                      help='Input OpenDRIVE file (.xodr)',
-                     default="examples/xodr_sumo_maps/test_map_merge_split.xodr")
+                     default="texas_example/test_map_junction_end_pt.xodr")
     parser.add_argument('--output', '-o',
                      help='Output prefix (default: based on input name)',
                      default="test")

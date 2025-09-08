@@ -9,6 +9,7 @@ from .base import (
     create_environment,
     create_simulator,
     load_config,
+    resolve_config_paths,
     SimulationConfig,
     SimulationCommand,
     SimulationStatus,
@@ -25,8 +26,10 @@ __all__ = [
     "create_environment",
     "create_simulator",
     "load_config",
+    "resolve_config_paths",
     "SimulationConfig",
     "SimulationCommand",
     "SimulationStatus",
     "AgentCommandBatch",
+    "set_random_seed",
 ]
