@@ -1,0 +1,87 @@
+simulation_module: "my_simulations"
+simulation_class: "CarSimulation"
+parameters:
+  num_cars: 10
+  simulation_time: 3600
+
+# Simulation type: Choose between "safetest_mcity_av" or "safetest_mcity"
+simulation_type: "safetest_mcity_av"
+
+output:
+  dir: "examples/test_output"  # Output directory (use "output" for non-AV simulations)
+  name: "test"  # Experiment name
+  nth: "0_0"  # Experiment number
+  aggregated_dir: "aggregated"  # Directory for aggregated logs
+
+environment:
+  # Module containing the environment class
+  module: "terasim_nde_nade.envs"  # Use "terasim_nde_nade.envs.safetest_nade" for non-AV simulations
+  # Environment class name
+  class: "NADEWithAV"  # Use "SafeTestNADE" for non-AV simulations
+  parameters:
+    # Vehicle factory class
+    vehicle_factory: "terasim_nde_nade.vehicle.nde_vehicle_factory.NDEVehicleFactory"
+    # Info extractor class
+    info_extractor: "terasim.logger.infoextractor.InfoExtractor"
+    log_flag: true
+    warmup_time_lb: 900  # Lower bound for warmup time
+    warmup_time_ub: 1200  # Upper bound for warmup time
+    run_time: 1200  # Simulation run time (use 30 for non-AV simulations)
+
+    MOBIL_lc_flag: True
+    stochastic_acc_flag: False
+    drive_rule: "lefthand"
+
+    adversity_cfg:
+      vehicle:
+        highway_cutin:
+          _target_: terasim_nde_nade.adversity.vehicles.lanechange_adversity.LanechangeAdversity
+          _convert_: 'all'
+          location: 'highway'
+          ego_type: 'vehicle'
+          probability: 3.1996225726187704e-05
+          predicted_collision_type: "highway_cutin"
+
+        highway_rearend:
+          _target_: terasim_nde_nade.adversity.vehicles.leader_adversity.LeaderAdversity
+          _convert_: 'all'
+          location: 'highway'
+          ego_type: 'vehicle'
+          probability: 0 # 0.8783674048511999
+          predicted_collision_type: "highway_rearend"
+
+      vulnerable_road_user:
+        jaywalking:
+          _target_: terasim_nde_nade.adversity.vru.jaywalking_adversity.JaywalkingAdversity
+          _convert_: 'all'
+          location: 'crosswalk'
+          ego_type: 'vulnerable_road_user'
+          probability: 0.001
+          predicted_collision_type: "intersection_jaywalking"
+
+    AV_cfg:
+      type: "veh_AV"
+      cache_radius: 150
+      control_radius: 50
+
+simulator:
+  module: "terasim.simulator"
+  class: "Simulator"
+  parameters:
+    num_tries: 10
+    gui_flag: true
+    realtime_flag: false  # Only applicable for AV mode
+    sumo_output_file_types: 
+      - "fcd_all"
+      - "collision"
+      - "tripinfo"
+
+# New section for file paths
+file_paths:
+  sumo_net_file: "path/to/road/directory/map.net.xml"
+  sumo_config_file: "path/to/road/directory/osm.sumocfg"
+
+logging:
+  levels:
+    - "TRACE"  # Log level for the main log file
+    - "INFO"   # Log level for the aggregated log file

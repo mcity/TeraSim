@@ -1,0 +1,9 @@
+adversity_cfg:
+  vehicle:
+    highway_cutin:
+      _target_: terasim_nde_nade.adversity.vehicles.lanechange_adversity.LanechangeAdversity
+      _convert_: 'all'
+      location: 'highway'
+      ego_type: 'vehicle'
+      probability: 3.1996225726187704e-05
+      predicted_collision_type: "highway_cutin" 

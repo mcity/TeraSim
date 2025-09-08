@@ -1,0 +1,54 @@
+[project]
+name = "terasim-service"
+version = "0.2.0"
+description = "TeraSim service API and web interface"
+authors = [
+    {name = "Haowei Sun", email = "printfplus@outlook.com"},
+]
+readme = "README.md"
+license = "Apache-2.0"
+requires-python = ">=3.10,<3.13"
+dependencies = [
+    "terasim>=0.2.0",
+    "terasim-nde-nade>=0.2.0",    # Includes NDE-NADE enhancements
+    "fastapi>=0.115.8",
+    "uvicorn>=0.34.0",
+    "pydantic>=2.10.6",
+    "pyyaml>=6.0.2",
+    "redis>=5.2.1",
+    "loguru>=0.7.3",
+    "utm>=0.8.0",
+    "dash>=2.14.0",
+    "plotly>=5.18.0",
+]
+
+[project.scripts]
+terasim-service = "terasim_service.__main__:main"
+
+[tool.setuptools.packages.find]
+include = ["terasim_service*"]
+
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.black]
+line-length = 88
+target-version = ['py310']
+include = '\.pyi?$'
+
+[tool.isort]
+profile = "black"
+multi_line_output = 3
+line_length = 88
+
+[tool.mypy]
+python_version = "3.10"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+addopts = "-v --cov=terasim_service --cov-report=term-missing"

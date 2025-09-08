@@ -1,0 +1,15 @@
+version: '3.8'
+
+services:
+  terasim_service:
+    image: terasim_service:1.0.0-cpu
+    container_name: terasim_service
+    ports:
+      - "8000:8000"
+    environment:
+      - PYTHONUNBUFFERED=1
+      - ENVIRONMENT=development
+    volumes:
+      - ../examples:/app/examples
+    command: ["bash", "examples/main.sh"]
+    

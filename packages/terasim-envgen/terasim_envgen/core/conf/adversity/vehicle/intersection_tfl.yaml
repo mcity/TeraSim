@@ -1,0 +1,9 @@
+adversity_cfg:
+  vehicle:
+    intersection_tfl:
+      _target_: terasim_nde_nade.adversity.vehicles.trafficrule_adversity.TrafficRuleAdversity
+      _convert_: 'all'
+      location: 'intersection'
+      ego_type: 'vehicle'
+      probability: 0.010141902545438387
+      predicted_collision_type: "intersection_tfl" 

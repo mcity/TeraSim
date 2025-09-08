@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<configuration>
+
+    <input>
+        <net-file value="mcity.net.xml"/>
+        <route-files value="mcity.rou.xml"/>
+        <gui-settings-file value="gui-settings.xml"/>
+        <additional-files value="mcity.add.xml"/>
+        <step-length value = "0.1"/>
+        <scale value="0.8"/>
+    </input>
+
+    <time>
+        <begin value="0"/>
+        <end value="3600"/>
+    </time>
+
+    <random_number>
+        <random value="true"/>
+    </random_number>
+
+    <processing>
+        <!-- <lanechange.duration value="1"/> -->
+        <lateral-resolution value="0.5"/>
+        <time-to-teleport value="-1"/>
+        <collision.action value="warn"/>
+        <collision.check-junctions value="true"/>
+        <collision.mingap-factor value="0"/>
+    </processing>
+</configuration>

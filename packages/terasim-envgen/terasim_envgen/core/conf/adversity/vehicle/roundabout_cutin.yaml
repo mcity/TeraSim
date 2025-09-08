@@ -1,0 +1,9 @@
+adversity_cfg:
+  vehicle:
+    roundabout_cutin:
+      _target_: terasim_nde_nade.adversity.vehicles.lanechange_adversity.LanechangeAdversity
+      _convert_: 'all'
+      location: 'roundabout'
+      ego_type: 'vehicle'
+      probability: 2.3123152310029683e-05
+      predicted_collision_type: "roundabout_cutin" 

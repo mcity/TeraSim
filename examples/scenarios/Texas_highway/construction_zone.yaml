@@ -1,0 +1,121 @@
+environment:
+  class: NADEWithAV
+  module: terasim_nde_nade.envs
+  parameters:
+    AV_cfg:
+      cache_radius: 100
+      control_radius: 50
+      initial_lane_index: 0
+      initial_lane_position: 0.0
+      initial_speed: 30.0
+      clearance_distance: 50
+      type: vehicle_passenger
+      warmup_control:
+        enabled: true  # Enable AV warmup (false keeps original behavior)
+        
+        # Trigger condition (choose one)
+        trigger_type: "time"  # Options: "position", "time", "zone", "edge"
+        
+        # Position trigger configuration
+        # position_trigger:
+        #   target_position: 650.0  # Target position in meters (50m before construction zone at 700m)
+        #   tolerance: 5.0         # Tolerance range
+          
+        # # Time trigger configuration (alternative)
+        time_trigger:
+          duration: 10.0  # Warmup duration in seconds
+          
+        # # Zone trigger configuration (alternative)
+        # zone_trigger:
+        #   edge_id: "95975047"     # Target edge
+        #   min_position: 640.0      # Zone start position
+        #   max_position: 660.0      # Zone end position
+          
+        # Logging and visualization
+        log_progress: true         # Log warmup progress
+        visual_indicator: true     # Show status in GUI
+    MOBIL_lc_flag: true
+    adversity_cfg:
+      static:
+        # Professional construction zone with full taper design
+        construction_zone_professional:
+          _convert_: all
+          _target_: terasim_nde_nade.adversity.ConstructionAdversity
+          lane_id: "95975047_0"  # Update this to match your map
+          construction_mode: "partial_lane"
+          
+          # Main construction area
+          start_position: 700.0
+          end_position: 1400.0
+          
+          # Speed-based spacing (MUTCD compliant)
+          speed_limit: 70  # 70 mph highway speed
+          use_dynamic_spacing: true  # Enable MUTCD speed-based spacing
+          
+          # Taper configuration (MUTCD standard for 70 mph)
+          # Formula: L = WS²/60 = 3.5 × 70²/60 = 286m (~940 feet)
+          taper_length_in: 286.0   # 286m entry taper for 70 mph
+          taper_length_out: 72.0   # 72m exit taper (1/4 of entry)
+          taper_type: "linear"     # S-curve for high-speed highway
+          work_zone_offset: 3.2    # Near full lane width closure for safety
+          
+          # Zone configuration for high-speed highway
+          warning_zone_length: 800.0     # 800m (0.5 mile) advance warning
+          warning_zone_spacing: 100.0    # ~328 feet between warning signs
+          buffer_zone_length: 50.0       # 50m safety buffer for high speed
+          termination_zone_length: 200.0 # 200m termination area
+          warning_sign_offset: -4.0      # Place signs 4m right of lane (wider shoulder)
+          
+          # Object configuration
+          construction_type: "cone"  # Mix of cones and barriers for visibility
+          spacing: 21.0               # Default ~70 feet (will be overridden by dynamic spacing)
+          
+      vehicle:
+        highway_rearend_decel:
+          _convert_: all
+          _target_: terasim_nde_nade.adversity.vehicles.FollowerAdversity
+          ego_type: vehicle
+          location: highway
+          predicted_collision_type: highway_rearend
+          probability: 1.0e-05
+        intersection_cutin:
+          _convert_: all
+          _target_: terasim_nde_nade.adversity.vehicles.lanechange_adversity.LanechangeAdversity
+          ego_type: vehicle
+          location: intersection
+          predicted_collision_type: intersection_cutin
+          probability: 1.0e-07
+    adversity_sampling_probability: 0.1
+    drive_rule: righthand
+    info_extractor: terasim.logger.infoextractor.InfoExtractor
+    log_flag: true
+    run_time: 1200
+    stochastic_acc_flag: false
+    vehicle_factory: terasim_nde_nade.vehicle.nde_vehicle_factory.NDEVehicleFactory
+    warmup_time_lb: 630
+    warmup_time_ub: 640
+input:
+  sumo_config_file: examples/texas_highway_maps/2/simulation.sumocfg
+  sumo_net_file: examples/texas_highway_maps/2/map.net.xml
+logging:
+  levels:
+  - TRACE
+  - INFO
+output:
+  aggregated_dir: aggregated
+  dir: outputs
+  name: construction_zone
+  nth: 000_53688
+seed: 12345
+simulator:
+  class: Simulator
+  module: terasim.simulator
+  parameters:
+    gui_flag: false  # Enable GUI to see the construction zone
+    num_tries: 10
+    realtime_flag: false
+    traffic_scale: 4
+    sumo_output_file_types:
+    - collision
+    - tripinfo
+    sumo_seed: 29451

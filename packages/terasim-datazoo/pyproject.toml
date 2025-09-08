@@ -1,0 +1,28 @@
+[project]
+name = "terasim-datazoo"
+version = "0.2.0"
+description = "TeraSim data processing and dataset management tools"
+authors = [
+    {name = "TeraSim Team", email = "haoweis@umich.edu"},
+]
+readme = "README.md"
+license = "Apache-2.0"
+requires-python = ">=3.10,<3.13"
+dependencies = [
+    "terasim>=0.2.0",
+]
+
+[tool.setuptools.packages.find]
+include = ["terasim_datazoo*"]
+
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.black]
+line-length = 110
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+addopts = "-v --cov=terasim_datazoo --cov-report=term-missing"

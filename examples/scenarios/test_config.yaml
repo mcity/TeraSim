@@ -1,0 +1,93 @@
+environment:
+  class: NADEWithAV
+  module: terasim_nde_nade.envs
+  parameters:
+    AV_cfg:
+      cache_radius: 100
+      control_radius: 50
+      initial_lane_index: 0
+      initial_lane_position: 0.0
+      initial_speed: 20.0
+      type: vehicle_passenger
+    MOBIL_lc_flag: true
+    adversity_cfg:
+      static:
+        stalled_object:
+          _convert_: all
+          _target_: terasim_nde_nade.adversity.StalledObjectAdversity
+          end_time: 1200
+          lane_id: '1202002183_1'
+          lane_position: 245.0
+          object_type: vehicle_passenger
+          start_time: 700
+        stalled_object:
+          _convert_: all
+          _target_: terasim_nde_nade.adversity.StalledObjectAdversity
+          end_time: 1200
+          lane_id: '1202002183_1'
+          lane_position: 230.0
+          object_type: vehicle_passenger
+          start_time: 700
+      vehicle:
+        highway_cutin:
+          _convert_: all
+          _target_: terasim_nde_nade.adversity.vehicles.lanechange_adversity.LanechangeAdversity
+          ego_type: vehicle
+          location: highway
+          predicted_collision_type: highway_cutin
+          probability: 3.1996225726187704e-05
+        highway_cutin_abort:
+          _convert_: all
+          _target_: terasim_nde_nade.adversity.vehicles.lanechangeabort_adversity.LanechangeAbortAdversity
+          ego_type: vehicle
+          location: highway
+          predicted_collision_type: highway_cutin
+          probability: 1e-5
+        highway_rearend:
+          _convert_: all
+          _target_: terasim_nde_nade.adversity.vehicles.leader_adversity.LeaderAdversity
+          ego_type: vehicle
+          location: highway
+          predicted_collision_type: highway_rearend
+          probability: 0.0001
+        highway_rearend_decel:
+          _convert_: all
+          _target_: terasim_nde_nade.adversity.vehicles.FollowerAdversity
+          ego_type: vehicle
+          location: highway
+          predicted_collision_type: highway_rearend
+          probability: 1.0e-05
+    adversity_sampling_probability: 0.1
+    drive_rule: righthand
+    info_extractor: terasim.logger.infoextractor.InfoExtractor
+    log_flag: true
+    run_time: 1200
+    stochastic_acc_flag: false
+    vehicle_factory: terasim_nde_nade.vehicle.nde_vehicle_factory.NDEVehicleFactory
+    warmup_time_lb: 749
+    warmup_time_ub: 750
+input:
+  sumo_config_file: austin_cases/austin_wrong_leftturn_case/simulation.sumocfg
+  sumo_net_file: austin_cases/austin_wrong_leftturn_case/map.net.xml
+logging:
+  levels:
+  - TRACE
+  - INFO
+output:
+  aggregated_dir: aggregated
+  dir: outputs
+  name: test
+  nth: '0_0'
+seed: 42
+simulator:
+  class: Simulator
+  module: terasim.simulator
+  parameters:
+    gui_flag: false
+    num_tries: 10
+    realtime_flag: false
+    sumo_output_file_types:
+    - fcd_all
+    - collision
+    - tripinfo
+    sumo_seed: 21448

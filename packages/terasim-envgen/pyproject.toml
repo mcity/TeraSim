@@ -1,0 +1,56 @@
+[project]
+name = "terasim-envgen"
+version = "0.2.0"
+description = "TeraSim environment generation tools - map search, conversion and traffic generation"
+authors = [
+    {name = "TeraSim Team", email = "haoweis@umich.edu"},
+]
+readme = "README.md"
+license = "Apache-2.0"
+requires-python = ">=3.10,<3.13"
+dependencies = [
+    "numpy==1.26.4",        # Fixed version to avoid conflicts
+    "scipy>=1.11.4",        # Compatible with numpy 1.26.4
+    "terasim>=0.2.0",
+    "osmnx>=1.9.4",
+    "googlemaps>=4.10.0",
+    "scenariogeneration>=0.14.9",
+    "anthropic>=0.52.0",
+    "gradio>=4.0.0",
+    "contextily>=1.6.2",
+    "polyline>=2.0.2",
+    "jsonschema>=4.23.0",
+    "python-dotenv>=1.1.0",
+    "requests>=2.32.3",
+    "fiftyone>=1.5.2",
+    "fastapi>=0.115.8",
+    "uvicorn>=0.34.0",
+    "pydantic>=2.10.6",
+    "addict>=2.4.0",
+]
+
+[project.scripts]
+terasim-mapgen = "terasim_envgen.cli:map_command"
+terasim-traffic = "terasim_envgen.cli:traffic_command"
+terasim-scenario = "terasim_envgen.cli:scenario_command"
+
+[tool.setuptools.packages.find]
+include = ["terasim_envgen*"]
+
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.black]
+line-length = 100
+target-version = ['py310']
+
+[tool.isort]
+profile = "black"
+multi_line_output = 3
+line_length = 100
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+addopts = "-v --cov=terasim_envgen --cov-report=term-missing"

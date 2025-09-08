@@ -1,0 +1,136 @@
+environment:
+  class: NADEWithAV
+  module: terasim_nde_nade.envs
+  parameters:
+    AV_cfg:
+      cache_radius: 100
+      control_radius: 50
+      initial_edge: "1122219140#0"  # Start on Washtenaw Avenue
+      initial_lane_index: 0
+      initial_lane_position: 50.0  # Start 50m into the edge
+      initial_speed: 13.89  # 50 km/h urban speed
+      clearance_distance: 50
+      type: vehicle_passenger
+      warmup_control:
+        enabled: false
+        trigger_type: "time"
+        time_trigger:
+          duration: 10.0
+        log_progress: false
+        visual_indicator: false
+    MOBIL_lc_flag: true
+    adversity_cfg:
+      static:
+        # Urban construction zone spanning multiple intersections
+        urban_construction_zone:
+          _convert_: all
+          _target_: terasim_nde_nade.adversity.static.urban_construction.UrbanConstructionAdversity
+          
+          # Corridor definition - span 3 intersections on Washtenaw Avenue
+          corridor_definition:
+            mode: "intersection_count"
+            start_edge: "1122219140#0"  # Washtenaw Avenue starting edge
+            num_intersections: 3
+            direction: "forward"
+          
+          # Lane configuration
+          lane_configuration:
+            lanes_to_close: [0]  # Close rightmost lane
+            minimum_open_lanes: 1  # Keep at least 1 lane open
+          
+          # Intersection handling with merge-before strategy
+          intersection_handling:
+            strategy: "merge_before"
+            merge_distance: 150  # Start merge 150m before intersection
+            merge_taper_length: 100  # Taper length for merging
+            merge_signs: ["Lane Closed Ahead", "Merge Left", "Construction Zone"]
+          
+          # Construction vehicles (static)
+          construction_vehicles:
+            excavator:
+              count: 1
+              placement: "zone_center"
+            dump_truck:
+              count: 2
+              placement: "distributed"
+              spacing: 200
+            warning_vehicle:
+              count: 2
+              placement: ["zone_start", "zone_end"]
+          
+          # Construction workers
+          workers:
+            enabled: true
+            count: 4
+            placement: "inside_barriers"
+            spacing: 50
+          
+          # MUTCD-compliant zone configuration
+          zones:
+            warning:
+              length: 200  # 200m warning zone
+              sign_spacing: 50  # Signs every 50m
+            taper:
+              calculate_by_speed: false  # Use fixed values for simplicity
+              length: 65  # For 35mph urban speed
+            buffer:
+              length: 30  # 30m safety buffer
+            work:
+              barrier_type: "concrete"
+              cone_spacing: 10  # Cones every 10m
+              
+          # Timing
+          start_time: 0
+          end_time: -1  # Permanent construction zone
+          
+      vehicle:
+        # Additional vehicle adversities can be added here
+        highway_rearend_decel:
+          _convert_: all
+          _target_: terasim_nde_nade.adversity.vehicles.FollowerAdversity
+          ego_type: vehicle
+          location: highway
+          predicted_collision_type: highway_rearend
+          probability: 1.0e-05
+          
+    adversity_sampling_probability: 0.1
+    drive_rule: righthand
+    info_extractor: terasim.logger.infoextractor.InfoExtractor
+    log_flag: true
+    run_time: 600  # 10 minutes simulation
+    stochastic_acc_flag: false
+    vehicle_factory: terasim_nde_nade.vehicle.nde_vehicle_factory.NDEVehicleFactory
+    warmup_time_lb: 30
+    warmup_time_ub: 40
+    
+input:
+  sumo_config_file: ../../../generated_experiments/ann_arbor_1000m/simulation.sumocfg
+  sumo_net_file: ../../../generated_experiments/ann_arbor_1000m/map.net.xml
+  
+logging:
+  levels:
+  - TRACE
+  - INFO
+  
+output:
+  aggregated_dir: aggregated
+  dir: outputs
+  name: urban_construction_ann_arbor
+  nth: "000_00001"
+  
+seed: 12345
+
+simulator:
+  class: Simulator
+  module: terasim.simulator
+  parameters:
+    gui_flag: true  # Enable GUI to visualize construction zone
+    num_tries: 10
+    realtime_flag: false
+    traffic_scale: 2  # Moderate traffic
+    sumo_output_file_types:
+    - collision
+    - tripinfo
+    - edgedata
+    - lanedata
+    sumo_seed: 12345

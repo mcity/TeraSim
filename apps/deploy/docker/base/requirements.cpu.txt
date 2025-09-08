@@ -1,0 +1,9 @@
+# # Deep Learning frameworks (CPU versions)
+# torch>=2.1.0
+# torchvision>=0.16.0
+# torchaudio>=2.1.0
+
+# ML and Scientific Computing
+scikit-learn>=1.3.0
+scipy>=1.11.0
+matplotlib>=3.7.0 

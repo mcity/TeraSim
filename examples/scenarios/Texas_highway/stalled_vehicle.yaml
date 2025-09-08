@@ -1,0 +1,73 @@
+environment:
+  class: NADEWithAV
+  module: terasim_nde_nade.envs
+  parameters:
+    AV_cfg:
+      cache_radius: 100
+      control_radius: 50
+      initial_lane_index: 0
+      initial_lane_position: 0.0
+      initial_speed: 30.0
+      clearance_distance: 50
+      type: vehicle_passenger
+    MOBIL_lc_flag: true
+    adversity_cfg:
+      static:
+        stalled_object:
+          _convert_: all
+          _target_: terasim_nde_nade.adversity.StalledObjectAdversity
+          placement_mode: xy_angle
+          x: 1095
+          y: 617
+          angle: 0
+          object_type: veh_passenger
+          other_settings:
+            duration: 1200
+      vehicle:
+        highway_rearend_decel:
+          _convert_: all
+          _target_: terasim_nde_nade.adversity.vehicles.FollowerAdversity
+          ego_type: vehicle
+          location: highway
+          predicted_collision_type: highway_rearend
+          probability: 1.0e-05
+        intersection_cutin:
+          _convert_: all
+          _target_: terasim_nde_nade.adversity.vehicles.lanechange_adversity.LanechangeAdversity
+          ego_type: vehicle
+          location: intersection
+          predicted_collision_type: intersection_cutin
+          probability: 1.0e-07
+    adversity_sampling_probability: 0.1
+    drive_rule: righthand
+    info_extractor: terasim.logger.infoextractor.InfoExtractor
+    log_flag: true
+    run_time: 1200
+    stochastic_acc_flag: false
+    vehicle_factory: terasim_nde_nade.vehicle.nde_vehicle_factory.NDEVehicleFactory
+    warmup_time_lb: 749
+    warmup_time_ub: 750
+input:
+  sumo_config_file: examples/texas_highway_maps/2/simulation.sumocfg
+  sumo_net_file: examples/texas_highway_maps/2/map.net.xml
+logging:
+  levels:
+  - TRACE
+  - INFO
+output:
+  aggregated_dir: aggregated
+  dir: outputs
+  name: stalled_vehicle
+  nth: 000_53688
+seed: 53688
+simulator:
+  class: Simulator
+  module: terasim.simulator
+  parameters:
+    gui_flag: false
+    num_tries: 10
+    realtime_flag: false
+    sumo_output_file_types:
+    - collision
+    - tripinfo
+    sumo_seed: 29451

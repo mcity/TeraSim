@@ -1,0 +1,80 @@
+environment:
+  class: NADEWithAV
+  module: terasim_nde_nade.envs
+  parameters:
+    AV_cfg:
+      cache_radius: 100
+      control_radius: 50
+      initial_lane_index: 0
+      initial_lane_position: 0.0
+      initial_speed: 30.0
+      clearance_distance: 50
+      type: vehicle_passenger
+      warmup_control:
+        enabled: true  # Enable AV warmup (false keeps original behavior)
+        
+        # Trigger condition (choose one)
+        trigger_type: "position"  # Options: "position", "time", "zone", "edge"
+        
+        # Position trigger configuration
+        position_trigger:
+          target_position: 650.0  # Target position in meters (50m before construction zone at 700m)
+          tolerance: 5.0         # Tolerance range
+          
+        # # Time trigger configuration (alternative)
+        # time_trigger:
+        #   duration: 20.0  # Warmup duration in seconds
+          
+        # # Zone trigger configuration (alternative)
+        # zone_trigger:
+        #   edge_id: "95975047"     # Target edge
+        #   min_position: 640.0      # Zone start position
+        #   max_position: 660.0      # Zone end position
+          
+        # Logging and visualization
+        log_progress: true         # Log warmup progress
+        visual_indicator: true     # Show status in GUI
+    MOBIL_lc_flag: true
+    adversity_cfg:
+      vehicle:
+        highway_cutin:
+          _target_: terasim_nde_nade.adversity.vehicles.lanechange_adversity.LanechangeAdversity
+          _convert_: 'all'
+          location: 'highway'
+          ego_type: 'vehicle'
+          probability: 3.1996225726187704e-05
+          predicted_collision_type: "highway_cutin" 
+    adversity_sampling_probability: 0.1
+    drive_rule: righthand
+    info_extractor: terasim.logger.infoextractor.InfoExtractor
+    log_flag: true
+    run_time: 1200
+    stochastic_acc_flag: false
+    vehicle_factory: terasim_nde_nade.vehicle.nde_vehicle_factory.NDEVehicleFactory
+    warmup_time_lb: 749
+    warmup_time_ub: 750
+input:
+  sumo_config_file: examples/maps/texas_highway_maps/2/simulation.sumocfg
+  sumo_net_file: examples/maps/texas_highway_maps/2/map.net.xml
+logging:
+  levels:
+  - TRACE
+  - INFO
+output:
+  aggregated_dir: aggregated
+  dir: outputs
+  name: cutin
+  nth: 000_53688
+seed: 12345
+simulator:
+  class: Simulator
+  module: terasim.simulator
+  parameters:
+    gui_flag: true  # Enable GUI to see the construction zone
+    num_tries: 10
+    traffic_scale: 4
+    realtime_flag: false
+    sumo_output_file_types:
+    - collision
+    - tripinfo
+    sumo_seed: 29451

@@ -1,0 +1,9 @@
+adversity_cfg:
+  vehicle:
+    highway_rearend:
+      _target_: terasim_nde_nade.adversity.vehicles.leader_adversity.LeaderAdversity
+      _convert_: 'all'
+      location: 'highway'
+      ego_type: 'vehicle'
+      probability: 0.0001
+      predicted_collision_type: "highway_rearend" 

@@ -1,0 +1,18 @@
+defaults:
+  - _self_
+
+adversities: ""  # Format: "category1:adv1,adv2;category2:adv3,adv4"
+
+road_path: "test_output/roads/road_005"
+
+MOBIL_lc_flag: True
+stochastic_acc_flag: False
+sumo_net_file_path: "${road_path}/map.net.xml"
+sumo_cfg_file_path: "${road_path}/simulation.sumocfg"
+output_folder_name: "0_0"
+
+drive_rule: "righthand"
+
+AV_cfg:
+  cache_radius: 100
+  control_radius: 50

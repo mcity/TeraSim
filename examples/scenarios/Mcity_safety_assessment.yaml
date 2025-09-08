@@ -1,0 +1,189 @@
+simulation_module: "my_simulations"
+simulation_class: "CarSimulation"
+parameters:
+  num_cars: 10
+  simulation_time: 3600
+
+# Simulation type: Choose between "safetest_mcity_av" or "safetest_mcity"
+simulation_type: "safetest_mcity_av"
+
+
+environment:
+  # Module containing the environment class
+  module: "terasim_nde_nade.envs"  # Use "terasim_nde_nade.envs.safetest_nade" for non-AV simulations
+  # Environment class name
+  class: "NADEWithAV"  # Use "SafeTestNADE" for non-AV simulations
+  parameters:
+    # Vehicle factory class
+    vehicle_factory: "terasim_nde_nade.vehicle.nde_vehicle_factory.NDEVehicleFactory"
+    # Info extractor class
+    info_extractor: "terasim.logger.infoextractor.InfoExtractor"
+    log_flag: true
+    warmup_time_lb: 900  # Lower bound for warmup time
+    warmup_time_ub: 1200  # Upper bound for warmup time
+    run_time: 1200  # Simulation run time (use 30 for non-AV simulations)
+
+    MOBIL_lc_flag: True
+    stochastic_acc_flag: False
+    drive_rule: "righthand"
+
+    adversity_sampling_probability: 0.1
+    adversity_cfg:
+      vehicle:
+        roundabout_cutin:
+          _target_: terasim_nde_nade.adversity.vehicles.lanechange_adversity.LanechangeAdversity
+          _convert_: 'all'
+          location: 'roundabout'
+          ego_type: 'vehicle'
+          probability: 2.3123152310029683e-05
+          predicted_collision_type: "roundabout_cutin"
+        
+        roundabout_rearend:
+          _target_: terasim_nde_nade.adversity.vehicles.leader_adversity.LeaderAdversity
+          _convert_: 'all'
+          location: 'roundabout'
+          ego_type: 'vehicle'
+          probability: 1.8383121748678325e-10
+          predicted_collision_type: "roundabout_rearend"
+
+        roundabout_fail_to_yield:
+          _target_: terasim_nde_nade.adversity.vehicles.trafficrule_adversity.TrafficRuleAdversity
+          _convert_: 'all'
+          location: 'roundabout'
+          ego_type: 'vehicle'
+          probability: 0.0005025411072000003
+          predicted_collision_type: "roundabout_fail_to_yield"
+
+        # roundabout_neglect_conflict_lead:
+        #   _target_: terasim_nde_nade.adversity.roundabout_cutin_adversity.RoundaboutCutinAdversity
+        #   _convert_: 'all'
+        #   location: 'roundabout'
+        #   ego_type: 'vehicle'
+        #   probability: 0.00027119028871789013
+
+        highway_cutin:
+          _target_: terasim_nde_nade.adversity.vehicles.lanechange_adversity.LanechangeAdversity
+          _convert_: 'all'
+          location: 'highway'
+          ego_type: 'vehicle'
+          probability: 3.1996225726187704e-05
+          predicted_collision_type: "highway_cutin"
+
+        highway_rearend:
+          _target_: terasim_nde_nade.adversity.vehicles.leader_adversity.LeaderAdversity
+          _convert_: 'all'
+          location: 'highway'
+          ego_type: 'vehicle'
+          probability: 0 # 0.8783674048511999
+          predicted_collision_type: "highway_rearend"
+
+        intersection_cutin:
+          _target_: terasim_nde_nade.adversity.vehicles.lanechange_adversity.LanechangeAdversity
+          _convert_: 'all'
+          location: 'intersection'
+          ego_type: 'vehicle'
+          probability: 6.694592721399203e-05
+          predicted_collision_type: "intersection_cutin"
+
+        intersection_rearend:
+          _target_: terasim_nde_nade.adversity.vehicles.leader_adversity.LeaderAdversity
+          _convert_: 'all'
+          location: 'intersection'
+          ego_type: 'vehicle'
+          probability: 0.00017365940078885788
+          predicted_collision_type: "intersection_rearend"
+
+        intersection_headon:
+          _target_: terasim_nde_nade.adversity.vehicles.headon_adversity.HeadonAdversity
+          _convert_: 'all'
+          location: 'intersection'
+          ego_type: 'vehicle'
+          probability: 1.0663168272664859e-08
+          predicted_collision_type: "intersection_headon"
+
+        intersection_tfl:
+          _target_: terasim_nde_nade.adversity.vehicles.trafficrule_adversity.TrafficRuleAdversity
+          _convert_: 'all'
+          location: 'intersection'
+          ego_type: 'vehicle'
+          probability: 0.010141902545438387
+          predicted_collision_type: "intersection_tfl"
+
+        # intersection_neglect_conflict_lead:
+        #   _target_: terasim_nde_nade.adversity.roundabout_cutin_adversity.RoundaboutCutinAdversity
+        #   _convert_: 'all'
+        #   location: 'roundabout'
+        #   ego_type: 'vehicle'
+        #   probability: 0.015050715723004704
+
+      vulnerable_road_user:
+        jaywalking:
+          _target_: terasim_nde_nade.adversity.vru.jaywalking_adversity.JaywalkingAdversity
+          _convert_: 'all'
+          location: 'crosswalk'
+          ego_type: 'vulnerable_road_user'
+          probability: 0.001
+          predicted_collision_type: "intersection_jaywalking"
+
+        runningredlight:
+          _target_: terasim_nde_nade.adversity.vru.runningredlight_adversity.RunningRedLightAdversity
+          _convert_: 'all'
+          location: 'crosswalk'
+          ego_type: 'vulnerable_road_user'
+          probability: 0.001
+          predicted_collision_type: "intersection_runningredlight"
+
+        stopcrossing:
+          _target_: terasim_nde_nade.adversity.vru.stopcrossing_adversity.StopCrossingAdversity
+          _convert_: 'all'
+          location: 'crosswalk'
+          ego_type: 'vulnerable_road_user'
+          probability: 0.001
+          predicted_collision_type: "intersection_stopcrossing"
+
+    AV_cfg:
+      route: ["EG_35_1_14", "EG_1_3_1", "EG_1_3_1.61", "EG_1_3_1.136", "EG_34_1_24", "EG_34_1_3", "gneE0", "EG_4_1_1", "EG_10_1_1", "EG_15_1_17", "EG_15_1_1", "EG_16_45_1", "EG_16_23_1", "EG_17_1_1", "EG_14_2_1", "EG_9_1_1", "EG_21_1_1", "EG_21_1_5", "EG_20_1_11", "EG_29_1_1", "EG_35_1_14"] # list of SUMO edges (example for Mcity)
+      type: "NDE_HIGHWAY"
+      cache_radius: 100
+      control_radius: 50
+      warmup_control:
+        enabled: true  # Enable AV warmup (false keeps original behavior)
+        
+        # Trigger condition (choose one)
+        trigger_type: "time"  # Options: "position", "time", "zone", "edge"
+        
+        # Position trigger configuration
+        time_trigger:
+          duration: 20.0  # Warmup duration in seconds
+simulator:
+  module: "terasim.simulator"
+  class: "Simulator"
+  parameters:
+    num_tries: 10
+    gui_flag: false
+    realtime_flag: false  # Only applicable for AV mode
+    sumo_output_file_types: 
+      - "fcd_all"
+      - "collision"
+      - "tripinfo"
+
+# Path resolution mode:
+# - "config_relative": Relative paths are resolved from the config file's directory
+# - "cwd_relative": Relative paths are resolved from the current working directory
+path_resolution: "config_relative" 
+
+# New section for file paths
+input:
+  sumo_net_file: "../maps/Mcity/mcity.net.xml"
+  sumo_config_file: "../maps/Mcity/mcity.sumocfg"
+
+output:
+  dir: "outputs"  # Output directory (use "output" for non-AV simulations)
+  name: "Mcity"  # Experiment name
+  nth: "0_0"  # Experiment number
+  aggregated_dir: "aggregated"  # Directory for aggregated logs
+
+logging:
+  levels:
+    - "TRACE"  # Log level for the main log file
+    - "INFO"   # Log level for the aggregated log file

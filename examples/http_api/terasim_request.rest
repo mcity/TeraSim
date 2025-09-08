@@ -1,0 +1,50 @@
+### Start a simulation
+# @name startSimulation
+POST http://localhost:8000/start_simulation?enable_viz=true&viz_port=8050&viz_update_freq=1
+Content-Type: application/json
+
+{
+    "config_file": "texas_example/test_configs/cutin.yaml",
+    "auto_run": false
+}
+
+### Store simulation_id in a variable
+@simulationId = {{startSimulation.response.body.simulation_id}}
+
+### Check simulation status
+GET http://localhost:8000/simulation_status/{{simulationId}}
+
+### Get AV route
+GET http://localhost:8000/av_route/{{simulationId}}
+
+### Tick the simulation (advance one step) only works when auto_run is false
+POST http://localhost:8000/simulation_tick/{{simulationId}}
+
+### Get all simulation states
+GET http://localhost:8000/simulation/{{simulationId}}/state
+
+### Control a specific vehicle
+POST http://localhost:8000/simulation/{{simulationId}}/agent_command
+Content-Type: application/json
+
+{
+    "agent_id": "AV",
+    "agent_type": "vehicle",
+    "command_type": "set_state",
+    "data": {
+        "position": [112, 45.85],
+        "speed": 0.0,
+        "sumo_angle": 225.0
+    }
+}
+
+### Stop the simulation
+POST http://localhost:8000/simulation_control/{{simulationId}}
+Content-Type: application/json
+
+{
+    "command": "stop"
+}
+
+### Check simulation result
+GET http://localhost:8000/simulation_result/{{simulationId}}

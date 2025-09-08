@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- generated on 2024-07-13 21:53:13 by Eclipse SUMO netedit Version 1.20.0
+-->
+
+<routes xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://sumo.dlr.de/xsd/routes_file.xsd">
+    <!-- Routes -->
+
+    <vType id="NDE_URBAN" length="5.00" width="1.85" minGap="3.28" maxSpeed="10.00" carFollowModel="IDM" accel="1.84" decel="1.29" tau="1.17" emergencyDecel="7.06" lcSpeedGain="0" lcCooperative="0" lcKeepRight="1" speedFactor="normc(1,0.1,0.8,1.2)"/>
+    <vType id="NDE_HIGHWAY" length="5.00" width="1.85" minGap="5.92" maxSpeed="28.31" carFollowModel="IDM" accel="5.95" decel="5.96" tau="1.72" emergencyDecel="7.06" lcSpeedGain="0" lcCooperative="0" lcKeepRight="1" speedFactor="normc(1,0.1,0.8,1.2)"/>
+
+
+    <route id="r_0" edges="15 31 30 34 33 19 20 32 25 23 39"/>
+    <route id="r_1" edges="13 14 35 24 44 17 5 6"/>
+    <route id="r_2" edges="18 10 11 13 14 16 0 2 9 43 42 41 40 21 1 12"/>
+    <route id="r_3" edges="37 36 34 33 19 15 31 30 29 28 18 10 11 13"/>
+    <!-- Vehicles, persons and containers (sorted by depart) -->
+    <flow id="BV_flow_0" begin="0.00" from="18" to="35" via="10 11 13 14" end="3600.00" vehsPerHour="200"/>
+    <flow id="BV_flow_1" begin="0.00" from="12" to="17" via="16 0 2 42 41 5 27 26 24" end="3600.00" vehsPerHour="200"/>
+    <flow id="BV_flow_2" begin="0.00" from="5" to="19" via="6 8 38 20 23 37 36 34 33" end="3600.00" vehsPerHour="200"/>
+    <flow id="BV_flow_3" begin="0.00" from="24" to="42" via="18 10 8 38" end="3600.00" vehsPerHour="200"/>
+    <flow id="BV_flow_4" begin="0.00" from="12" to="1" via=" 16 43 42 41" end="3600.00" vehsPerHour="200"/>
+    <flow id="BV_bike_flow_5" type="DEFAULT_BIKETYPE" begin="0.00" from="37" to="39" via="36 34 33 19 20 25" end="3600.00" vehsPerHour="200"/>
+    <flow id="BV_bike_flow_6" type="DEFAULT_BIKETYPE" begin="0.00" from="24" to="35" via="17 18 10 11 13 14" end="3600.00" vehsPerHour="200"/>
+    <flow id="BV_bike_flow_7" type="DEFAULT_BIKETYPE" begin="0.00" from="22" to="36" via="14 16 2 9 43 42 11 7 8 20 32 25 23 39 37" end="3600.00" vehsPerHour="200"/>
+    <personFlow id="VRU_person_flow_0" begin="0.00" end="3600.00" personsPerHour="300">
+        <walk route="r_0"/>
+    </personFlow>
+    <personFlow id="VRU_person_flow_1" begin="0.00" end="3600.00" personsPerHour="300">
+        <walk route="r_0"/>
+    </personFlow>
+    <personFlow id="VRU_person_flow_2" begin="0.00" end="3600.00" personsPerHour="300">
+        <walk route="r_2"/>
+    </personFlow>
+    <personFlow id="VRU_person_flow_3" begin="0.00" end="3600.00" personsPerHour="300">
+        <walk edges="37 36 7 8 38"/>
+    </personFlow>
+    <personFlow id="VRU_person_flow_5" begin="0.00" end="3600.00" personsPerHour="300">
+        <walk edges="42 10 11 29 28"/>
+    </personFlow>
+    <personFlow id="VRU_person_flow_6" begin="0.00" end="3600.00" personsPerHour="300">
+        <walk route="r_1"/>
+    </personFlow>
+    <personFlow id="VRU_person_flow_7" begin="0.00" end="3600.00" personsPerHour="300">
+        <walk edges="27 26"/>
+    </personFlow>
+     <personFlow id="VRU_bike_flow_8" type="DEFAULT_BIKETYPE" begin="0.00" end="3600.00" personsPerHour="100">
+        <walk edges="24 17 18 10 11 13 14 35"/>
+    </personFlow>
+    <personFlow id="VRU_bike_flow_9" type="DEFAULT_BIKETYPE" begin="0.00" end="3600.00" personsPerHour="100">
+        <walk edges="22 14 16 2 9 43 42 11 7 8 20 32 25 23 39 37 36"/>
+    </personFlow>
+</routes>

@@ -1,0 +1,33 @@
+# US Cities Coordinates for TeraSim Experiment Generation
+# Format: latitude, longitude
+# Each line represents a location center for scenario generation
+
+# Ann Arbor, Michigan (University of Michigan area)
+42.277547, -83.734668
+
+# Austin, Texas (Downtown)
+30.267153, -97.743057
+
+# San Francisco, California (Financial District)
+37.774929, -122.419418
+
+# Phoenix, Arizona (Downtown)
+33.448376, -112.074036
+
+# Pittsburgh, Pennsylvania (Carnegie Mellon area)
+40.443180, -79.943560
+
+# Mountain View, California (Google/Waymo area)
+37.386052, -122.083851
+
+# Detroit, Michigan (Downtown)
+42.331427, -83.045754
+
+# Las Vegas, Nevada (Strip area)
+36.114647, -115.172813
+
+# Boston, Massachusetts (MIT area)
+42.360082, -71.094816
+
+# Seattle, Washington (Downtown)
+47.606209, -122.332069

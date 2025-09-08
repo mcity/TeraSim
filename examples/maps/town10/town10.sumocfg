@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<configuration>
+
+    <input>
+        <net-file value="town10.net.xml"/>
+        <route-files value="town10_demand_with_ped.rou..xml"/>
+        <additional-files value="parking.add.xml"/>
+        <step-length value = "0.1"/>
+    </input>
+
+    <time>
+        <begin value="0"/>
+        <end value="3600"/>
+    </time>
+
+    <random_number>
+        <random value="true"/>
+    </random_number>
+
+    <processing>
+        <!-- <lanechange.duration value="1"/> -->
+        <time-to-teleport value="-1"/>
+        <collision.action value="warn"/>
+        <collision.check-junctions value="true"/>
+        <collision.mingap-factor value="0"/>
+    </processing>
+</configuration>
