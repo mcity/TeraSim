@@ -200,6 +200,8 @@ class ConstructionAdversity(AbstractStaticAdversity):
         Returns:
             float: Lateral offset in meters
         """
+        lane_index = int(self._lane_id.split('_')[-1])
+        is_left_lane = lane_index > 1
         # Special handling for warning signs - place on shoulder
         if object_type == 'sign' and zone_type in ['warning', 'termination']:
             return self._warning_sign_offset  # Negative value places on right shoulder
@@ -212,11 +214,18 @@ class ConstructionAdversity(AbstractStaticAdversity):
             # Gradual offset increase from right edge to work zone
             zone_length = zone_end - zone_start
             if zone_length <= 0:
-                return -(self._lane_width / 2 - 0.3)  # Start at right edge (negative = right)
+                # Start at appropriate edge based on lane type
+                if is_left_lane:
+                    return self._lane_width / 2 - 0.3  # Start at left edge (positive = left)
+                else:
+                    return -(self._lane_width / 2 - 0.3)  # Start at right edge (negative = right)
             progress = (position - zone_start) / zone_length
             
-            # Start from right edge of lane (negative), transition to work zone offset
-            edge_offset = -(self._lane_width / 2 - 0.3)  # Negative for right side
+
+            if is_left_lane:
+                edge_offset = self._lane_width / 2 - 0.3  # Positive for left side
+            else:
+                edge_offset = -(self._lane_width / 2 - 0.3)  # Negative for right side
             
             if self._taper_type == 'linear':
                 offset = edge_offset + progress * (self._work_zone_offset - edge_offset)
@@ -245,8 +254,10 @@ class ConstructionAdversity(AbstractStaticAdversity):
                 return self._work_zone_offset
             progress = (position - zone_start) / zone_length
             
-            # Transition from work zone offset to right edge of lane (negative)
-            edge_offset = -(self._lane_width / 2 - 0.3)  # Negative for right side
+            if is_left_lane:
+                edge_offset = self._lane_width / 2 - 0.3  # Positive for left side
+            else:
+                edge_offset = -(self._lane_width / 2 - 0.3)  # Negative for right side
             
             if self._taper_type == 'linear':
                 offset = self._work_zone_offset + progress * (edge_offset - self._work_zone_offset)
@@ -277,6 +288,7 @@ class ConstructionAdversity(AbstractStaticAdversity):
         edge_id = traci.lane.getEdgeID(self._lane_id)
         lane_index = int(self._lane_id.split('_')[-1])  # Extract lane index from lane ID
         x_center, y_center = traci.simulation.convert2D(edge_id, lane_position, lane_index)
+        is_left_lane = lane_index > 1
         
         # Get lane angle at this position
         lane_angle = traci.lane.getAngle(self._lane_id, lane_position)
@@ -291,8 +303,14 @@ class ConstructionAdversity(AbstractStaticAdversity):
         
         # Calculate shoulder coordinates
         # Note: SUMO uses a different coordinate system where y increases northward
-        x_shoulder = x_center + offset_distance * math.cos(perpendicular_rad)
-        y_shoulder = y_center + offset_distance * math.sin(perpendicular_rad)
+        if is_left_lane:
+            # For left lane, place sign on left shoulder (subtract offset)
+            x_shoulder = x_center - offset_distance * math.cos(perpendicular_rad)
+            y_shoulder = y_center - offset_distance * math.sin(perpendicular_rad)
+        else:
+            # For right lane, place sign on right shoulder (add offset)
+            x_shoulder = x_center + offset_distance * math.cos(perpendicular_rad)
+            y_shoulder = y_center + offset_distance * math.sin(perpendicular_rad)
         
         return x_shoulder, y_shoulder, lane_angle
     
