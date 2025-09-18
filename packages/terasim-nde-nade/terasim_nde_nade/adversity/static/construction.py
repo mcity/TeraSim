@@ -200,6 +200,8 @@ class ConstructionAdversity(AbstractStaticAdversity):
         Returns:
             float: Lateral offset in meters
         """
+        lane_index = int(self._lane_id.split('_')[-1])
+        is_left_lane = lane_index > 1
         # Special handling for warning signs - place on shoulder
         if object_type == 'sign' and zone_type in ['warning', 'termination']:
             return self._warning_sign_offset  # Negative value places on right shoulder
@@ -212,11 +214,18 @@ class ConstructionAdversity(AbstractStaticAdversity):
             # Gradual offset increase from right edge to work zone
             zone_length = zone_end - zone_start
             if zone_length <= 0:
-                return -(self._lane_width / 2 - 0.3)  # Start at right edge (negative = right)
+                # Start at appropriate edge based on lane type
+                if is_left_lane:
+                    return self._lane_width / 2 - 0.3  # Start at left edge (positive = left)
+                else:
+                    return -(self._lane_width / 2 - 0.3)  # Start at right edge (negative = right)
             progress = (position - zone_start) / zone_length
             
-            # Start from right edge of lane (negative), transition to work zone offset
-            edge_offset = -(self._lane_width / 2 - 0.3)  # Negative for right side
+
+            if is_left_lane:
+                edge_offset = self._lane_width / 2 - 0.3  # Positive for left side
+            else:
+                edge_offset = -(self._lane_width / 2 - 0.3)  # Negative for right side
             
             if self._taper_type == 'linear':
                 offset = edge_offset + progress * (self._work_zone_offset - edge_offset)
@@ -245,8 +254,10 @@ class ConstructionAdversity(AbstractStaticAdversity):
                 return self._work_zone_offset
             progress = (position - zone_start) / zone_length
             
-            # Transition from work zone offset to right edge of lane (negative)
-            edge_offset = -(self._lane_width / 2 - 0.3)  # Negative for right side
+            if is_left_lane:
+                edge_offset = self._lane_width / 2 - 0.3  # Positive for left side
+            else:
+                edge_offset = -(self._lane_width / 2 - 0.3)  # Negative for right side
             
             if self._taper_type == 'linear':
                 offset = self._work_zone_offset + progress * (edge_offset - self._work_zone_offset)
@@ -277,6 +288,7 @@ class ConstructionAdversity(AbstractStaticAdversity):
         edge_id = traci.lane.getEdgeID(self._lane_id)
         lane_index = int(self._lane_id.split('_')[-1])  # Extract lane index from lane ID
         x_center, y_center = traci.simulation.convert2D(edge_id, lane_position, lane_index)
+        is_left_lane = lane_index > 1
         
         # Get lane angle at this position
         lane_angle = traci.lane.getAngle(self._lane_id, lane_position)
@@ -291,8 +303,14 @@ class ConstructionAdversity(AbstractStaticAdversity):
         
         # Calculate shoulder coordinates
         # Note: SUMO uses a different coordinate system where y increases northward
-        x_shoulder = x_center + offset_distance * math.cos(perpendicular_rad)
-        y_shoulder = y_center + offset_distance * math.sin(perpendicular_rad)
+        if is_left_lane:
+            # For left lane, place sign on left shoulder (subtract offset)
+            x_shoulder = x_center - offset_distance * math.cos(perpendicular_rad)
+            y_shoulder = y_center - offset_distance * math.sin(perpendicular_rad)
+        else:
+            # For right lane, place sign on right shoulder (add offset)
+            x_shoulder = x_center + offset_distance * math.cos(perpendicular_rad)
+            y_shoulder = y_center + offset_distance * math.sin(perpendicular_rad)
         
         return x_shoulder, y_shoulder, lane_angle
     
@@ -454,7 +472,30 @@ class ConstructionAdversity(AbstractStaticAdversity):
         """Initialize the adversarial event.
         """
         assert self.is_effective(), "Adversarial event is not effective."
-        
+
+        # Check for and remove vehicles in the construction zone (except stalled vehicle)
+        if self._start_position is not None and self._end_position is not None:
+            # Get all vehicles on the lane
+            vehicles_on_lane = traci.lane.getLastStepVehicleIDs(self._lane_id)
+
+            for vehicle_id in vehicles_on_lane:
+                # Skip if this is a stalled vehicle (check if it's marked as stalled)
+                # Stalled vehicles typically have "stalled" or "STALLED" in their ID
+                if "stalled" in vehicle_id.lower() or "STALLED" in vehicle_id:
+                    logger.debug(f"Skipping stalled vehicle {vehicle_id} in construction zone")
+                    continue
+
+                # Get vehicle position on the lane
+                try:
+                    vehicle_pos = traci.vehicle.getLanePosition(vehicle_id)
+
+                    # Check if vehicle is inside the construction zone
+                    if self._start_position <= vehicle_pos <= self._end_position:
+                        logger.info(f"Removing vehicle {vehicle_id} from construction zone at position {vehicle_pos}")
+                        traci.vehicle.remove(vehicle_id)
+                except Exception as e:
+                    logger.debug(f"Could not check/remove vehicle {vehicle_id}: {e}")
+
         if self._construction_mode == "full_lane":
             # Original behavior: block entire lane
             traci.lane.setDisallowed(self._lane_id, ["all"])
