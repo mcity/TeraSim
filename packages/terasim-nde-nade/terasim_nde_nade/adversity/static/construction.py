@@ -472,7 +472,30 @@ class ConstructionAdversity(AbstractStaticAdversity):
         """Initialize the adversarial event.
         """
         assert self.is_effective(), "Adversarial event is not effective."
-        
+
+        # Check for and remove vehicles in the construction zone (except stalled vehicle)
+        if self._start_position is not None and self._end_position is not None:
+            # Get all vehicles on the lane
+            vehicles_on_lane = traci.lane.getLastStepVehicleIDs(self._lane_id)
+
+            for vehicle_id in vehicles_on_lane:
+                # Skip if this is a stalled vehicle (check if it's marked as stalled)
+                # Stalled vehicles typically have "stalled" or "STALLED" in their ID
+                if "stalled" in vehicle_id.lower() or "STALLED" in vehicle_id:
+                    logger.debug(f"Skipping stalled vehicle {vehicle_id} in construction zone")
+                    continue
+
+                # Get vehicle position on the lane
+                try:
+                    vehicle_pos = traci.vehicle.getLanePosition(vehicle_id)
+
+                    # Check if vehicle is inside the construction zone
+                    if self._start_position <= vehicle_pos <= self._end_position:
+                        logger.info(f"Removing vehicle {vehicle_id} from construction zone at position {vehicle_pos}")
+                        traci.vehicle.remove(vehicle_id)
+                except Exception as e:
+                    logger.debug(f"Could not check/remove vehicle {vehicle_id}: {e}")
+
         if self._construction_mode == "full_lane":
             # Original behavior: block entire lane
             traci.lane.setDisallowed(self._lane_id, ["all"])
