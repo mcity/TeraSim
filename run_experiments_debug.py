@@ -42,6 +42,7 @@ def main(config_path: str) -> None:
         warmup_time_ub=config.environment.parameters.warmup_time_ub,
         run_time=1200,
         configuration=config.environment.parameters,
+        av_debug_control=True, # Enable debug control for AV, will use SUMO
     )
 
     # Paths already resolved in config
@@ -79,7 +80,7 @@ if __name__ == "__main__":
     config_dir = Path(__file__).parent / "examples" / "scenarios"
     # yaml_files = sorted(config_dir.glob("*.yaml"), key=lambda x: int(''.join(filter(str.isdigit, x.stem)) or '0'))
     # yaml_files = ["examples/scenarios/cutin.yaml"]
-    yaml_files = [Path("texas_example/test_configs/cutin.yaml")]
+    yaml_files = [Path("texas_example/test_configs/construction_zone_back_to_back.yaml")]
     # Randomly shuffle yaml files
     random.shuffle(yaml_files)
 
