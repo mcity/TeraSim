@@ -31,9 +31,9 @@ Built upon the open-source traffic simulation software [SUMO (Simulation of Urba
 
 The source code for **TeraSim-World** will soon be released **within this repository** as a next-generation extension of TeraSim.   
 
-It automatically synthesizes geographically grounded, safety-critical data for E2E autonomous driving at anythere in the world.
+It automatically synthesizes **geographically grounded, safety-critical data** for E2E autonomous driving **at anywhere in the world**.
 
-See our [📄 arXiv paper](https://arxiv.org/abs/2509.13164) and [🌐 videos](https://wjiawei.com/terasim-world-web/) for details.
+See our [📄 arXiv](https://arxiv.org/abs/2509.13164) and [🌐 videos](https://wjiawei.com/terasim-world-web/) for details.
 
 ## **🎥 Demo Video**
 
