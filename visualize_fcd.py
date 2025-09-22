@@ -265,6 +265,11 @@ class TrafficVisualizer:
                 end_time = self.trajectories.end
             timestep_range = timestep_range[(timestep_range >= start_time) & (timestep_range <= end_time)]
         
+        # Limit to max frames if desired
+        max_frames = self.config.get('max_frames')
+        if max_frames is not None:
+            timestep_range = timestep_range[:max_frames]
+        
         print(f"Creating animation with {len(timestep_range)} frames")
         print(f"Time range: {timestep_range[0]:.1f} to {timestep_range[-1]:.1f}")
         
@@ -350,8 +355,11 @@ def main(path_to_config):
             print(f"Highlighting adversarial vehicle: {adv_vehicle_id}")
         anim = visualizer.create_animation(ego_vehicle_id, adv_vehicle_id)
         
-       
-        save_path = output_dir/f"animation.mp4"
+        video_name = config.get('video_name', 'animation')
+        max_frames = config.get('max_frames')
+        if max_frames is not None:
+            video_name = f"{video_name}_{max_frames}"
+        save_path = output_dir/f"{video_name}.mp4"
         
         print(f"Saving animation to: {save_path}")
         Writer = animation.writers['ffmpeg']
@@ -378,9 +386,11 @@ if __name__ == "__main__":
     # path_to_config = "vis_configs/Germany_Rossfeld_AggressiveMerge.yaml"
     # path_to_config = "vis_configs/US_Arizona_HighwayCutin.yaml"
     # path_to_config = "vis_configs/US_AnnArbor_RoundaboutFailToYield.yaml"
-    # path_to_config = "vis_configs/US_SanDiego_RunRedLight.yaml"
+    path_to_config = "vis_configs/US_SanDiego_RunRedLight.yaml"
     # path_to_config = "vis_configs/US_Chicago_UncoordinatedLeftTurn.yaml"
-    path_to_config = "vis_configs/Mcity_CyclistCrossing.yaml"
+    # path_to_config = "vis_configs/Mcity_CyclistCrossing.yaml"
     # path_to_config = "vis_configs/Mcity_PedestrianCrossing.yaml"
     # path_to_config = "vis_configs/Mcity_UnprotectedLeftTurn.yaml"
+    # path_to_config = "vis_configs/US_AnnArbor_RoundaboutFailToYield.yaml"
+    # path_to_config = "vis_configs/Demo_AnnArborRoundabout.yaml"
     main(path_to_config)
