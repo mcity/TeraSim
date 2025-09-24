@@ -191,6 +191,9 @@ setup_sumo_tools() {
         log_info "✅ SUMO tools updated"
     fi
     
+    # Export SUMO_HOME for current session
+    export SUMO_HOME="${SUMO_HOME}"
+    
     # Save SUMO_HOME path for reference
     echo "SUMO_HOME=${SUMO_HOME}" > "${DEPS_DIR}/.sumo_home"
     
@@ -204,6 +207,89 @@ create_output_directories() {
     log_info "Output directories created"
 }
 
+setup_environment_variables() {
+    log_info "Setting up environment variables..."
+    
+    # Get SUMO_HOME from the saved file
+    DEPS_DIR="${HOME}/.terasim/deps"
+    if [ -f "${DEPS_DIR}/.sumo_home" ]; then
+        source "${DEPS_DIR}/.sumo_home"
+        log_info "📍 Found SUMO_HOME: ${SUMO_HOME}"
+    else
+        log_warning "SUMO_HOME not found. Please run SUMO setup first."
+        return 1
+    fi
+    
+    # Ask user if they want to add environment variables to shell config
+    echo
+    log_info "Environment variable setup options:"
+    echo "1. Add to ~/.bashrc (recommended for bash users)"
+    echo "2. Add to ~/.profile (recommended for all shells)"
+    echo "3. Add to ~/.zshrc (for zsh users)"
+    echo "4. Skip (environment variables will only be available in current session)"
+    echo
+    read -p "Choose an option (1-4): " -n 1 -r
+    echo
+    
+    case $REPLY in
+        1)
+            SHELL_CONFIG="${HOME}/.bashrc"
+            ;;
+        2)
+            SHELL_CONFIG="${HOME}/.profile"
+            ;;
+        3)
+            SHELL_CONFIG="${HOME}/.zshrc"
+            ;;
+        4)
+            log_info "Skipping persistent environment variable setup"
+            log_info "To use SUMO in other sessions, run: source ${DEPS_DIR}/.sumo_home"
+            return 0
+            ;;
+        *)
+            log_warning "Invalid option. Skipping persistent environment variable setup"
+            return 0
+            ;;
+    esac
+    
+    # Check if SUMO_HOME is already in the config file
+    if grep -q "SUMO_HOME=" "${SHELL_CONFIG}" 2>/dev/null; then
+        log_warning "SUMO_HOME already exists in ${SHELL_CONFIG}"
+        read -p "Update existing SUMO_HOME? (y/n) " -n 1 -r
+        echo
+        if [[ $REPLY =~ ^[Yy]$ ]]; then
+            # Remove existing SUMO_HOME lines
+            sed -i '/SUMO_HOME=/d' "${SHELL_CONFIG}"
+        else
+            log_info "Keeping existing SUMO_HOME configuration"
+            return 0
+        fi
+    fi
+    
+    # Add environment variables to shell config
+    echo "" >> "${SHELL_CONFIG}"
+    echo "# TeraSim environment variables" >> "${SHELL_CONFIG}"
+    echo "export SUMO_HOME=\"${SUMO_HOME}\"" >> "${SHELL_CONFIG}"
+    echo "export PATH=\"\$SUMO_HOME/bin:\$PATH\"" >> "${SHELL_CONFIG}"
+    
+    log_info "✅ Environment variables added to ${SHELL_CONFIG}"
+    log_info "📍 SUMO_HOME: ${SUMO_HOME}"
+    log_info "📍 PATH updated to include SUMO tools"
+    
+    # Verify the setup
+    log_info "Verifying environment variable setup..."
+    if [ -f "${SUMO_HOME}/bin/sumo" ] || [ -f "${SUMO_HOME}/tools/sumo" ]; then
+        log_info "✅ SUMO tools found in ${SUMO_HOME}"
+    else
+        log_warning "⚠️  SUMO tools not found in expected location"
+    fi
+    
+    echo
+    log_info "To apply changes in current session, run:"
+    log_info "  source ${SHELL_CONFIG}"
+    log_info "Or restart your terminal"
+}
+
 
 main() {
     log_info "Starting TeraSim monorepo setup..."
@@ -212,6 +298,7 @@ main() {
     check_gcc_gpp
     check_redis
     setup_sumo_tools
+    setup_environment_variables
     setup_monorepo
     create_output_directories
     
@@ -242,10 +329,17 @@ for pkg_name, description in packages:
 "
     
     echo
+    echo "Environment variables:"
+    echo "  SUMO_HOME is set to: ${SUMO_HOME:-'Not set'}"
+    echo "  To verify: echo \$SUMO_HOME"
+    echo
     echo "Development commands:"
     echo "  pytest                                 # Run tests"
     echo "  black .                                # Format code"
     echo "  python                                 # Start Python shell"
+    echo
+    echo "If SUMO_HOME is not set in new terminal sessions:"
+    echo "  source ~/.terasim/deps/.sumo_home     # Load environment variables"
     echo
 }
 
