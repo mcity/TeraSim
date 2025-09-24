@@ -68,6 +68,12 @@ def create_construction_sign_type():
 
 class ConstructionAdversity(AbstractStaticAdversity):
     def __init__(self, **kwargs):
+        # Extract lane_ids parameter (backward compatible with lane_id)
+        self._lane_ids = kwargs.pop("lane_ids", None)
+
+        # Extract closure direction for multiple lanes
+        self._closure_direction = kwargs.pop("closure_direction", "right")  # "left" or "right"
+
         # Extract our custom parameters before passing to parent
         self._construction_mode = kwargs.pop("construction_mode", "full_lane")  # "full_lane" or "partial_lane"
         self._start_position = kwargs.pop("start_position", None)
@@ -97,14 +103,61 @@ class ConstructionAdversity(AbstractStaticAdversity):
         
         # Call parent constructor with remaining kwargs
         super().__init__(**kwargs)
-        
+
+        # Handle backward compatibility for lane_id/lane_ids
+        if self._lane_ids is None:
+            # Check if parent class set _lane_id from kwargs
+            if hasattr(self, '_lane_id') and self._lane_id:
+                self._lane_ids = [self._lane_id]
+            else:
+                self._lane_ids = []
+        elif not isinstance(self._lane_ids, list):
+            # Convert single lane_id string to list
+            self._lane_ids = [self._lane_ids]
+
+        # For backward compatibility, set _lane_id to first lane if available
+        if self._lane_ids and len(self._lane_ids) > 0:
+            self._lane_id = self._lane_ids[0]
+        elif not hasattr(self, '_lane_id'):
+            self._lane_id = ""
+
         # Initialize other attributes
         self._construction_object_ids = []
         
         # If work_zone_offset not specified, use lane_offset
         if self._work_zone_offset is None:
             self._work_zone_offset = self._lane_offset
-        
+
+    def get_boundary_lane(self):
+        """Get the boundary lane ID based on closure direction.
+
+        For multiple lane closures, returns the lane at the boundary of the closure:
+        - If closure_direction is "right", returns the leftmost closed lane (highest index)
+        - If closure_direction is "left", returns the rightmost closed lane (lowest index)
+
+        In SUMO: Lane 0 is rightmost, higher numbers are further left.
+
+        Returns:
+            str: The lane ID at the closure boundary, or empty string if no lanes.
+        """
+        if not self._lane_ids:
+            return ""
+
+        if len(self._lane_ids) == 1:
+            return self._lane_ids[0]
+
+        # Sort lanes by their index (number at the end of the ID)
+        sorted_lanes = sorted(self._lane_ids, key=lambda x: int(x.split('_')[-1]))
+
+        if self._closure_direction == "right":
+            # Right closure (closing right lanes): return leftmost closed lane (highest index)
+            # Example: closing lanes 0,1,2 -> return lane 2 (leftmost of the closed lanes)
+            return sorted_lanes[-1]
+        else:  # "left"
+            # Left closure (closing left lanes): return rightmost closed lane (lowest index)
+            # Example: closing lanes 2,3 -> return lane 2 (rightmost of the closed lanes)
+            return sorted_lanes[0]
+
     def is_effective(self):
         """Check if the adversarial event is effective.
 
@@ -314,17 +367,19 @@ class ConstructionAdversity(AbstractStaticAdversity):
         
         return x_shoulder, y_shoulder, lane_angle
     
-    def _place_object(self, position, lateral_offset, object_type, zone_type):
+    def _place_object(self, position, lateral_offset, object_type, zone_type, lane_id=None):
         """Place a single construction object at the specified position.
-        
+
         Args:
             position: Longitudinal position on the lane
             lateral_offset: Lateral offset from lane center
             object_type: Type of object ('cone', 'barrier', 'sign')
             zone_type: Zone type for logging and ID generation
+            lane_id: Optional lane ID to place object on (defaults to self._lane_id)
         """
+        current_lane = lane_id or self._lane_id
         # Create unique object ID
-        object_id = f"CONSTRUCTION_{zone_type}_{self._lane_id}_{len(self._construction_object_ids)}"
+        object_id = f"CONSTRUCTION_{zone_type}_{current_lane}_{len(self._construction_object_ids)}"
         self._construction_object_ids.append(object_id)
         
         # Add vehicle to simulation
@@ -360,7 +415,7 @@ class ConstructionAdversity(AbstractStaticAdversity):
             logger.debug(f"Placed warning sign {object_id} on shoulder at ({x_shoulder:.1f}, {y_shoulder:.1f})")
         else:
             # Normal placement for cones and barriers
-            traci.vehicle.moveTo(object_id, self._lane_id, position)
+            traci.vehicle.moveTo(object_id, current_lane, position)
             
             # Apply lateral offset for non-sign objects
             if lateral_offset != 0:
@@ -404,69 +459,114 @@ class ConstructionAdversity(AbstractStaticAdversity):
     
     def _create_construction_objects(self):
         """Create construction objects with proper zone-based placement."""
-        edge_id = traci.lane.getEdgeID(self._lane_id)
-        
-        # Create route for construction objects
-        self._route_id = f"r_construction_{self._lane_id}"
-        if self._route_id not in traci.route.getIDList():
-            traci.route.add(self._route_id, [edge_id])
-        
+        # Get boundary lane for cone placement in work zone
+        boundary_lane = self.get_boundary_lane()
+
         # Create object types and store them as instance variables for comparison
         self._cone_type = create_construction_cone_type()
         self._barrier_type = create_construction_barrier_type()
         self._sign_type = create_construction_sign_type()
-        
-        # Calculate zones
+
+        # Calculate zones based on first lane (they should be same for all lanes)
         zones = self._calculate_zone_positions()
-        
+
         # Process each zone
         for zone_type, (zone_start, zone_end) in zones.items():
             # Calculate dynamic spacing based on speed limit
             spacing = self._calculate_dynamic_spacing(zone_type)
-            
-            # Determine object type for this zone
-            if zone_type == 'warning':
-                object_types = ['sign']  # Only warning signs in warning zone
-            elif zone_type in ['taper_in', 'taper_out']:
-                object_types = ['cone']
-            elif zone_type == 'buffer':
-                object_types = ['cone', 'cone', 'barrier']  # Mostly cones, some barriers
-            elif zone_type == 'work':
-                if self._construction_type == 'mixed':
-                    object_types = ['cone', 'cone', 'barrier']
-                else:
-                    object_types = [self._construction_type]
-            elif zone_type == 'termination':
-                object_types = ['sign']
+
+            # For work zone, only place cones on boundary lane
+            if zone_type == 'work':
+                if not boundary_lane:
+                    continue
+
+                # Create route for this lane if not exists
+                edge_id = traci.lane.getEdgeID(boundary_lane)
+                route_id = f"r_construction_{boundary_lane}"
+                if route_id not in traci.route.getIDList():
+                    traci.route.add(route_id, [edge_id])
+                self._route_id = route_id
+
+                # Place cones only on boundary lane
+                current_pos = zone_start
+                while current_pos < zone_end:
+                    # Calculate lateral offset for this position
+                    lateral_offset = self._calculate_lateral_offset(
+                        current_pos, zone_type, zone_start, zone_end, 'cone'
+                    )
+
+                    # Place cone on boundary lane
+                    object_id = f"CONSTRUCTION_{zone_type}_{boundary_lane}_{len(self._construction_object_ids)}"
+                    self._construction_object_ids.append(object_id)
+
+                    traci.vehicle.add(
+                        object_id,
+                        routeID=route_id,
+                        typeID=self._cone_type,
+                    )
+
+                    traci.vehicle.setSpeedMode(object_id, 0)
+                    traci.vehicle.setLaneChangeMode(object_id, 0)
+                    traci.vehicle.moveTo(object_id, boundary_lane, current_pos)
+
+                    if lateral_offset != 0:
+                        try:
+                            traci.vehicle.changeSublane(object_id, lateral_offset)
+                        except:
+                            logger.debug(f"Could not apply lateral offset {lateral_offset} to {object_id}")
+
+                    traci.vehicle.setSpeed(object_id, 0)
+                    current_pos += spacing
+
             else:
-                continue
-            
-            # Place objects in this zone
-            current_pos = zone_start
-            object_index = 0
-            
-            while current_pos < zone_end:
-                # Select object type
-                obj_type_name = object_types[object_index % len(object_types)]
-                if obj_type_name == 'cone':
-                    type_id = self._cone_type
-                elif obj_type_name == 'barrier':
-                    type_id = self._barrier_type
-                elif obj_type_name == 'sign':
-                    type_id = self._sign_type
-                
-                # Calculate lateral offset for this position
-                lateral_offset = self._calculate_lateral_offset(
-                    current_pos, zone_type, zone_start, zone_end, obj_type_name
-                )
-                
-                # Place the object
-                self._place_object(current_pos, lateral_offset, type_id, zone_type)
-                
-                current_pos += spacing
-                object_index += 1
-        
-        logger.info(f"Created {len(self._construction_object_ids)} construction objects in {len(zones)} zones on lane {self._lane_id}")
+                # For non-work zones, place on first lane (for simplicity)
+                if not self._lane_id:
+                    continue
+
+                edge_id = traci.lane.getEdgeID(self._lane_id)
+                route_id = f"r_construction_{self._lane_id}"
+                if route_id not in traci.route.getIDList():
+                    traci.route.add(route_id, [edge_id])
+                self._route_id = route_id
+
+                # Determine object type for this zone
+                if zone_type == 'warning':
+                    object_types = ['sign']  # Only warning signs in warning zone
+                elif zone_type in ['taper_in', 'taper_out']:
+                    object_types = ['cone']
+                elif zone_type == 'buffer':
+                    object_types = ['cone', 'cone', 'barrier']  # Mostly cones, some barriers
+                elif zone_type == 'termination':
+                    object_types = ['sign']
+                else:
+                    continue
+
+                # Place objects in this zone
+                current_pos = zone_start
+                object_index = 0
+
+                while current_pos < zone_end:
+                    # Select object type
+                    obj_type_name = object_types[object_index % len(object_types)]
+                    if obj_type_name == 'cone':
+                        type_id = self._cone_type
+                    elif obj_type_name == 'barrier':
+                        type_id = self._barrier_type
+                    elif obj_type_name == 'sign':
+                        type_id = self._sign_type
+
+                    # Calculate lateral offset for this position
+                    lateral_offset = self._calculate_lateral_offset(
+                        current_pos, zone_type, zone_start, zone_end, obj_type_name
+                    )
+
+                    # Place the object
+                    self._place_object(current_pos, lateral_offset, type_id, zone_type)
+
+                    current_pos += spacing
+                    object_index += 1
+
+        logger.info(f"Created {len(self._construction_object_ids)} construction objects in zones, with work zone cones on boundary lane {boundary_lane}")
     
     def initialize(self, time: float):
         """Initialize the adversarial event.
