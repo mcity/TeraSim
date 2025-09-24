@@ -123,7 +123,10 @@ class ConstructionAdversity(AbstractStaticAdversity):
 
         # Initialize other attributes
         self._construction_object_ids = []
-        
+
+        # Dictionary to store lane information for multiple lanes
+        self._lane_info = {}  # {lane_id: {'length': float, 'width': float}}
+
         # If work_zone_offset not specified, use lane_offset
         if self._work_zone_offset is None:
             self._work_zone_offset = self._lane_offset
@@ -158,6 +161,69 @@ class ConstructionAdversity(AbstractStaticAdversity):
             # Example: closing lanes 2,3 -> return lane 2 (rightmost of the closed lanes)
             return sorted_lanes[0]
 
+    def get_widths(self, lane_ids=None):
+        """Get lane widths for specified lanes or all configured lanes.
+
+        Args:
+            lane_ids (list, optional): List of lane IDs to get widths for.
+                                     If None, returns widths for all configured lanes.
+
+        Returns:
+            dict: Dictionary mapping lane_id to width, or empty dict if lanes not available.
+        """
+        target_lanes = lane_ids if lane_ids is not None else self._lane_ids
+
+        if not target_lanes:
+            return {}
+
+        widths = {}
+        for lane_id in target_lanes:
+            if lane_id in self._lane_info:
+                widths[lane_id] = self._lane_info[lane_id]['width']
+            else:
+                # Try to get width from SUMO if not cached
+                try:
+                    width = traci.lane.getWidth(lane_id)
+                    widths[lane_id] = width
+                    # Cache the information
+                    if lane_id not in self._lane_info:
+                        self._lane_info[lane_id] = {}
+                    self._lane_info[lane_id]['width'] = width
+                except:
+                    logger.warning(f"Failed to get width for lane {lane_id}")
+                    continue
+
+        return widths
+
+    def _calculate_other_lanes_width(self, exclude_lane_id):
+        """Calculate the total width of all lanes in the construction zone except the specified lane.
+
+        Args:
+            exclude_lane_id (str): Lane ID to exclude from the calculation
+
+        Returns:
+            float: Total width of other construction zone lanes in meters.
+        """
+        # Sort lanes by their index to ensure consistent results regardless of input order
+        sorted_lanes = sorted(self._lane_ids, key=lambda x: int(x.split('_')[-1]))
+
+        total_width = 0.0
+        for lane_id in sorted_lanes:
+            if lane_id == exclude_lane_id:
+                continue  # Skip the excluded lane
+
+            if lane_id in self._lane_info:
+                total_width += self._lane_info[lane_id]['width']
+            else:
+                # Fallback to querying SUMO if not in cache
+                try:
+                    width = traci.lane.getWidth(lane_id)
+                    total_width += width
+                except:
+                    logger.warning(f"Could not get width for lane {lane_id}, using default 3.2m")
+                    total_width += 3.2  # Standard lane width fallback
+        return total_width
+
     def is_effective(self):
         """Check if the adversarial event is effective.
 
@@ -167,14 +233,35 @@ class ConstructionAdversity(AbstractStaticAdversity):
         if self._lane_id == "":
             logger.warning("Lane ID is not provided.")
             return False
-        try:
-            allowed_type_list = traci.lane.getAllowed(self._lane_id)
-            lane_length = traci.lane.getLength(self._lane_id)
-            self._lane_width = traci.lane.getWidth(self._lane_id)
-        except:
-            logger.warning(f"Failed to get lane information for {self._lane_id}.")
+
+        # Populate lane information dictionary for all configured lanes
+        for lane_id in self._lane_ids:
+            try:
+                allowed_type_list = traci.lane.getAllowed(lane_id)
+                lane_length = traci.lane.getLength(lane_id)
+                lane_width = traci.lane.getWidth(lane_id)
+
+                # Store in dictionary
+                self._lane_info[lane_id] = {
+                    'length': lane_length,
+                    'width': lane_width
+                }
+
+                # Set backward compatibility attribute for primary lane
+                if lane_id == self._lane_id:
+                    self._lane_width = lane_width
+
+            except:
+                logger.warning(f"Failed to get lane information for {lane_id}.")
+                return False
+
+        # Get primary lane info for validation
+        if self._lane_id in self._lane_info:
+            lane_length = self._lane_info[self._lane_id]['length']
+        else:
+            logger.warning(f"Primary lane {self._lane_id} not found in lane info.")
             return False
-            
+
         # Additional validation for partial lane mode
         if self._construction_mode == "partial_lane":
             if self._start_position is None or self._end_position is None:
@@ -186,7 +273,7 @@ class ConstructionAdversity(AbstractStaticAdversity):
             if self._start_position >= self._end_position:
                 logger.warning("Start position must be less than end position.")
                 return False
-                
+
         return True
     
     def _calculate_zone_positions(self):
@@ -264,21 +351,28 @@ class ConstructionAdversity(AbstractStaticAdversity):
             return 0.0
         
         elif zone_type == 'taper_in':
-            # Gradual offset increase from right edge to work zone
+            # Gradual offset increase from edge of current lane plus other lanes to work zone
             zone_length = zone_end - zone_start
-            if zone_length <= 0:
-                # Start at appropriate edge based on lane type
-                if is_left_lane:
-                    return self._lane_width / 2 - 0.3  # Start at left edge (positive = left)
-                else:
-                    return -(self._lane_width / 2 - 0.3)  # Start at right edge (negative = right)
-            progress = (position - zone_start) / zone_length
-            
+            lane_index = int(self._lane_id.split('_')[-1])
+            is_left_lane = lane_index > 1
 
+            # Get boundary lane for reference
+            boundary_lane = self.get_boundary_lane()
+            other_lanes_width = self._calculate_other_lanes_width(boundary_lane)
+
+            if zone_length <= 0:
+                # Start at appropriate edge based on lane type and other lanes
+                if is_left_lane:
+                    return self._lane_width / 2 - 0.3 + other_lanes_width  # Current lane edge + other lanes
+                else:
+                    return -(self._lane_width / 2 - 0.3 + other_lanes_width)  # Current lane edge + other lanes
+            progress = (position - zone_start) / zone_length
+
+            # Calculate edge offset: current lane's half-width + width of other lanes in construction zone
             if is_left_lane:
-                edge_offset = self._lane_width / 2 - 0.3  # Positive for left side
+                edge_offset = self._lane_width / 2 - 0.3 + other_lanes_width  # Positive for left side
             else:
-                edge_offset = -(self._lane_width / 2 - 0.3)  # Negative for right side
+                edge_offset = -(self._lane_width / 2 - 0.3 + other_lanes_width)  # Negative for right side
             
             if self._taper_type == 'linear':
                 offset = edge_offset + progress * (self._work_zone_offset - edge_offset)
@@ -288,10 +382,11 @@ class ConstructionAdversity(AbstractStaticAdversity):
                 offset = edge_offset + s_curve * (self._work_zone_offset - edge_offset)
             else:
                 offset = edge_offset + progress * (self._work_zone_offset - edge_offset)
-            
-            # Ensure offset stays within lane boundaries
-            max_left_offset = self._lane_width / 2 - 0.3  # Leave 0.3m margin
-            max_right_offset = -(self._lane_width / 2 - 0.3)
+
+            # Ensure offset stays within construction zone boundaries
+            total_construction_width = self._lane_width + other_lanes_width
+            max_left_offset = total_construction_width / 2 - 0.3  # Leave 0.3m margin
+            max_right_offset = -(total_construction_width / 2 - 0.3)
             return max(max_right_offset, min(offset, max_left_offset))
         
         elif zone_type in ['buffer', 'work']:
@@ -301,16 +396,24 @@ class ConstructionAdversity(AbstractStaticAdversity):
             return max(max_right_offset, min(self._work_zone_offset, max_left_offset))
         
         elif zone_type == 'taper_out':
-            # Gradual offset decrease from work zone to right edge
+            # Gradual offset decrease from work zone to edge of current lane plus other lanes
             zone_length = zone_end - zone_start
+            lane_index = int(self._lane_id.split('_')[-1])
+            is_left_lane = lane_index > 1
+
+            # Get boundary lane for reference
+            boundary_lane = self.get_boundary_lane()
+            other_lanes_width = self._calculate_other_lanes_width(boundary_lane)
+
             if zone_length <= 0:
                 return self._work_zone_offset
             progress = (position - zone_start) / zone_length
-            
+
+            # Calculate edge offset: current lane's half-width + width of other lanes in construction zone
             if is_left_lane:
-                edge_offset = self._lane_width / 2 - 0.3  # Positive for left side
+                edge_offset = self._lane_width / 2 - 0.3 + other_lanes_width  # Positive for left side
             else:
-                edge_offset = -(self._lane_width / 2 - 0.3)  # Negative for right side
+                edge_offset = -(self._lane_width / 2 - 0.3 + other_lanes_width)  # Negative for right side
             
             if self._taper_type == 'linear':
                 offset = self._work_zone_offset + progress * (edge_offset - self._work_zone_offset)
@@ -320,10 +423,11 @@ class ConstructionAdversity(AbstractStaticAdversity):
                 offset = self._work_zone_offset + s_curve * (edge_offset - self._work_zone_offset)
             else:
                 offset = self._work_zone_offset + progress * (edge_offset - self._work_zone_offset)
-            
-            # Ensure offset stays within lane boundaries
-            max_left_offset = self._lane_width / 2 - 0.3  # Leave 0.3m margin
-            max_right_offset = -(self._lane_width / 2 - 0.3)
+
+            # Ensure offset stays within construction zone boundaries
+            total_construction_width = self._lane_width + other_lanes_width
+            max_left_offset = total_construction_width / 2 - 0.3  # Leave 0.3m margin
+            max_right_offset = -(total_construction_width / 2 - 0.3)
             return max(max_right_offset, min(offset, max_left_offset))
         
         return 0.0
@@ -519,12 +623,12 @@ class ConstructionAdversity(AbstractStaticAdversity):
                     current_pos += spacing
 
             else:
-                # For non-work zones, place on first lane (for simplicity)
-                if not self._lane_id:
+                # For non-work zones, also place on boundary lane for consistency
+                if not boundary_lane:
                     continue
 
-                edge_id = traci.lane.getEdgeID(self._lane_id)
-                route_id = f"r_construction_{self._lane_id}"
+                edge_id = traci.lane.getEdgeID(boundary_lane)
+                route_id = f"r_construction_{boundary_lane}"
                 if route_id not in traci.route.getIDList():
                     traci.route.add(route_id, [edge_id])
                 self._route_id = route_id
@@ -560,8 +664,8 @@ class ConstructionAdversity(AbstractStaticAdversity):
                         current_pos, zone_type, zone_start, zone_end, obj_type_name
                     )
 
-                    # Place the object
-                    self._place_object(current_pos, lateral_offset, type_id, zone_type)
+                    # Place the object on boundary lane
+                    self._place_object(current_pos, lateral_offset, type_id, zone_type, boundary_lane)
 
                     current_pos += spacing
                     object_index += 1
