@@ -24,7 +24,7 @@ AV_ID = "AV"
 AV_ROUTE_ID = "av_route"
 
 class NADEWithAV(NADE):
-    def __init__(self, av_cfg, *args, **kwargs):
+    def __init__(self, av_cfg, av_debug_control=False, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.av_cfg = av_cfg
         self.cache_radius = 100 if "cache_radius" not in av_cfg else av_cfg.cache_radius
@@ -37,6 +37,10 @@ class NADEWithAV(NADE):
         self.av_warmup_config = None
         self.av_warmup_start_time = None
         self.av_warmup_completed = False
+        # Set AV control mode: "sumo" for SUMO-managed warmup, "external" for immediate external control
+        self.av_debug_control = av_debug_control
+        # If "sumo", AV is initially SUMO-controlled and switched to external after warmup.
+        # If "external", AV is controlled externally from the start, with speed and lane change modes set for external control.
         
         # Parse warmup configuration
         if hasattr(av_cfg, 'warmup_control'):
@@ -105,8 +109,10 @@ class NADEWithAV(NADE):
             self.cache_radius,
             [traci.constants.VAR_DISTANCE],
         )
-        traci.vehicle.setSpeedMode(AV_ID, 0)
-        traci.vehicle.setLaneChangeMode(AV_ID, 0)
+        if not self.av_debug_control:
+            # Set SpeedMode and LaneChangeMode to 0 for external control
+            traci.vehicle.setSpeedMode(AV_ID, 0)
+            traci.vehicle.setLaneChangeMode(AV_ID, 0)
         traci.vehicle.setSpeed(AV_ID, speed)
         
         # Set control mode to external
@@ -469,8 +475,9 @@ class NADEWithAV(NADE):
         current_edge = traci.vehicle.getRoadID(AV_ID)
         
         # Disable SUMO automatic control
-        traci.vehicle.setSpeedMode(AV_ID, 0)
-        traci.vehicle.setLaneChangeMode(AV_ID, 0)
+        if not self.av_debug_control:
+            traci.vehicle.setSpeedMode(AV_ID, 0)
+            traci.vehicle.setLaneChangeMode(AV_ID, 0)
         
         # Maintain current speed to avoid sudden changes
         traci.vehicle.setSpeed(AV_ID, current_speed)
@@ -488,33 +495,6 @@ class NADEWithAV(NADE):
     def preparation(self):
         """Prepare for the NADE step."""
         super().preparation()
-        # if not self.insert_bv and traci.vehicle.getRoadID("AV") == "152261_Ramp" and traci.vehicle.getLanePosition("AV") > 220:
-        #     traci.vehicle.add(
-        #         "BV",
-        #         "test_merge",
-        #         typeID="veh_passenger",
-        #         departSpeed=0,
-        #         departLane="3",
-        #         departPos="230"
-        #     )
-        #     self.insert_bv = True
-        #     traci.vehicle.setLaneChangeMode("BV", 0)
-        #     # traci.vehicle.setPreviousSpeed("BV", traci.vehicle.getSpeed("AV")-3)
-        #     traci.vehicle.setSpeedMode("BV", 0)
-
-        # if not self.insert_bv and traci.vehicle.getRoadID("AV") == "152261_Ramp" and traci.vehicle.getLanePosition("AV") > 230:
-        #     traci.vehicle.add(
-        #         "BV",
-        #         "test_merge2",
-        #         typeID="veh_passenger",
-        #         departSpeed=10,
-        #         departLane="2",
-        #         arrivalLane="1",
-        #         departPos="190",
-        #     )
-        #     self.insert_bv = True
-        #     traci.vehicle.setLaneChangeMode("BV", 0)
-        #     traci.vehicle.setSpeedMode("BV", 0)
 
     @profile
     def NDE_decision(self, ctx):
