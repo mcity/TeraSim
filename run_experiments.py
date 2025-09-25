@@ -103,7 +103,7 @@ if __name__ == "__main__":
     
     # Example 2: Run simulation with visualization
     result = run_simulation(
-        config_file="/home/sdai/harry/TeraSim/texas_example/test_configs/stalled_vehicle_merge_lane.yaml",
+        config_file="/home/sdai/harry/TeraSim/texas_example/test_configs/construction_zone_multiple_right.yaml",
         enable_viz=True,  # Enable visualization
         viz_port=8050,    # Visualization port
         viz_update_freq=2 # Update every 2 simulation steps (reduce load)

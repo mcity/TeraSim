@@ -160,41 +160,7 @@ class ConstructionAdversity(AbstractStaticAdversity):
             # Left closure (closing left lanes): return rightmost closed lane (lowest index)
             # Example: closing lanes 2,3 -> return lane 2 (rightmost of the closed lanes)
             return sorted_lanes[0]
-
-    def get_widths(self, lane_ids=None):
-        """Get lane widths for specified lanes or all configured lanes.
-
-        Args:
-            lane_ids (list, optional): List of lane IDs to get widths for.
-                                     If None, returns widths for all configured lanes.
-
-        Returns:
-            dict: Dictionary mapping lane_id to width, or empty dict if lanes not available.
-        """
-        target_lanes = lane_ids if lane_ids is not None else self._lane_ids
-
-        if not target_lanes:
-            return {}
-
-        widths = {}
-        for lane_id in target_lanes:
-            if lane_id in self._lane_info:
-                widths[lane_id] = self._lane_info[lane_id]['width']
-            else:
-                # Try to get width from SUMO if not cached
-                try:
-                    width = traci.lane.getWidth(lane_id)
-                    widths[lane_id] = width
-                    # Cache the information
-                    if lane_id not in self._lane_info:
-                        self._lane_info[lane_id] = {}
-                    self._lane_info[lane_id]['width'] = width
-                except:
-                    logger.warning(f"Failed to get width for lane {lane_id}")
-                    continue
-
-        return widths
-
+    
     def _calculate_other_lanes_width(self, exclude_lane_id):
         """Calculate the total width of all lanes in the construction zone except the specified lane.
 
@@ -341,7 +307,8 @@ class ConstructionAdversity(AbstractStaticAdversity):
             float: Lateral offset in meters
         """
         lane_index = int(self._lane_id.split('_')[-1])
-        is_left_lane = lane_index > 1
+        # Use closure direction to determine placement side
+        is_left_closure = self._closure_direction == "left"
         # Special handling for warning signs - place on shoulder
         if object_type == 'sign' and zone_type in ['warning', 'termination']:
             return self._warning_sign_offset  # Negative value places on right shoulder
@@ -353,23 +320,23 @@ class ConstructionAdversity(AbstractStaticAdversity):
         elif zone_type == 'taper_in':
             # Gradual offset increase from edge of current lane plus other lanes to work zone
             zone_length = zone_end - zone_start
-            lane_index = int(self._lane_id.split('_')[-1])
-            is_left_lane = lane_index > 1
+            # Use closure direction to determine placement side
+            is_left_closure = self._closure_direction == "left"
 
             # Get boundary lane for reference
             boundary_lane = self.get_boundary_lane()
             other_lanes_width = self._calculate_other_lanes_width(boundary_lane)
 
             if zone_length <= 0:
-                # Start at appropriate edge based on lane type and other lanes
-                if is_left_lane:
+                # Start at appropriate edge based on closure direction and other lanes
+                if is_left_closure:
                     return self._lane_width / 2 - 0.3 + other_lanes_width  # Current lane edge + other lanes
                 else:
                     return -(self._lane_width / 2 - 0.3 + other_lanes_width)  # Current lane edge + other lanes
             progress = (position - zone_start) / zone_length
 
             # Calculate edge offset: current lane's half-width + width of other lanes in construction zone
-            if is_left_lane:
+            if is_left_closure:
                 edge_offset = self._lane_width / 2 - 0.3 + other_lanes_width  # Positive for left side
             else:
                 edge_offset = -(self._lane_width / 2 - 0.3 + other_lanes_width)  # Negative for right side
@@ -383,23 +350,18 @@ class ConstructionAdversity(AbstractStaticAdversity):
             else:
                 offset = edge_offset + progress * (self._work_zone_offset - edge_offset)
 
-            # Ensure offset stays within construction zone boundaries
-            total_construction_width = self._lane_width + other_lanes_width
-            max_left_offset = total_construction_width / 2 - 0.3  # Leave 0.3m margin
-            max_right_offset = -(total_construction_width / 2 - 0.3)
-            return max(max_right_offset, min(offset, max_left_offset))
+
+            return offset
         
         elif zone_type in ['buffer', 'work']:
-            # Full offset in work zone, but ensure within lane boundaries
-            max_left_offset = self._lane_width / 2 - 0.3  # Leave 0.3m margin on left
-            max_right_offset = -(self._lane_width / 2 - 0.3)  # Leave 0.3m margin on right
-            return max(max_right_offset, min(self._work_zone_offset, max_left_offset))
+            # Full offset in work zone (already validated during initialization)
+            return self._work_zone_offset
         
         elif zone_type == 'taper_out':
             # Gradual offset decrease from work zone to edge of current lane plus other lanes
             zone_length = zone_end - zone_start
-            lane_index = int(self._lane_id.split('_')[-1])
-            is_left_lane = lane_index > 1
+            # Use closure direction to determine placement side
+            is_left_closure = self._closure_direction == "left"
 
             # Get boundary lane for reference
             boundary_lane = self.get_boundary_lane()
@@ -410,7 +372,7 @@ class ConstructionAdversity(AbstractStaticAdversity):
             progress = (position - zone_start) / zone_length
 
             # Calculate edge offset: current lane's half-width + width of other lanes in construction zone
-            if is_left_lane:
+            if is_left_closure:
                 edge_offset = self._lane_width / 2 - 0.3 + other_lanes_width  # Positive for left side
             else:
                 edge_offset = -(self._lane_width / 2 - 0.3 + other_lanes_width)  # Negative for right side
@@ -424,11 +386,7 @@ class ConstructionAdversity(AbstractStaticAdversity):
             else:
                 offset = self._work_zone_offset + progress * (edge_offset - self._work_zone_offset)
 
-            # Ensure offset stays within construction zone boundaries
-            total_construction_width = self._lane_width + other_lanes_width
-            max_left_offset = total_construction_width / 2 - 0.3  # Leave 0.3m margin
-            max_right_offset = -(total_construction_width / 2 - 0.3)
-            return max(max_right_offset, min(offset, max_left_offset))
+            return offset
         
         return 0.0
     
@@ -445,7 +403,8 @@ class ConstructionAdversity(AbstractStaticAdversity):
         edge_id = traci.lane.getEdgeID(self._lane_id)
         lane_index = int(self._lane_id.split('_')[-1])  # Extract lane index from lane ID
         x_center, y_center = traci.simulation.convert2D(edge_id, lane_position, lane_index)
-        is_left_lane = lane_index > 1
+        # Use closure direction to determine placement side
+        is_left_closure = self._closure_direction == "left"
         
         # Get lane angle at this position
         lane_angle = traci.lane.getAngle(self._lane_id, lane_position)
@@ -460,12 +419,12 @@ class ConstructionAdversity(AbstractStaticAdversity):
         
         # Calculate shoulder coordinates
         # Note: SUMO uses a different coordinate system where y increases northward
-        if is_left_lane:
-            # For left lane, place sign on left shoulder (subtract offset)
+        if is_left_closure:
+            # For left closure, place sign on left shoulder (subtract offset)
             x_shoulder = x_center - offset_distance * math.cos(perpendicular_rad)
             y_shoulder = y_center - offset_distance * math.sin(perpendicular_rad)
         else:
-            # For right lane, place sign on right shoulder (add offset)
+            # For right closure, place sign on right shoulder (add offset)
             x_shoulder = x_center + offset_distance * math.cos(perpendicular_rad)
             y_shoulder = y_center + offset_distance * math.sin(perpendicular_rad)
         
@@ -677,28 +636,42 @@ class ConstructionAdversity(AbstractStaticAdversity):
         """
         assert self.is_effective(), "Adversarial event is not effective."
 
+        # Validate and correct work zone offset at initialization
+        max_left_offset = self._lane_width / 2 - 0.3  # Leave 0.3m margin on left
+        max_right_offset = -(self._lane_width / 2 - 0.3)  # Leave 0.3m margin on right
+
+        # Clamp work zone offset to valid range
+        if self._work_zone_offset > max_left_offset:
+            logger.warning(f"Work zone offset {self._work_zone_offset} exceeds max left offset {max_left_offset}, clamping to max")
+            self._work_zone_offset = max_left_offset
+        elif self._work_zone_offset < max_right_offset:
+            logger.warning(f"Work zone offset {self._work_zone_offset} exceeds max right offset {max_right_offset}, clamping to max")
+            self._work_zone_offset = max_right_offset
+
         # Check for and remove vehicles in the construction zone (except stalled vehicle)
         if self._start_position is not None and self._end_position is not None:
-            # Get all vehicles on the lane
-            vehicles_on_lane = traci.lane.getLastStepVehicleIDs(self._lane_id)
+            # Check all lanes in the construction zone
+            for lane_id in self._lane_ids:
+                # Get all vehicles on each construction lane
+                vehicles_on_lane = traci.lane.getLastStepVehicleIDs(lane_id)
 
-            for vehicle_id in vehicles_on_lane:
-                # Skip if this is a stalled vehicle (check if it's marked as stalled)
-                # Stalled vehicles typically have "stalled" or "STALLED" in their ID
-                if "stalled" in vehicle_id.lower() or "STALLED" in vehicle_id:
-                    logger.debug(f"Skipping stalled vehicle {vehicle_id} in construction zone")
-                    continue
+                for vehicle_id in vehicles_on_lane:
+                    # Skip if this is a stalled vehicle (check if it's marked as stalled)
+                    # Stalled vehicles typically have "stalled" or "STALLED" in their ID
+                    if "stalled" in vehicle_id.lower() or "STALLED" in vehicle_id:
+                        logger.debug(f"Skipping stalled vehicle {vehicle_id} in construction zone on lane {lane_id}")
+                        continue
 
-                # Get vehicle position on the lane
-                try:
-                    vehicle_pos = traci.vehicle.getLanePosition(vehicle_id)
+                    # Get vehicle position on the lane
+                    try:
+                        vehicle_pos = traci.vehicle.getLanePosition(vehicle_id)
 
-                    # Check if vehicle is inside the construction zone
-                    if self._start_position <= vehicle_pos <= self._end_position:
-                        logger.info(f"Removing vehicle {vehicle_id} from construction zone at position {vehicle_pos}")
-                        traci.vehicle.remove(vehicle_id)
-                except Exception as e:
-                    logger.debug(f"Could not check/remove vehicle {vehicle_id}: {e}")
+                        # Check if vehicle is inside the construction zone
+                        if self._start_position <= vehicle_pos <= self._end_position:
+                            logger.info(f"Removing vehicle {vehicle_id} from construction zone at position {vehicle_pos} on lane {lane_id}")
+                            traci.vehicle.remove(vehicle_id)
+                    except Exception as e:
+                        logger.debug(f"Could not check/remove vehicle {vehicle_id} on lane {lane_id}: {e}")
 
         if self._construction_mode == "full_lane":
             # Original behavior: block entire lane
