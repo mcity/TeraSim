@@ -174,11 +174,11 @@ path_resolution: "config_relative"
 
 # New section for file paths
 input:
-  sumo_net_file: "/home/jiawei/data/global_corner_case/US_AnnArbor_RoundaboutFailToYield/map.net.xml"
-  sumo_config_file: "/home/jiawei/data/global_corner_case/US_AnnArbor_RoundaboutFailToYield/simulation.sumocfg"
+  sumo_net_file: "path_to_net"
+  sumo_config_file: "path_to_config"
 
 output:
-  dir: "/home/jiawei/data/global_corner_case/US_AnnArbor_RoundaboutFailToYield/simulation_output"  # Output directory (use "output" for non-AV simulations)
+  dir: "path_to_output"  # Output directory (use "output" for non-AV simulations)
   name: "test"  # Experiment name
   nth: "0_2"  # Experiment number
   aggregated_dir: "aggregated"  # Directory for aggregated logs

@@ -1,6 +1,6 @@
-fcd: "/home/jiawei/data/terasim/test_cosmos/global_case/France_Paris_PedestrianCrossing/fcd_all.xml"  
-net: "/home/jiawei/data/terasim/test_cosmos/global_case/France_Paris_PedestrianCrossing/vis_map.net.xml"        
-output_dir: "/home/jiawei/data/terasim/test_cosmos/global_case/France_Paris_PedestrianCrossing"
+fcd: "path_to_fcd"  
+net: "path_to_net"        
+output_dir: "path_to_output"
 video_name: "bev_trajectory"  
   
 

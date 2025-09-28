@@ -255,13 +255,13 @@ def add_camera_frustums(server, camera_poses, current_frame_idx, all_cameras):
 
 
 @click.command()
-@click.option('--input_root', '-i', type=str, default='/home/jiawei/data/terasim/test_output/Ann_Arbor_Michigan_USA_roundabout_a2e17991/raw_data/roundabout_fail_to_yield_14/wds',
-               help='The root directory of the webdataset')
+@click.option('--input_root', '-i', type=str, required=True,
+               help='The root directory of the webdataset (wds) folder')
 @click.option('--novel_pose_folder', '-np', type=str, default='novel_pose',
                help='The folder name of the novel pose data. If provided, we will render the novel ego trajectory')
 @click.option('--dataset', '-d', type=str, default='rds_hq_mv_terasim',
                help='The dataset name, "rds_hq" or "waymo"')
-@click.option('--clip_id', '-c', type=str, help='clip id to visualize', default='roundabout_fail_to_yield_14')
+@click.option('--clip_id', '-c', type=str, help='clip id to visualize', required=True)
 def main(input_root, novel_pose_folder, dataset, clip_id):
     server = viser.ViserServer()
 

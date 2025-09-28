@@ -79,7 +79,7 @@ if __name__ == "__main__":
     # yaml_files = sorted(config_dir.glob("*.yaml"), key=lambda x: int(''.join(filter(str.isdigit, x.stem)) or '0'))
     # yaml_files = ["examples/scenarios/cutin.yaml"]
     # yaml_files = [Path("sim_configs/Germany_Rossfeld_AggressiveMerge.yaml")]
-    yaml_files = [Path("sim_configs/US_AnnArbor_RoundaboutFailToYield.yaml")]
+    yaml_files = [Path("configs/simulation/test.yaml")]
     # Randomly shuffle yaml files
     random.shuffle(yaml_files)
 

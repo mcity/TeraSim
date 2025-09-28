@@ -1,9 +1,0 @@
-path_to_output: "/home/jiawei/data/terasim/terasim-world-github/global_case/US_Arizona_HighwayCutin"
-path_to_fcd: "/home/jiawei/data/terasim/test_cosmos/global_case/US_Arizona_HighwayCutin/fcd_all.xml"
-path_to_map: "/home/jiawei/data/terasim/test_cosmos/global_case/US_Arizona_HighwayCutin/map.net.xml"
-camera_setting_name: "default" # "waymo" or "default"
-vehicle_id: "vehicle_flow.217"
-time_start: 460.0
-time_end: 464.0
-agent_clip_distance: 80.0
-map_clip_distance: 200.0
