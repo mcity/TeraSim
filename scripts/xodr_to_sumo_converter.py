@@ -127,6 +127,14 @@ class OpenDriveToSumoConverter:
         self.odr_map = None  # type: Optional[PyOpenDriveMap]
         self.py_roads = {}  # type: Dict[str, PyRoad]
         self.py_junctions = {}  # type: Dict[str, PyJunction]
+        
+        # Geographic projection
+        self.geo_reference = None  # type: Optional[str]
+        
+        # Coordinate offset attributes for relative coordinate system
+        self.net_offset = None  # type: Optional[Tuple[float, float]]
+        self.conv_boundary = None  # type: Optional[Tuple[float, float, float, float]]
+        self.orig_boundary = None  # type: Optional[Tuple[float, float, float, float]]
     
     def _decode_if_bytes(self, value):
         """ decode bytes to str if it is bytes, otherwise return the value """
@@ -146,234 +154,52 @@ class OpenDriveToSumoConverter:
         Returns:
             Whether conversion was successful
         """
-        try:
-            # 1. Parse OpenDRIVE file
-            logger.info(f"Parsing OpenDRIVE file: {xodr_file}")
-            if self.use_pyopendrive:
-                logger.info("Using pyOpenDRIVE for enhanced geometry processing")
-                if not self._parse_with_pyopendrive(xodr_file):
-                    return False
-            else:
-                raise ValueError("pyOpenDRIVE is not available. Please install pyOpenDRIVE.")
-                # logger.info("Using XML parsing (fallback mode)")
-                # if not self._parse_opendrive(xodr_file):
-                #     return False
-            
-            # 2. Convert to Plain XML elements
-            logger.info("Converting to Plain XML format...")
-            self._create_nodes()
-            self._create_edges()
-            self._create_connections()
-            
-            # 3. Write Plain XML files
-            logger.info(f"Writing Plain XML files with prefix: {output_prefix}")
-            self._write_plain_xml(output_prefix)
-            
-            # 4. Use netconvert to generate final network
-            if use_netconvert:
-                logger.info("Running netconvert to generate final network...")
-                return self._run_netconvert(output_prefix)
-            
-            return True
-            
-        except Exception as e:
-            import traceback
-            logger.error(f"Conversion failed: {e}")
-            traceback.print_exc()
-            return False
-    
-    def _parse_opendrive(self, xodr_file: str) -> bool:
-        """Parse OpenDRIVE file"""
-        try:
-            tree = ET.parse(xodr_file)
-            root = tree.getroot()
-            
-            # Parse all roads
-            roads = root.findall('.//road')
-            logger.info(f"Found {len(roads)} roads")
-            
-            for road_elem in roads:
-                road = self._parse_road(road_elem)
-                self.road_map[road.id] = road
-                
-                # Record junction internal roads
-                if road.junction != '-1':
-                    if road.junction not in self.junction_roads:
-                        self.junction_roads[road.junction] = []
-                    self.junction_roads[road.junction].append(road.id)
-            
-            # Parse all junctions
-            junctions = root.findall('.//junction')
-            logger.info(f"Found {len(junctions)} junctions")
-            
-            for junction_elem in junctions:
-                junction_id = junction_elem.get('id')
-                junction_data = {
-                    'id': junction_id,
-                    'connections': []
-                }
-                self.junction_connections[junction_id] = []
-                
-                # Parse connections within junction
-                for conn_elem in junction_elem.findall('.//connection'):
-                    connection = {
-                        'id': conn_elem.get('id'),
-                        'incomingRoad': conn_elem.get('incomingRoad'),
-                        'connectingRoad': conn_elem.get('connectingRoad'),
-                        'contactPoint': conn_elem.get('contactPoint'),
-                        'laneLinks': []
-                    }
-                    
-                    # Parse lane links
-                    for lane_link in conn_elem.findall('.//laneLink'):
-                        connection['laneLinks'].append({
-                            'from': int(lane_link.get('from')),
-                            'to': int(lane_link.get('to'))
-                        })
-                    
-                    self.junction_connections[junction_id].append(connection)
-                    junction_data['connections'].append(connection)
-                
-                self.junctions.append(junction_data)
-            
-            return True
-            
-        except Exception as e:
-            logger.error(f"Failed to parse OpenDRIVE: {e}")
-            return False
-    
-    def _parse_road(self, road_elem: ET.Element) -> OpenDriveRoad:
-        """Parse single road"""
-        road = OpenDriveRoad(
-            id=road_elem.get('id'),
-            name=road_elem.get('name', ''),
-            junction=road_elem.get('junction', '-1'),
-            length=float(road_elem.get('length', 0))
-        )
+        # 1. Parse OpenDRIVE file
+        logger.info(f"Parsing OpenDRIVE file: {xodr_file}")
+        if self.use_pyopendrive:
+            logger.info("Using pyOpenDRIVE for enhanced geometry processing")
+            if not self._parse_with_pyopendrive(xodr_file):
+                return False
+        else:
+            raise ValueError("Unsupported parsing method")
+
+        # 2. Convert to Plain XML elements
+        logger.info("Converting to Plain XML format...")
+        self._create_nodes()
+        self._create_edges()
+        self._create_connections()
         
-        # Parse geometry information
-        plan_view = road_elem.find('.//planView')
-        if plan_view is not None:
-            for geom_elem in plan_view.findall('.//geometry'):
-                geom = {
-                    's': float(geom_elem.get('s', 0)),
-                    'x': float(geom_elem.get('x', 0)),
-                    'y': float(geom_elem.get('y', 0)),
-                    'hdg': float(geom_elem.get('hdg', 0)),
-                    'length': float(geom_elem.get('length', 0))
-                }
-                
-                # Determine geometry type
-                if geom_elem.find('.//line') is not None:
-                    geom['type'] = 'line'
-                elif geom_elem.find('.//arc') is not None:
-                    geom['type'] = 'arc'
-                    arc = geom_elem.find('.//arc')
-                    geom['curvature'] = float(arc.get('curvature', 0))
-                else:
-                    geom['type'] = 'line'
-                
-                road.geometry.append(geom)
+        # 3. Calculate and apply coordinate offset if we have geo reference
+        if self.geo_reference:
+            logger.info("Applying coordinate transformation for relative coordinate system")
+            self._calculate_coordinate_bounds()
+            self._apply_coordinate_offset()
         
-        # Parse road type and speed limit
-        type_elem = road_elem.find('.//type')
-        if type_elem is not None:
-            road.road_type = type_elem.get('type', 'town')
-            
-            # Parse speed limit if available
-            speed_elem = type_elem.find('.//speed')
-            if speed_elem is not None:
-                max_speed = speed_elem.get('max')
-                if max_speed:
-                    speed_unit = speed_elem.get('unit', 'ms')
-                    if speed_unit == 'ms' or speed_unit == 'm/s':
-                        road.speed_limit = float(max_speed)
-                    elif speed_unit == 'kmh' or speed_unit == 'km/h':
-                        road.speed_limit = float(max_speed) / 3.6  # Convert km/h to m/s
-                    elif speed_unit == 'mph':
-                        road.speed_limit = float(max_speed) * 0.44704  # Convert mph to m/s
+        # 4. Write Plain XML files
+        logger.info(f"Writing Plain XML files with prefix: {output_prefix}")
+        self._write_plain_xml(output_prefix)
         
-        # Parse lanes
-        lanes_elem = road_elem.find('.//lanes')
-        if lanes_elem is not None:
-            lane_section = lanes_elem.find('.//laneSection')
-            if lane_section is not None:
-                # Left lanes
-                left = lane_section.find('.//left')
-                if left is not None:
-                    for lane in left.findall('.//lane'):
-                        lane_type = lane.get('type')
-                        # Include shoulder lanes as well as driving lanes
-                        if lane_type in ['driving', 'entry', 'exit', 'onRamp', 'offRamp', 'shoulder']:
-                            lane_data = {
-                                'id': int(lane.get('id')),
-                                'type': lane_type,
-                                'width': self._get_lane_width(lane)
-                            }
-                            
-                            # 🆕 parse lane link information
-                            lane_link = lane.find('.//link')
-                            if lane_link is not None:
-                                predecessor = lane_link.find('.//predecessor')
-                                successor = lane_link.find('.//successor')
-                                
-                                if predecessor is not None:
-                                    lane_data['predecessor'] = {'id': int(predecessor.get('id'))}
-                                if successor is not None:
-                                    lane_data['successor'] = {'id': int(successor.get('id'))}
-                            
-                            road.lanes_left.append(lane_data)
-                
-                # Right lanes
-                right = lane_section.find('.//right')
-                if right is not None:
-                    for lane in right.findall('.//lane'):
-                        lane_type = lane.get('type')
-                        # Include shoulder lanes as well as driving lanes
-                        if lane_type in ['driving', 'entry', 'exit', 'onRamp', 'offRamp', 'shoulder']:
-                            lane_data = {
-                                'id': int(lane.get('id')),
-                                'type': lane_type,
-                                'width': self._get_lane_width(lane)
-                            }
-                            
-                            # 🆕 parse lane link information
-                            lane_link = lane.find('.//link')
-                            if lane_link is not None:
-                                predecessor = lane_link.find('.//predecessor')
-                                successor = lane_link.find('.//successor')
-                                
-                                if predecessor is not None:
-                                    lane_data['predecessor'] = {'id': int(predecessor.get('id'))}
-                                if successor is not None:
-                                    lane_data['successor'] = {'id': int(successor.get('id'))}
-                            
-                            road.lanes_right.append(lane_data)
+        # 4. Use netconvert to generate final network
+        if use_netconvert:
+            logger.info("Running netconvert to generate final network...")
+            return self._run_netconvert(output_prefix)
         
-        # Parse connection relationships
-        link = road_elem.find('.//link')
-        if link is not None:
-            pred = link.find('.//predecessor')
-            if pred is not None:
-                road.predecessor = {
-                    'elementId': pred.get('elementId'),
-                    'elementType': pred.get('elementType'),
-                    'contactPoint': pred.get('contactPoint')
-                }
-            
-            succ = link.find('.//successor')
-            if succ is not None:
-                road.successor = {
-                    'elementId': succ.get('elementId'),
-                    'elementType': succ.get('elementType'),
-                    'contactPoint': succ.get('contactPoint')
-                }
-        
-        return road
+        return True
+
     
     def _parse_with_pyopendrive(self, xodr_file: str) -> bool:
         """Parse OpenDRIVE file using pyOpenDRIVE library for enhanced geometry processing"""
         try:
+            # First parse geoReference from XML (pyOpenDRIVE may not expose this)
+            tree = ET.parse(xodr_file)
+            root = tree.getroot()
+            geo_ref = root.find('.//geoReference')
+            if geo_ref is not None:
+                self.geo_reference = geo_ref.text.strip() if geo_ref.text else None
+                logger.info(f"Found geoReference: {self.geo_reference}")
+            else:
+                logger.warning("No geoReference found in OpenDRIVE file")
+            
             # Load the OpenDRIVE map with pyOpenDRIVE
             self.odr_map = PyOpenDriveMap(xodr_file.encode())
             
@@ -506,8 +332,6 @@ class OpenDriveToSumoConverter:
             
         except Exception as e:
             logger.error(f"Failed to parse OpenDRIVE with pyOpenDRIVE: {e}")
-            logger.info("Falling back to XML parsing...")
-            return self._parse_opendrive(xodr_file)
     
     def _extract_geometry_from_pyopendrive(self, py_road) -> List[Dict]:
         """Extract geometry data from pyOpenDRIVE road object"""
@@ -555,6 +379,53 @@ class OpenDriveToSumoConverter:
             # If all width elements have a=0, use default
             return 3.5
         return 3.5
+    
+    def _is_highway_merge(self, junction_id: str, internal_road_ids: List[str]) -> bool:
+        """
+        Check if a junction represents a highway merge scenario
+        
+        Highway merge criteria:
+        1. Exactly 2 incoming roads (main line + ramp)
+        2. Exactly 1 outgoing road (merged highway)
+        3. Connecting road length > 150m (sufficient merge distance)
+        
+        Returns:
+            True if this is a highway merge, False otherwise
+        """
+        incoming_roads = set()
+        outgoing_roads = set()
+        max_connecting_length = 0
+        
+        for road_id in internal_road_ids:
+            if road_id not in self.road_map:
+                continue
+                
+            road = self.road_map[road_id]
+            
+            # Track maximum connecting road length
+            max_connecting_length = max(max_connecting_length, road.length)
+            
+            # Collect incoming roads (predecessors of connecting roads)
+            if road.predecessor and road.predecessor['elementType'] == 'road':
+                incoming_roads.add(road.predecessor['elementId'])
+            
+            # Collect outgoing roads (successors of connecting roads)
+            if road.successor and road.successor['elementType'] == 'road':
+                outgoing_roads.add(road.successor['elementId'])
+        
+        # Check highway merge criteria
+        is_merge = (
+            len(incoming_roads) == 2 and 
+            len(outgoing_roads) == 1 and 
+            max_connecting_length > 150
+        )
+        
+        if is_merge:
+            logger.info(f"Junction {junction_id} identified as highway merge: "
+                       f"incoming={incoming_roads}, outgoing={outgoing_roads}, "
+                       f"max_length={max_connecting_length:.1f}m")
+        
+        return is_merge
     
     def _determine_junction_type(self, junction_id: str, internal_road_ids: List[str]) -> str:
         """
@@ -646,6 +517,13 @@ class OpenDriveToSumoConverter:
         for junction_id, internal_road_ids in self.junction_roads.items():
             if junction_id in referenced_junctions:
                 continue  # Already handled by road connections
+            
+            # Check if this is a highway merge
+            if self._is_highway_merge(junction_id, internal_road_ids):
+                # Handle highway merge specially - will create edges instead of junction
+                logger.info(f"Skipping junction node for highway merge {junction_id}")
+                self._handle_highway_merge(junction_id, internal_road_ids)
+                continue
                 
             # Calculate junction center from all internal roads
             center_x, center_y = self._calculate_junction_center(internal_road_ids)
@@ -669,6 +547,12 @@ class OpenDriveToSumoConverter:
         for junction_id in referenced_junctions:
             if junction_id in self.node_map:
                 continue  # Already created
+            
+            # Check if this is a highway merge
+            if junction_id in self.junction_roads and self._is_highway_merge(junction_id, self.junction_roads[junction_id]):
+                logger.info(f"Skipping junction node for highway merge {junction_id} (referenced)")
+                self._handle_highway_merge(junction_id, self.junction_roads[junction_id])
+                continue
                 
             # Calculate junction center from connecting road endpoints
             if junction_id in junction_road_endpoints:
@@ -814,6 +698,161 @@ class OpenDriveToSumoConverter:
         
         logger.warning(f"No geometry found for junction internal roads, using origin")
         return 0.0, 0.0
+    
+    def _handle_highway_merge(self, junction_id: str, internal_road_ids: List[str]):
+        """
+        Handle highway merge by creating edges instead of junction
+        Creates: Junction A (merge start) -> Merge Edge (4 lanes) -> Junction B (merge end)
+        """
+        logger.info(f"Handling highway merge for junction {junction_id}")
+        
+        # Analyze the merge configuration
+        merge_info = self._analyze_merge_roads(junction_id, internal_road_ids)
+        if not merge_info:
+            logger.error(f"Failed to analyze merge roads for junction {junction_id}")
+            return
+        
+        # Create Junction A (merge start)
+        junction_a = self._create_merge_start_junction(junction_id, merge_info)
+        if junction_a:
+            self.nodes.append(junction_a)
+            self.node_map[f"merge_start_{junction_id}"] = junction_a.id
+        
+        # Create Junction B (merge end)
+        junction_b = self._create_merge_end_junction(junction_id, merge_info)
+        if junction_b:
+            self.nodes.append(junction_b)
+            self.node_map[f"merge_end_{junction_id}"] = junction_b.id
+        
+        # Mark junction as handled - but we need to be smarter about the mapping
+        # Incoming roads (main and ramp) should map to merge start
+        # Outgoing road should map to merge end
+        
+        # For roads ending at this junction (incoming), use merge start
+        for road_id, road in self.road_map.items():
+            if road.successor and road.successor.get('elementId') == junction_id:
+                # This road ends at the junction - it's an incoming road
+                # It should connect to the merge start node
+                pass  # Will be handled by the updated _get_road_to_node logic
+            if road.predecessor and road.predecessor.get('elementId') == junction_id:
+                # This road starts from the junction - it's an outgoing road
+                # It should connect to the merge end node
+                pass  # Will be handled by the updated _get_road_from_node logic
+        
+        # Store a special marker for this junction
+        self.node_map[junction_id] = f"merge_zone_{junction_id}"
+        
+        # Also store specific mappings for incoming and outgoing
+        self.highway_merges = getattr(self, 'highway_merges', {})
+        self.highway_merges[junction_id] = {
+            'start_node': junction_a.id if junction_a else None,
+            'end_node': junction_b.id if junction_b else None,
+            'merge_info': merge_info
+        }
+        
+        logger.info(f"Created merge zone for junction {junction_id}: "
+                   f"{junction_a.id if junction_a else 'None'} -> merge_zone_{junction_id} -> "
+                   f"{junction_b.id if junction_b else 'None'}")
+    
+    def _analyze_merge_roads(self, junction_id: str, internal_road_ids: List[str]) -> Optional[dict]:
+        """
+        Analyze the roads involved in the highway merge
+        Returns dict with main_road, ramp_road, outgoing_road, and connecting_roads info
+        """
+        incoming_roads = {}
+        outgoing_road = None
+        connecting_roads = {}
+        
+        for road_id in internal_road_ids:
+            if road_id not in self.road_map:
+                continue
+            
+            road = self.road_map[road_id]
+            connecting_roads[road_id] = road
+            
+            # Find incoming roads
+            if road.predecessor and road.predecessor['elementType'] == 'road':
+                incoming_id = road.predecessor['elementId']
+                if incoming_id not in incoming_roads:
+                    incoming_roads[incoming_id] = self.road_map.get(incoming_id)
+            
+            # Find outgoing road
+            if road.successor and road.successor['elementType'] == 'road':
+                outgoing_id = road.successor['elementId']
+                if outgoing_id in self.road_map:
+                    outgoing_road = self.road_map[outgoing_id]
+        
+        if len(incoming_roads) != 2:
+            logger.warning(f"Junction {junction_id} has {len(incoming_roads)} incoming roads, expected 2")
+            return None
+        
+        # Identify main road and ramp based on lane count
+        roads = list(incoming_roads.values())
+        road1_lanes = len(roads[0].lanes_right) if roads[0] else 0
+        road2_lanes = len(roads[1].lanes_right) if roads[1] else 0
+        
+        if road1_lanes > road2_lanes:
+            main_road = roads[0]
+            ramp_road = roads[1]
+        else:
+            main_road = roads[1]
+            ramp_road = roads[0]
+
+        main_connecting_road = None
+        for road_id, road in connecting_roads.items():
+            if road.predecessor and road.predecessor['elementId'] == main_road.id:
+                main_connecting_road = road
+                break
+        ramp_connecting_road = None
+        for road_id, road in connecting_roads.items():
+            if road.predecessor and road.predecessor['elementId'] == ramp_road.id:
+                ramp_connecting_road = road
+                break
+        
+        return {
+            'main_road': main_road,
+            'ramp_road': ramp_road,
+            'outgoing_road': outgoing_road,
+            'connecting_roads': connecting_roads,
+            'main_connecting_road': main_connecting_road,
+            'ramp_connecting_road': ramp_connecting_road
+        }
+    
+    def _create_merge_start_junction(self, junction_id: str, merge_info: dict) -> Optional[PlainNode]:
+        """Create the junction node at the merge start (where main road and ramp meet)"""
+        main_road = merge_info['main_road']
+        
+        # Use main road's end position as junction location
+        if main_road.successor and main_road.successor['elementType'] == 'junction':
+            end_pos = self._calculate_road_end(main_road)
+            if end_pos:
+                return PlainNode(
+                    id=f"j_merge_start_{junction_id}",
+                    x=end_pos[0],
+                    y=end_pos[1],
+                    type="priority"
+                )
+        
+        logger.warning(f"Could not determine merge start position for junction {junction_id}")
+        return None
+    
+    def _create_merge_end_junction(self, junction_id: str, merge_info: dict) -> Optional[PlainNode]:
+        """Create the junction node at the merge end (where merge zone meets outgoing road)"""
+        outgoing_road = merge_info['outgoing_road']
+        
+        # Use outgoing road's start position as junction location
+        if outgoing_road and outgoing_road.predecessor and outgoing_road.predecessor['elementType'] == 'junction':
+            start_pos = self._calculate_road_start(outgoing_road)
+            if start_pos:
+                return PlainNode(
+                    id=f"j_merge_end_{junction_id}",
+                    x=start_pos[0],
+                    y=start_pos[1],
+                    type="priority"
+                )
+        
+        logger.warning(f"Could not determine merge end position for junction {junction_id}")
+        return None
     
     def _get_junction_center_from_pyopendrive(self, py_junction, junction_id: str) -> Tuple[float, float]:
         """Get junction center coordinates from pyOpenDRIVE PyJunction object"""
@@ -1078,7 +1117,23 @@ class OpenDriveToSumoConverter:
         if road.predecessor:
             if road.predecessor['elementType'] == 'junction':
                 # Road starts from a junction - elementId is the junction ID directly
-                return f"junction_{road.predecessor['elementId']}"
+                junction_id = road.predecessor['elementId']
+                
+                # Check if this is a highway merge junction
+                if hasattr(self, 'highway_merges') and junction_id in self.highway_merges:
+                    # This road is outgoing from a merge - use the merge end node
+                    return self.highway_merges[junction_id]['end_node']
+                
+                # Check if this junction has been converted to merge nodes
+                if junction_id in self.node_map:
+                    mapped_node = self.node_map[junction_id]
+                    # If it's a merge zone marker, this shouldn't happen
+                    if mapped_node and mapped_node.startswith("merge_zone_"):
+                        logger.warning(f"Road {road.id} references junction {junction_id} which is a merge zone")
+                        # Fallback to junction node
+                        return f"junction_{junction_id}"
+                    return mapped_node
+                return f"junction_{junction_id}"
             elif road.predecessor['elementType'] == 'road':
                 # Road connects to another road - find the shared connection point
                 pred_road_id = road.predecessor['elementId']
@@ -1111,7 +1166,23 @@ class OpenDriveToSumoConverter:
         if road.successor:
             if road.successor['elementType'] == 'junction':
                 # Road ends at a junction - elementId is the junction ID directly
-                return f"junction_{road.successor['elementId']}"
+                junction_id = road.successor['elementId']
+                
+                # Check if this is a highway merge junction
+                if hasattr(self, 'highway_merges') and junction_id in self.highway_merges:
+                    # This road is incoming to a merge - use the merge start node
+                    return self.highway_merges[junction_id]['start_node']
+                
+                # Check if this junction has been converted to merge nodes
+                if junction_id in self.node_map:
+                    mapped_node = self.node_map[junction_id]
+                    # If it's a merge zone marker, this shouldn't happen
+                    if mapped_node and mapped_node.startswith("merge_zone_"):
+                        logger.warning(f"Road {road.id} references junction {junction_id} which is a merge zone")
+                        # Fallback to junction node
+                        return f"junction_{junction_id}"
+                    return mapped_node
+                return f"junction_{junction_id}"
             elif road.successor['elementType'] == 'road':
                 # Road connects to another road - find the shared connection point
                 succ_road_id = road.successor['elementId']
@@ -1241,7 +1312,7 @@ class OpenDriveToSumoConverter:
                 # SUMO: index 0 (rightmost) to index n-1 (leftmost)
                 sorted_right_lanes = sorted(road.lanes_right, key=lambda x: x['id'])
                 for sumo_index, lane_info in enumerate(sorted_right_lanes):
-                    lane_dict = {'width': lane_info.get('width', 3.2)}
+                    lane_dict = {'width': lane_info.get('width', 3.66)}
                     # Set type and restrictions for shoulder lanes
                     lane_type = self._decode_if_bytes(lane_info['type'])
                     if lane_type == 'shoulder':
@@ -1277,7 +1348,7 @@ class OpenDriveToSumoConverter:
                 lane_data = []
                 sorted_left_lanes = sorted(road.lanes_left, key=lambda x: x['id'])
                 for sumo_index, lane_info in enumerate(sorted_left_lanes):
-                    lane_dict = {'width': lane_info.get('width', 3.2)}
+                    lane_dict = {'width': lane_info.get('width', 3.66)}
                     # Set type and restrictions for shoulder lanes
                     lane_type = self._decode_if_bytes(lane_info['type'])
                     if lane_type == 'shoulder':
@@ -1319,6 +1390,175 @@ class OpenDriveToSumoConverter:
             logger.warning(f"Warning: More edges than expected! Possible junction explosion?")
             logger.warning(f"  Created edges: {len(self.edges)}")
             logger.warning(f"  Expected max: {expected_max_edges * 2}")
+        
+        # Create merge edges for highway merges
+        self._create_merge_edges()
+    
+    def _create_merge_edges(self):
+        """Create edges for highway merge zones"""
+        for junction_id, internal_road_ids in self.junction_roads.items():
+            # Only process highway merges
+            if not self._is_highway_merge(junction_id, internal_road_ids):
+                continue
+            
+            logger.info(f"Creating merge edge for highway merge junction {junction_id}")
+            
+            # Get merge configuration
+            merge_info = self._analyze_merge_roads(junction_id, internal_road_ids)
+            if not merge_info:
+                logger.error(f"Failed to create merge edge for junction {junction_id}")
+                continue
+            
+            # Find the main connecting road (the one from main road, not ramp)
+            # We should use the connecting road that comes from the main road (higher lane count)
+            main_connecting = None
+            main_road = merge_info.get('main_road')
+            
+            # Try to find the connecting road that follows the main road
+            for road_id, road in merge_info['connecting_roads'].items():
+                # Check if this connecting road comes from the main road
+                if road.predecessor and main_road:
+                    pred_id = road.predecessor.get('elementId')
+                    if pred_id == main_road.id:
+                        main_connecting = road
+                        logger.debug(f"Selected connecting road {road_id} from main road {main_road.id}")
+                        break
+            
+            if not main_connecting:
+                logger.error(f"No connecting road found for merge zone {junction_id}")
+                continue
+            
+            # Create 4-lane merge edge
+            merge_edge = self._build_merge_edge(junction_id, main_connecting, merge_info)
+            if merge_edge:
+                self.edges.append(merge_edge)
+                logger.info(f"Created merge edge {merge_edge.id} with {merge_edge.num_lanes} lanes")
+                
+                # # Create lane mappings for junction internal roads to merge zone
+                # self._create_merge_zone_lane_mappings(junction_id, merge_info)
+    
+    def _build_merge_edge(self, junction_id: str, main_connecting: OpenDriveRoad, merge_info: dict) -> Optional[PlainEdge]:
+        """Build a 4-lane merge edge from connecting road geometry"""
+        # Determine nodes
+        from_node = f"j_merge_start_{junction_id}"
+        to_node = f"j_merge_end_{junction_id}"
+        
+        # Check if nodes exist
+        if from_node not in [n.id for n in self.nodes] or to_node not in [n.id for n in self.nodes]:
+            logger.error(f"Merge nodes not found for junction {junction_id}")
+            return None
+        
+        # Get geometry from main connecting road
+        if self.use_pyopendrive and main_connecting.id in self.py_roads:
+            shape_points = self._get_road_centerline_pyopendrive(main_connecting.id, eps=0.5)
+        else:
+            shape_points = self._generate_road_shape(main_connecting)
+
+        # Trim 10m from start and end of shape_points if possible
+        trim_distance = 50.0
+        if shape_points and len(shape_points) > 2:
+            def trim_shape(points, trim_dist):
+                # Calculate cumulative distances
+                cum_dist = [0.0]
+                for i in range(1, len(points)):
+                    dx = points[i][0] - points[i-1][0]
+                    dy = points[i][1] - points[i-1][1]
+                    cum_dist.append(cum_dist[-1] + math.hypot(dx, dy))
+                total_dist = cum_dist[-1]
+                # Find indices for trimming
+                start_idx = next((i for i, d in enumerate(cum_dist) if d >= trim_dist), 0)
+                end_idx = next((i for i, d in enumerate(cum_dist) if d >= total_dist - trim_dist), len(points)-1)
+                # Ensure at least two points remain
+                if end_idx > start_idx and end_idx - start_idx >= 1:
+                    return points[start_idx:end_idx+1]
+                return points
+            shape_points = trim_shape(shape_points, trim_distance)
+        
+        # Adjust shape for the additional lane on the right
+        # When adding a lane on the right side, the center line needs to shift right
+        # to keep the left lanes (main road) in their original position
+        # if shape_points and len(shape_points) >= 2:
+        #     # Calculate the shift amount (half of new lane width)
+        #     # We're adding a lane on the right, so we need to shift the centerline right
+        #     # to keep the main lanes (left side) in the same position
+        #     new_lane_width = 3.66  # Width of acceleration lane 12 ft
+        #     shift_amount = new_lane_width  # Shift right by half the new lane width
+            
+        #     # Calculate the direction perpendicular to the road
+        #     # For simplicity, use the first segment direction
+        #     dx = shape_points[1][0] - shape_points[0][0]
+        #     dy = shape_points[1][1] - shape_points[0][1]
+        #     length = math.sqrt(dx*dx + dy*dy)
+            
+        #     if length > 0:
+        #         # Perpendicular vector (rotate 90 degrees right)
+        #         perp_x = dy / length
+        #         perp_y = -dx / length
+                
+        #         # Shift all points to the right
+        #         adjusted_shape = []
+        #         for x, y in shape_points:
+        #             adjusted_x = x + perp_x * shift_amount
+        #             adjusted_y = y + perp_y * shift_amount
+        #             adjusted_shape.append((adjusted_x, adjusted_y))
+                
+        #         shape_points = adjusted_shape
+        #         logger.debug(f"Adjusted merge zone centerline by {shift_amount}m to the right")
+        
+        # Prepare lane data for 4 lanes (3 main + 1 acceleration)
+        lane_data = []
+        edge_id = f"merge_zone_{junction_id}"
+        
+        # Add acceleration lane (from ramp), this will be the rightmost lane and set lane index to 0
+        lane_data.append({
+            'width': 3.66,  # Wider for acceleration
+            # 'speed': main_road.speed_limit * 0.9,  # Slightly lower speed
+            # 'index': 0,
+            'acceleration': True
+        })
+        road_id = merge_info['ramp_connecting_road'].id
+        opendrive_lane_id = -1 # rightmost lane
+        mapping_key = (road_id, opendrive_lane_id, 'forward')
+        self.lane_mapping[mapping_key] = (edge_id, 0)
+        
+        # Main lanes (from main road configuration)
+        main_road = merge_info['main_road']
+        
+        main_lanes = [l for l in main_road.lanes_right]
+        # main_connecting_road = 
+        road_id = merge_info['main_connecting_road'].id
+        # Add main lanes (typically 3)
+        for i, lane in enumerate(main_lanes):  # Limit to 3 main lanes
+            lane_dict = {
+                'width': lane.get('width', 3.66),
+                # 'speed': main_road.speed_limit,
+                # 'index': i+1,
+                # 'type': lane.get('type', 'driving')
+            }
+            lane_type = self._decode_if_bytes(lane['type'])
+            if lane_type == 'shoulder':
+                lane_dict['type'] = 'shoulder'  # Set lane type
+                lane_dict['disallow'] = 'all'
+            lane_data.append(lane_dict)
+            opendrive_lane_id = lane['id']
+            mapping_key = (road_id, opendrive_lane_id, 'forward')
+            self.lane_mapping[mapping_key] = (edge_id, i+1)
+
+        
+        
+        # Create merge edge
+        
+        return PlainEdge(
+            id=edge_id,
+            from_node=from_node,
+            to_node=to_node,
+            num_lanes=len(lane_data),
+            speed=main_road.speed_limit,
+            name=f"Merge zone {junction_id}",
+            type="highway_merge",
+            shape=shape_points if len(shape_points) >= 2 else None,
+            lane_data=lane_data
+        )
     
     def _create_connections(self):
         """Create Plain XML connections using connecting road geometry as via points"""
@@ -1328,6 +1568,12 @@ class OpenDriveToSumoConverter:
         
         # Process each junction in OpenDRIVE
         for junction_id, junction_connections in self.junction_connections.items():
+            # Skip highway merges - they have special handling
+            if junction_id in self.junction_roads and self._is_highway_merge(junction_id, self.junction_roads[junction_id]):
+                logger.info(f"Skipping normal connections for highway merge junction {junction_id}")
+                self._create_merge_connections(junction_id)
+                continue
+            
             logger.info(f"Processing junction {junction_id}: {len(junction_connections)} connections")
             
             for conn in junction_connections:
@@ -1453,7 +1699,7 @@ class OpenDriveToSumoConverter:
                                         to_edge=to_edge,
                                         from_lane=from_lane,
                                         to_lane=to_lane,
-                                        via=via_points  # Precise turning path
+                                        # via=via_points  # Precise turning path
                                     ))
                                     logger.debug(f"Created connection: {from_edge}:{from_lane} -> {to_edge}:{to_lane}")
                                     connection_created = True
@@ -1482,6 +1728,209 @@ class OpenDriveToSumoConverter:
         logger.info(f"  Successfully created: {successful_connections}")
         logger.info(f"  Failed: {failed_connections}")
         logger.info(f"Created {len(self.connections)} connections with via points")
+    
+    def _build_junction_connection_chains(self, junction_id: str) -> Dict[str, List[Dict]]:
+        """
+        Build complete connection chains for a junction
+        Returns a mapping of incoming_road_id -> list of connection chains
+        Each chain contains: incoming_road, connecting_road, outgoing_road, and lane mappings
+        """
+        connection_chains = {}
+        
+        # Get all connections for this junction
+        junction_conns = self.junction_connections.get(junction_id, [])
+        
+        for conn in junction_conns:
+            incoming_road_id = conn.get('incomingRoad')
+            connecting_road_id = conn.get('connectingRoad')
+            
+            # Get the connecting road
+            connecting_road = self.road_map.get(connecting_road_id)
+            if not connecting_road:
+                logger.warning(f"Connecting road {connecting_road_id} not found")
+                continue
+            
+            # Determine the outgoing road from the connecting road
+            # For junction internal roads, the successor is the outgoing road
+            outgoing_road_id = None
+            if connecting_road.successor:
+                if connecting_road.successor.get('elementType') == 'road':
+                    outgoing_road_id = connecting_road.successor.get('elementId')
+            
+            # Build chain for each lane link
+            for lane_link in conn.get('laneLinks', []):
+                from_lane = lane_link.get('from')
+                to_lane = lane_link.get('to')
+                
+                # Trace the final lane through the connecting road
+                final_lane = self._trace_lane_successor(connecting_road, to_lane)
+                
+                chain = {
+                    'incoming_road': incoming_road_id,
+                    'connecting_road': connecting_road_id,
+                    'outgoing_road': outgoing_road_id,
+                    'from_lane': from_lane,
+                    'connecting_lane': to_lane,
+                    'final_lane': final_lane
+                }
+                
+                if incoming_road_id not in connection_chains:
+                    connection_chains[incoming_road_id] = []
+                connection_chains[incoming_road_id].append(chain)
+                
+                logger.debug(f"Connection chain: Road {incoming_road_id} lane {from_lane} -> "
+                           f"Road {connecting_road_id} lane {to_lane} -> "
+                           f"Road {outgoing_road_id} lane {final_lane}")
+        
+        return connection_chains
+    
+    def _trace_lane_successor(self, road: OpenDriveRoad, lane_id: int) -> Optional[int]:
+        """
+        Trace the successor lane ID through a connecting road
+        Returns the final lane ID that this lane connects to
+        """
+        # Find the lane in the road
+        target_lane = None
+        for lane_info in road.lanes_left + road.lanes_right:
+            if lane_info['id'] == lane_id:
+                target_lane = lane_info
+                break
+        
+        if not target_lane:
+            logger.warning(f"Lane {lane_id} not found in road {road.id}")
+            return None
+        
+        # Get the successor lane ID
+        successor = target_lane.get('successor')
+        if successor and isinstance(successor, dict):
+            return successor.get('id')
+        elif successor:
+            return successor
+        
+        # If no explicit successor, return the same lane ID (direct mapping)
+        return lane_id
+    
+    def _create_merge_connections(self, junction_id: str):
+        """Create connections for highway merge zones using OpenDRIVE definitions"""
+        logger.info(f"Creating merge connections for junction {junction_id}")
+        
+        # Get merge configuration
+        if junction_id not in self.junction_roads:
+            logger.error(f"No junction roads found for merge {junction_id}")
+            return
+        
+        merge_info = self._analyze_merge_roads(junction_id, self.junction_roads[junction_id])
+        if not merge_info:
+            logger.error(f"Failed to analyze merge for connections {junction_id}")
+            return
+        
+        main_road = merge_info['main_road']
+        ramp_road = merge_info['ramp_road']
+        outgoing_road = merge_info['outgoing_road']
+        
+        # Build connection chains from OpenDRIVE data
+        connection_chains = self._build_junction_connection_chains(junction_id)
+        
+        # Create merge zone edge reference
+        merge_edge = f"merge_zone_{junction_id}"
+        
+        # Process connections using established lane mappings
+        for incoming_road_id, chains in connection_chains.items():
+            # Get the incoming edge
+            incoming_edge_id = f"{incoming_road_id}.0"
+            incoming_edge_obj = next((e for e in self.edges if e.id == incoming_edge_id), None)
+            
+            if not incoming_edge_obj:
+                logger.warning(f"Incoming edge {incoming_edge_id} not found for merge connections")
+                continue
+            
+            for chain in chains:
+                from_lane_id = chain['from_lane']
+                connecting_road_id = chain['connecting_road']
+                connecting_lane_id = chain['connecting_lane']
+                
+                # Get lane mappings using the established system
+                # 1. From incoming road to connecting road (via normal mapping)
+                from_mapping = self._get_sumo_lane_index(incoming_road_id, from_lane_id, 'forward')
+                
+                # 2. From connecting road to merge zone (via our new mapping)
+                to_mapping = self._get_sumo_lane_index(connecting_road_id, connecting_lane_id, 'forward')
+                
+                if not from_mapping:
+                    logger.error(f"No lane mapping found for incoming road {incoming_road_id} lane {from_lane_id}")
+                    continue
+                
+                if not to_mapping:
+                    logger.error(f"No lane mapping found for connecting road {connecting_road_id} lane {connecting_lane_id}")
+                    continue
+                
+                from_edge, from_lane_idx = from_mapping
+                to_edge, to_lane_idx = to_mapping
+                
+                # Verify the to_edge is our merge zone
+                if to_edge != merge_edge:
+                    logger.error(f"Expected merge zone edge {merge_edge}, but got {to_edge}")
+                    continue
+                
+                # Determine connection direction
+                incoming_road = self.road_map.get(incoming_road_id)
+                main_road = merge_info['main_road']
+                
+                
+                # Create the connection
+                self.connections.append(PlainConnection(
+                    from_edge=from_edge,
+                    to_edge=to_edge,
+                    from_lane=from_lane_idx,
+                    to_lane=to_lane_idx,
+                    # dir=direction,
+                    # state=state
+                ))
+                logger.debug(f"Connected via mapping: {from_edge}:{from_lane_idx} -> {to_edge}:{to_lane_idx} "
+                           f"(Road {incoming_road_id} lane {from_lane_id} -> Road {connecting_road_id} lane {connecting_lane_id})")
+        
+            # Create connections for Junction B (merge end)
+            # Merge zone to outgoing road (4 lanes to 3 lanes)
+            if outgoing_road:
+                outgoing_edge = f"{outgoing_road.id}.0"
+                outgoing_edge_obj = next((e for e in self.edges if e.id == outgoing_edge), None)
+                
+                if outgoing_edge_obj:
+                    for chain in chains:
+
+                        connecting_road_id = chain['connecting_road']
+                        connecting_lane_id = chain['connecting_lane']
+                        outgoing_road_id = chain['outgoing_road']
+                        outgoing_lane_id = chain['final_lane']
+                        from_mapping = self._get_sumo_lane_index(connecting_road_id, connecting_lane_id, 'forward')
+                        to_mapping = self._get_sumo_lane_index(outgoing_road_id, outgoing_lane_id, 'forward')
+
+                        if incoming_road and incoming_road.id == main_road.id:
+                            # Main road - straight
+                            direction = 's'
+                            state = 'M'
+                        else:
+                            # Ramp - right merge
+                            direction = 'r'
+                            state = 'm'
+                        
+                        if from_mapping is None or to_mapping is None:
+                            logger.error(f"Missing lane mapping for merge end: from {connecting_road_id} lane {connecting_lane_id} or to {outgoing_road_id} lane {outgoing_lane_id}")
+                            continue
+
+                        from_edge, from_lane_idx = from_mapping
+                        to_edge, to_lane_idx = to_mapping
+                        self.connections.append(PlainConnection(
+                            from_edge=from_edge,
+                            to_edge=to_edge,
+                            from_lane=from_lane_idx,  # From lanes 1,2,3
+                            to_lane=to_lane_idx,        # To lanes 0,1,2
+                            dir=direction,
+                            state=state
+                        ))
+                        logger.debug(f"Connected merge to outgoing: {from_edge}:{from_lane_idx} -> {to_edge}:{to_lane_idx}")
+        
+        logger.info(f"Created merge connections for junction {junction_id}")
     
     def _get_outgoing_road_from_connecting(self, connecting_road: OpenDriveRoad, contact_point: str) -> Optional[str]:
         """Get the outgoing road ID from a connecting road"""
@@ -1539,9 +1988,13 @@ class OpenDriveToSumoConverter:
         
         # For connecting roads, the outgoing road is always the successor
         # So we always use the successor lane link
-        outgoing_road_id = target_lane.get('successor', None)
+        successor = target_lane.get('successor', None)
         
-        return outgoing_road_id
+        if successor and isinstance(successor, dict):
+            # Return the lane ID from the successor
+            return successor.get('id', None)
+        
+        return successor
     
     def _fallback_lane_mapping(self, connecting_road: OpenDriveRoad, connecting_lane_id: int, outgoing_road_id: str, contact_point: str) -> Optional[int]:
         """
@@ -2234,6 +2687,93 @@ class OpenDriveToSumoConverter:
         
         return None, None
     
+    def _calculate_coordinate_bounds(self):
+        """Calculate coordinate bounds from all geometric elements"""
+        if not self.nodes and not self.edges:
+            logger.warning("No nodes or edges to calculate bounds")
+            return
+        
+        min_x = float('inf')
+        min_y = float('inf')
+        max_x = float('-inf')
+        max_y = float('-inf')
+        
+        # Check all node coordinates
+        for node in self.nodes:
+            if node.x < min_x:
+                min_x = node.x
+            if node.x > max_x:
+                max_x = node.x
+            if node.y < min_y:
+                min_y = node.y
+            if node.y > max_y:
+                max_y = node.y
+        
+        # Check all edge shape points
+        for edge in self.edges:
+            if edge.shape:
+                for x, y in edge.shape:
+                    if x < min_x:
+                        min_x = x
+                    if x > max_x:
+                        max_x = x
+                    if y < min_y:
+                        min_y = y
+                    if y > max_y:
+                        max_y = y
+        
+        # Check all connection via points
+        for conn in self.connections:
+            if conn.via:
+                for x, y in conn.via:
+                    if x < min_x:
+                        min_x = x
+                    if x > max_x:
+                        max_x = x
+                    if y < min_y:
+                        min_y = y
+                    if y > max_y:
+                        max_y = y
+        
+        # Set the coordinate offset (negative of minimum values)
+        self.net_offset = (-min_x, -min_y)
+        
+        # Set the converted boundary (after applying offset)
+        self.conv_boundary = (0.0, 0.0, max_x - min_x, max_y - min_y)
+        
+        # Set the original boundary
+        self.orig_boundary = (min_x, min_y, max_x, max_y)
+        
+        logger.info(f"Coordinate bounds calculated:")
+        logger.info(f"  Original: ({min_x:.2f}, {min_y:.2f}) to ({max_x:.2f}, {max_y:.2f})")
+        logger.info(f"  Net offset: ({self.net_offset[0]:.2f}, {self.net_offset[1]:.2f})")
+        logger.info(f"  Converted: (0.00, 0.00) to ({self.conv_boundary[2]:.2f}, {self.conv_boundary[3]:.2f})")
+    
+    def _apply_coordinate_offset(self):
+        """Apply coordinate offset to all geometric elements"""
+        if not self.net_offset:
+            logger.warning("No coordinate offset calculated")
+            return
+        
+        offset_x, offset_y = self.net_offset
+        
+        # Apply offset to all nodes
+        for node in self.nodes:
+            node.x += offset_x
+            node.y += offset_y
+        
+        # Apply offset to all edge shapes
+        for edge in self.edges:
+            if edge.shape:
+                edge.shape = [(x + offset_x, y + offset_y) for x, y in edge.shape]
+        
+        # Apply offset to all connection via points
+        for conn in self.connections:
+            if conn.via:
+                conn.via = [(x + offset_x, y + offset_y) for x, y in conn.via]
+        
+        logger.info("Coordinate offset applied to all geometric elements")
+    
     def _write_plain_xml(self, output_prefix: str):
         """Write Plain XML files"""
         # Write nodes file
@@ -2250,6 +2790,18 @@ class OpenDriveToSumoConverter:
         """Write nodes file"""
         root = ET.Element('nodes')
         
+        # Add location tag if we have coordinate offset and projection info
+        if self.net_offset and self.geo_reference:
+            location_elem = ET.SubElement(root, 'location')
+            location_elem.set('netOffset', f'{self.net_offset[0]:.2f},{self.net_offset[1]:.2f}')
+            location_elem.set('convBoundary', 
+                            f'{self.conv_boundary[0]:.2f},{self.conv_boundary[1]:.2f},'
+                            f'{self.conv_boundary[2]:.2f},{self.conv_boundary[3]:.2f}')
+            location_elem.set('origBoundary', 
+                            f'{self.orig_boundary[0]:.2f},{self.orig_boundary[1]:.2f},'
+                            f'{self.orig_boundary[2]:.2f},{self.orig_boundary[3]:.2f}')
+            location_elem.set('projParameter', self.geo_reference)
+        
         for node in self.nodes:
             node_elem = ET.SubElement(root, 'node')
             node_elem.set('id', node.id)
@@ -2265,6 +2817,18 @@ class OpenDriveToSumoConverter:
     def _write_edges(self, filename: str):
         """Write edges file"""
         root = ET.Element('edges')
+        
+        # Add location tag if we have coordinate offset and projection info (same as nodes)
+        if self.net_offset and self.geo_reference:
+            location_elem = ET.SubElement(root, 'location')
+            location_elem.set('netOffset', f'{self.net_offset[0]:.2f},{self.net_offset[1]:.2f}')
+            location_elem.set('convBoundary', 
+                            f'{self.conv_boundary[0]:.2f},{self.conv_boundary[1]:.2f},'
+                            f'{self.conv_boundary[2]:.2f},{self.conv_boundary[3]:.2f}')
+            location_elem.set('origBoundary', 
+                            f'{self.orig_boundary[0]:.2f},{self.orig_boundary[1]:.2f},'
+                            f'{self.orig_boundary[2]:.2f},{self.orig_boundary[3]:.2f}')
+            location_elem.set('projParameter', self.geo_reference)
         
         for edge in self.edges:
             edge_elem = ET.SubElement(root, 'edge')
@@ -2364,6 +2928,7 @@ class OpenDriveToSumoConverter:
                 '--output.street-names', 'true',  # Preserve street names
                 '--output.original-names', 'true',  # Keep original IDs
             ]
+        
             
             # Add connections file if it exists
             conn_file = f'{output_prefix}.con.xml'
@@ -2418,7 +2983,7 @@ def main():
     )
     parser.add_argument('--input', '-i',
                      help='Input OpenDRIVE file (.xodr)',
-                     default="examples/xodr_sumo_maps/test_map_merge_split.xodr")
+                     default="texas_example/test_map_junction_end_pt.xodr")
     parser.add_argument('--output', '-o',
                      help='Output prefix (default: based on input name)',
                      default="test")

@@ -4,7 +4,7 @@ POST http://localhost:8000/start_simulation?enable_viz=true&viz_port=8050&viz_up
 Content-Type: application/json
 
 {
-    "config_file": "examples/scenarios/cutin.yaml",
+    "config_file": "texas_example/test_configs/cutin.yaml",
     "auto_run": false
 }
 

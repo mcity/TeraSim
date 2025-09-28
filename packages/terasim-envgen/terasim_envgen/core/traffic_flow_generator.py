@@ -125,83 +125,115 @@ class TrafficFlowGenerator:
 
         return av_route_sumo_edges, av_route_sumo_points_latlon
     
-    def generate_av_fallback_route(self, map_path):
+    def generate_av_fallback_route(self, map_path, *, max_candidates=128, use_time_metric=False, seed=None):
         """
-        Generate a fallback AV route for a SUMO network using edges from the network periphery.
-        
+        Generate a fallback AV route by selecting the longest (by distance or time) shortest path
+        between two peripheral edges in a SUMO network.
+
         Args:
             map_path (str): Path to SUMO network file
-            
+            max_candidates (int): cap on number of candidate edges to consider (for O(k^2) search)
+            use_time_metric (bool): if True, maximize travel time (route cost); else maximize distance (sum of edge lengths)
+            seed (int|None): random seed for reproducibility
+
         Returns:
             tuple: (av_route_sumo_edges, av_route_sumo_with_internal)
         """
         try:
+            if seed is not None:
+                random.seed(seed)
+
             sumo_net = sumolib.net.readNet(map_path, withInternal=True)
-            
-            # Get all edges from the network
             edges = sumo_net.getEdges()
-            
+
             # Filter for non-internal edges (regular road edges)
-            regular_edges = [edge for edge in edges if not edge.isSpecial()]
-            
+            regular_edges = [e for e in edges if not e.isSpecial()]
             if not regular_edges:
                 logger.warning("No regular edges found in network")
                 return [], []
-            
-            # Find edges that are likely to be on the periphery/fringe
-            # These are edges with fewer connections or dead ends
+
+            # Find peripheral edges: edges with low in/out degree (≤1)
             peripheral_edges = []
-            
-            for edge in regular_edges:
-                # Count incoming and outgoing connections
-                incoming = len(edge.getIncoming())
-                outgoing = len(edge.getOutgoing())
-                
-                # Consider edges with limited connectivity as peripheral
+            for e in regular_edges:
+                incoming = len(e.getIncoming())
+                outgoing = len(e.getOutgoing())
                 if incoming <= 1 or outgoing <= 1:
-                    peripheral_edges.append(edge)
-            
-            # If we don't have enough peripheral edges, use all regular edges
+                    peripheral_edges.append(e)
+
+            # Candidate set: prefer peripheral edges, use all if not enough
+            candidates = peripheral_edges if len(peripheral_edges) >= 2 else regular_edges
             if len(peripheral_edges) < 2:
-                peripheral_edges = regular_edges
                 logger.info("Not enough peripheral edges found, using all regular edges")
-            
-            # Randomly select start and end edges
-            if len(peripheral_edges) >= 2:
-                start_edge = random.choice(peripheral_edges)
-                # Try to find an edge that's not too close to the start edge
-                potential_end_edges = [e for e in peripheral_edges if e != start_edge]
-                end_edge = random.choice(potential_end_edges) if potential_end_edges else start_edge
-                
-                # Try to find a route between start and end edges
-                try:
-                    route = sumo_net.getShortestPath(start_edge, end_edge)
-                    if route[0]:  # route[0] contains the list of edges, route[1] contains the cost
-                        av_route_sumo_edges = route[0]
-                    else:
-                        # If no route found, create a simple route with just the start edge
-                        av_route_sumo_edges = [start_edge]
-                except:
-                    # Fallback: use just the start edge
-                    av_route_sumo_edges = [start_edge]
+
+            # Sample to control complexity
+            if len(candidates) > max_candidates:
+                candidates = random.sample(candidates, max_candidates)
+
+            # Helper: calculate path length score
+            def path_length_score(path_edges):
+                # Return None if path is empty
+                if not path_edges:
+                    return None
+                if use_time_metric:
+                    # If scoring by time, this won't actually be used (we'll use route_cost directly)
+                    # Still provide function to keep interface uniform
+                    return sum(e.getLength() for e in path_edges)
+                else:
+                    return sum(e.getLength() for e in path_edges)
+
+            best_score = -1.0
+            best_route_edges = None
+            best_cost = None
+
+            # Exhaustive search of candidate pairs (O(k^2)); for k=128 this is typically fast enough
+            n = len(candidates)
+            for i in range(n):
+                for j in range(i + 1, n):
+                    src = candidates[i]
+                    dst = candidates[j]
+                    try:
+                        route_edges, route_cost = sumo_net.getShortestPath(src, dst)  # route_cost is often time/weighted cost
+                        if not route_edges:
+                            # If one direction is not reachable, try reverse
+                            route_edges, route_cost = sumo_net.getShortestPath(dst, src)
+                            if not route_edges:
+                                continue
+                        if use_time_metric:
+                            score = route_cost if route_cost is not None else -1
+                        else:
+                            score = path_length_score(route_edges)
+                            if score is None:
+                                continue
+                        if score > best_score:
+                            best_score = score
+                            best_route_edges = route_edges
+                            best_cost = route_cost
+                    except Exception as ex:
+                        # Some pairs might not be connected or raise errors, skip
+                        continue
+
+            # If no connected pairs found, fallback: select the longest single edge
+            if not best_route_edges:
+                logger.warning("No connected candidate pairs found; falling back to a single long edge")
+                single = max(regular_edges, key=lambda e: e.getLength(), default=None)
+                av_route_sumo_edges = [single] if single else []
             else:
-                # Last resort: use the first available edge
-                av_route_sumo_edges = [regular_edges[0]] if regular_edges else []
-            
-            # Add internal edges if needed
+                av_route_sumo_edges = best_route_edges
+
+            # Try to add internal edges
             if av_route_sumo_edges:
                 try:
                     av_route_sumo_with_internal = sumolib.route.addInternal(sumo_net, av_route_sumo_edges)
-                except:
-                    # If addInternal fails, just use the original route
+                except Exception:
                     av_route_sumo_with_internal = av_route_sumo_edges
                     logger.warning("Failed to add internal edges, using original route")
             else:
                 av_route_sumo_with_internal = []
-            
-            logger.info(f"Generated fallback AV route with {len(av_route_sumo_edges)} edges")
+
+            metric_name = "time" if use_time_metric else "distance"
+            logger.info(f"Generated longest ({metric_name}) route with {len(av_route_sumo_edges)} edges; score={best_score}, cost={best_cost}")
             return av_route_sumo_edges, av_route_sumo_with_internal
-            
+
         except Exception as e:
             logger.error(f"Error generating fallback AV route: {e}")
             return [], []
@@ -277,7 +309,7 @@ class TrafficFlowGenerator:
             seed = random.randint(1, 10000)
 
             # Build randomTrips command
-            cmd_vehicle = self.get_vehicle_random_trips_command(random_trips, net_path, trips_path, vehicles_path, end_time, period, seed, fringe_factor="10")
+            cmd_vehicle = self.get_vehicle_random_trips_command(random_trips, net_path, trips_path, vehicles_path, end_time, period, seed, fringe_factor=10)
             cmd_pedestrian = self.get_pedestrian_random_trips_command(random_trips, net_path, trips_path, pedestrians_path, end_time, period*0.5, seed)
             cmd_bicycle = self.get_bicycle_random_trips_command(random_trips, net_path, trips_path, bicycles_path, end_time, period*10, seed)
 
@@ -557,7 +589,8 @@ class TrafficFlowGenerator:
                 "--route-file",
                 str(routes_path),
                 "--fringe-factor",
-                str(fringe_factor),
+                # str(fringe_factor),
+                "100",
             ]
         return cmd
     

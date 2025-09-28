@@ -115,6 +115,10 @@ conda activate terasim
 # Clone and install in development mode
 git clone https://github.com/mcity/TeraSim.git
 cd TeraSim
+
+# Install gcc and g++
+conda install -c conda-forge gcc
+conda install -c conda-forge gxx
 ./setup_environment.sh
 ```
 
