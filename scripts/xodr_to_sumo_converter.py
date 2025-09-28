@@ -137,7 +137,7 @@ class OpenDriveToSumoConverter:
         self.orig_boundary = None  # type: Optional[Tuple[float, float, float, float]]
     
     def _decode_if_bytes(self, value):
-        """将 bytes 转换为 str，如果已经是 str 则直接返回"""
+        """ decode bytes to str if it is bytes, otherwise return the value """
         if isinstance(value, bytes):
             return value.decode('utf-8')
         return value
@@ -1320,7 +1320,7 @@ class OpenDriveToSumoConverter:
                         lane_dict['disallow'] = 'all'   # Disallow all vehicles
                     lane_data.append(lane_dict)
                     
-                    # 🆕 构建车道映射：(road_id, lane_id, direction) -> (edge_id, sumo_index)
+                    # 🆕 build lane mapping: (road_id, lane_id, direction) -> (edge_id, sumo_index)
                     opendrive_lane_id = lane_info['id']
                     mapping_key = (road_id, opendrive_lane_id, 'forward')
                     self.lane_mapping[mapping_key] = (edge_id, sumo_index)
@@ -1356,7 +1356,7 @@ class OpenDriveToSumoConverter:
                         lane_dict['disallow'] = 'all'   # Disallow all vehicles
                     lane_data.append(lane_dict)
                     
-                    # 🆕 构建车道映射：(road_id, lane_id, direction) -> (edge_id, sumo_index)
+                    # 🆕 build lane mapping: (road_id, lane_id, direction) -> (edge_id, sumo_index)
                     opendrive_lane_id = lane_info['id']
                     mapping_key = (road_id, opendrive_lane_id, 'backward')
                     self.lane_mapping[mapping_key] = (edge_id, sumo_index)
@@ -1643,20 +1643,20 @@ class OpenDriveToSumoConverter:
                 # Process lane links
                 connection_created = False
                 for lane_link in conn.get('laneLinks', []):
-                    from_lane_id = lane_link.get('from')        # incoming road车道ID
-                    connecting_lane_id = lane_link.get('to')    # connecting road车道ID
+                    from_lane_id = lane_link.get('from')        # incoming road lane ID
+                    connecting_lane_id = lane_link.get('to')    # connecting road lane ID
                     
-                    # 🆕 使用全局映射表查找SUMO lane indices
-                    # 1. 查找incoming road的SUMO mapping
+                    # 🆕 use the global mapping table to find the SUMO lane indices
+                    # 1. find the SUMO mapping of the incoming road
                     incoming_direction = 'forward' if from_lane_id < 0 else 'backward'
                     from_mapping = self._get_sumo_lane_index(incoming_road_id, from_lane_id, incoming_direction)
                     
-                    # 2. 获取真正的outgoing road车道ID
+                    # 2. get the actual outgoing road lane ID
                     outgoing_lane_id = self._get_outgoing_lane_from_connecting_road(
                         connecting_road, connecting_lane_id, contact_point)
                     
                     # if outgoing_lane_id is None:
-                    #     # 使用fallback映射
+                    #     # use fallback mapping
                     #     outgoing_lane_id = self._fallback_lane_mapping(
                     #         connecting_road, connecting_lane_id, outgoing_road_id, contact_point)
                     
@@ -1664,7 +1664,7 @@ class OpenDriveToSumoConverter:
                         logger.warning(f"Cannot map connecting road {connecting_road_id} lane {connecting_lane_id} to outgoing road {outgoing_road_id}")
                         continue
                     
-                    # 3. 查找outgoing road的SUMO mapping
+                    # 3. find the SUMO mapping of the outgoing road
                     outgoing_direction = 'forward' if outgoing_lane_id < 0 else 'backward'
                     to_mapping = self._get_sumo_lane_index(outgoing_road_id, outgoing_lane_id, outgoing_direction)
                     
@@ -1940,12 +1940,12 @@ class OpenDriveToSumoConverter:
 
     def _get_sumo_lane_index(self, road_id: str, lane_id: int, direction: str = 'forward') -> Optional[Tuple[str, int]]:
         """
-        从全局映射表中获取SUMO edge ID和lane index
+        get the SUMO edge ID and lane index from the global mapping table
         
         Args:
             road_id: OpenDRIVE road ID
             lane_id: OpenDRIVE lane ID
-            direction: 'forward' 或 'backward'
+            direction: 'forward' or 'backward'
             
         Returns:
             Tuple of (edge_id, lane_index) if found, None otherwise
@@ -2077,68 +2077,70 @@ class OpenDriveToSumoConverter:
     
     def _map_opendrive_lane_to_sumo_index(self, road: OpenDriveRoad, target_lane_id: int, edge_direction: str = 'forward') -> Optional[int]:
         """
-        智能映射OpenDRIVE车道ID到SUMO车道索引，正确处理shoulder车道差异
+        smart mapping OpenDRIVE lane ID to SUMO lane index, correctly handle shoulder lane differences
         
         Args:
-            road: OpenDRIVE road对象
-            target_lane_id: 目标车道ID（OpenDRIVE格式）
-            edge_direction: 'forward' 或 'backward'
+            road: OpenDRIVE road object
+            target_lane_id: target lane ID (OpenDRIVE format)
+            edge_direction: 'forward' or 'backward'
             
         Returns:
-            SUMO车道索引，如果找不到则返回None
+            SUMO lane index, if not found return None
         """
         if edge_direction == 'forward' and target_lane_id < 0:
-            # 前向边，右侧车道
+            # forward edge, right lane
             lanes = road.lanes_right
         elif edge_direction == 'backward' and target_lane_id > 0:
-            # 后向边，左侧车道
+            # backward edge, left lane
             lanes = road.lanes_left
         elif edge_direction == 'forward' and target_lane_id > 0:
-            # 前向边，左侧车道（实际用于backward edge）
+            # forward edge, left lane (actually used for backward edge)
             lanes = road.lanes_left
         elif edge_direction == 'backward' and target_lane_id < 0:
-            # 后向边，右侧车道（实际用于backward edge）
+            # backward edge, right lane (actually used for backward edge)
             lanes = road.lanes_right
         else:
             return None
         
-        # 1. 首先尝试精确匹配
+        # 1. first try exact match
         driving_lanes = [lane for lane in lanes if lane['type'] == 'driving']
-        # 对于右侧车道（负ID），按绝对值从小到大排序（-1, -2, -3...）
-        # 对于左侧车道（正ID），按值从小到大排序（1, 2, 3...）
+        # for right lane (negative ID), sort by absolute value (-1, -2, -3...）
+        # for left lane (positive ID), sort by value (-1, -2, -3...）
         if target_lane_id < 0:
-            # 右侧车道：-1是最内侧，-2, -3...向外，SUMO索引0是最右侧
-            # 所以按绝对值倒序排列：-3, -2, -1 → SUMO indices [0, 1, 2]
+            # right lane: -1 is the innermost, -2, -3... outward, SUMO index 0 is the rightmost
+            # so sort by absolute value: -3, -2, -1 → SUMO indices [0, 1, 2]
+            # Sort using absolute value: -3, -2, -1 → SUMO indices [0, 1, 2]
             sorted_driving_lanes = sorted(driving_lanes, key=lambda x: -x['id'])
         else:
-            # 左侧车道：1是最内侧，2, 3...向外
+            # left lane: 1 is the innermost, 2, 3... outward, SUMO index 0 is the leftmost
+            # so sort by value: 1, 2, 3 → SUMO indices [0, 1, 2]
             sorted_driving_lanes = sorted(driving_lanes, key=lambda x: x['id'])
         
         logger.debug(f"Road {road.id} lane mapping: target={target_lane_id}, direction={edge_direction}")
         logger.debug(f"  All lanes: {[lane['id'] for lane in lanes]}")
         logger.debug(f"  Driving lanes: {[lane['id'] for lane in sorted_driving_lanes]}")
         
-        # 精确匹配
+        # exact match
         for idx, lane_info in enumerate(sorted_driving_lanes):
             if lane_info['id'] == target_lane_id:
                 logger.debug(f"  Exact match: lane {target_lane_id} -> index {idx}")
                 return idx
         
-        # 2. 如果没有精确匹配，使用智能映射策略
+        # 2. if no exact match, use intelligent mapping strategy
         return self._intelligent_lane_mapping(road, target_lane_id, sorted_driving_lanes, edge_direction)
     
     def _intelligent_lane_mapping(self, road: OpenDriveRoad, target_lane_id: int, driving_lanes: List[Dict], edge_direction: str) -> Optional[int]:
         """
-        智能车道映射策略，处理shoulder车道和车道不匹配的情况
+        intelligent lane mapping strategy, handle shoulder lane and lane mismatch
         
         Args:
-            road: OpenDRIVE road对象
-            target_lane_id: 目标车道ID
-            driving_lanes: 已排序的driving车道列表
-            edge_direction: 边的方向
+            road: OpenDRIVE road object
+            target_lane_id: target lane ID
+            driving_lanes: sorted driving lanes list
+            edge_direction: edge direction
             
         Returns:
-            最佳匹配的SUMO车道索引
+            best matched SUMO lane index
         """
         if not driving_lanes:
             logger.warning(f"Road {road.id}: No driving lanes found for lane {target_lane_id}")
@@ -2146,13 +2148,13 @@ class OpenDriveToSumoConverter:
         
         logger.info(f"Road {road.id}: Applying intelligent mapping for lane {target_lane_id}")
         
-        # 策略1：基于车道相对位置的映射
-        if target_lane_id < 0:  # 右侧车道
-            # 计算目标车道在所有右侧车道中的相对位置
+        # strategy 1: mapping based on lane relative position
+        if target_lane_id < 0:  # right lane
+            # calculate the relative position of the target lane in all right lanes
             all_right_lanes = sorted([lane['id'] for lane in road.lanes_right], key=abs)
             try:
                 target_position = all_right_lanes.index(target_lane_id)
-                # 将相对位置映射到driving车道
+                # map relative position to driving lane
                 if target_position < len(driving_lanes):
                     mapped_idx = target_position
                     logger.info(f"  Position-based mapping: lane {target_lane_id} (pos {target_position}) -> index {mapped_idx}")
@@ -2160,30 +2162,30 @@ class OpenDriveToSumoConverter:
             except ValueError:
                 pass
         
-        # 策略2：基于车道数值的智能匹配
-        # 找到最接近的driving车道
+        # strategy 2: intelligent matching based on lane value
+        # find the closest driving lane
         driving_lane_ids = [lane['id'] for lane in driving_lanes]
         
-        if target_lane_id < 0:  # 右侧车道
-            # 对于右侧车道，找到绝对值最接近的driving车道
+        if target_lane_id < 0:  # right lane
+            # for right lane, find the driving lane with the closest absolute value
             closest_lane_id = min(driving_lane_ids, key=lambda x: abs(abs(x) - abs(target_lane_id)))
             closest_idx = next(idx for idx, lane in enumerate(driving_lanes) if lane['id'] == closest_lane_id)
             logger.info(f"  Closest-match mapping: lane {target_lane_id} -> lane {closest_lane_id} (index {closest_idx})")
             return closest_idx
-        else:  # 左侧车道
+        else:  # left lane
             closest_lane_id = min(driving_lane_ids, key=lambda x: abs(abs(x) - abs(target_lane_id)))
             closest_idx = next(idx for idx, lane in enumerate(driving_lanes) if lane['id'] == closest_lane_id)
             logger.info(f"  Closest-match mapping: lane {target_lane_id} -> lane {closest_lane_id} (index {closest_idx})")
             return closest_idx
         
-        # 策略3：默认映射
+        # strategy 3: default mapping
         if target_lane_id < 0:
-            # 右侧车道默认映射到最右侧driving车道
+            # right lane default mapping to the rightmost driving lane
             default_idx = len(driving_lanes) - 1
             logger.info(f"  Default mapping: lane {target_lane_id} -> rightmost driving lane (index {default_idx})")
             return default_idx
         else:
-            # 左侧车道默认映射到最左侧driving车道
+            # left lane default mapping to the leftmost driving lane
             logger.info(f"  Default mapping: lane {target_lane_id} -> leftmost driving lane (index 0)")
             return 0
 

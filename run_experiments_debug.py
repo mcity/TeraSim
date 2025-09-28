@@ -31,8 +31,8 @@ def main(config_path: str) -> None:
 
     base_dir = Path(config.output.dir) / config.output.name / "raw_data" / config.output.nth
     base_dir.mkdir(parents=True, exist_ok=True)
-    env = NADEWithAV(
-        av_cfg=config.environment.parameters.AV_cfg,
+    env = NADE( # NADEWithAV or NADE
+        # av_cfg = config.environment.parameters.AV_cfg,
         vehicle_factory=NDEVehicleFactory(cfg=config.environment.parameters),
         vru_factory=NDEVulnerableRoadUserFactory(cfg=config.environment.parameters),
         info_extractor=InfoExtractor,
@@ -55,12 +55,8 @@ def main(config_path: str) -> None:
         gui_flag=config.simulator.parameters.gui_flag,
         realtime_flag=config.simulator.parameters.realtime_flag,
         output_path=base_dir,
-        sumo_output_file_types=["collision"],
-        traffic_scale=(
-            config.simulator.parameters.traffic_scale
-            if hasattr(config.simulator.parameters, "traffic_scale")
-            else 1
-        ),
+        sumo_output_file_types=config.simulator.parameters.sumo_output_file_types,
+        traffic_scale=config.simulator.parameters.traffic_scale if hasattr(config.simulator.parameters, "traffic_scale") else 1,
         additional_sumo_args=[
             "--device.bluelight.explicit",
             "true",
@@ -76,10 +72,11 @@ def main(config_path: str) -> None:
 
 if __name__ == "__main__":
     # Get all yaml files in examples/scenarios directory
-    config_dir = Path(__file__).parent / "examples" / "scenarios"
+    # config_dir = Path(__file__).parent / "examples" / "scenarios"
     # yaml_files = sorted(config_dir.glob("*.yaml"), key=lambda x: int(''.join(filter(str.isdigit, x.stem)) or '0'))
     # yaml_files = ["examples/scenarios/cutin.yaml"]
-    yaml_files = [Path("texas_example/test_configs/cutin.yaml")]
+    # yaml_files = [Path("sim_configs/Germany_Rossfeld_AggressiveMerge.yaml")]
+    yaml_files = [Path("configs/simulation/test.yaml")]
     # Randomly shuffle yaml files
     random.shuffle(yaml_files)
 
