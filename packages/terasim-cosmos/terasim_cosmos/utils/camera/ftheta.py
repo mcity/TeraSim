@@ -541,7 +541,7 @@ class FThetaCamera(CameraBase):
             rays (torch.Tensor): ray direction vector. shape: (M, 3)
             valid (torch.Tensor): bool flag indicating the validity of each backprojected pixel. shape: (M,)
         """
-        # 确保输入形状为 (n_points, 2)
+        # ensure the input shape is (n_points, 2)
         if pixels.dim() == 1:
             pixels = pixels.unsqueeze(0)
 
@@ -565,7 +565,7 @@ class FThetaCamera(CameraBase):
         rays[valid, 1] = sin_alpha[valid] * xd[valid, 1] / xd_norm[valid] 
         rays[valid, 2] = torch.cos(alpha[valid])
 
-        # For the invalid point set to (0,0,1)
+        # for the invalid point set to (0,0,1)
         rays[~valid, 0] = 0
         rays[~valid, 1] = 0
         rays[~valid, 2] = 1
@@ -588,7 +588,7 @@ class FThetaCamera(CameraBase):
         # Fix the type
         rays = rays.astype(np.float32)
 
-        # TODO(restes) combine 2 and 3 column norm for rays?
+        # TODO(restes) combine 2 and 3 column norm for rays? (optional)
         xy_norm = np.linalg.norm(rays[:, :2], axis=1, keepdims=True)
         cos_alpha = rays[:, 2:] / np.linalg.norm(rays, axis=1, keepdims=True)
 

@@ -214,32 +214,33 @@ def draw_bev_projection(gui_image_handler, client_camera_pose, label_to_line_seg
 
 def add_camera_frustums(server, camera_poses, current_frame_idx, all_cameras):
     """
-    为所有相机添加视锥体
+    Add camera frustums to the viser server for all cameras at the current frame.
+    Different cameras are represented with different colors.    
     
     Args:
-        server: viser服务器
-        camera_poses: 相机姿态数据
-        current_frame_idx: 当前帧索引
-        all_cameras: 所有相机名称列表
+        server: viser server
+        camera_poses: camera poses
+        current_frame_idx: current frame index
+        all_cameras: all camera names
     """
-    # 为每个相机创建视锥体
+    # create frustums for each camera
     for i, camera_name in enumerate(all_cameras):
         camera_pose = camera_poses[f'{current_frame_idx:06d}.pose.{camera_name}.npy']
         camera_wxyz = tf.SE3.from_matrix(camera_pose).wxyz_xyz[:4]
         camera_position = camera_pose[:3, 3]
         
-        # 根据相机位置设置不同的颜色
-        if i == 0:  # 前相机
-            color = np.array([1.0, 0, 0])  # 红色
+        # set different colors based on the camera position
+        if i == 0:  # front camera
+            color = np.array([1.0, 0, 0])  # red
             fov = 60 / 180 * np.pi
-        # elif i == 1:  # 左相机
-        #     color = np.array([0, 1.0, 0])  # 绿色
+        # elif i == 1:  # left camera
+        #     color = np.array([0, 1.0, 0])  # green
         #     fov = 30 / 180 * np.pi
-        elif i == len(all_cameras) - 1:  # 后相机
-            color = np.array([0, 0, 1.0])  # 蓝色
+        elif i == len(all_cameras) - 1:  # back camera
+            color = np.array([0, 0, 1.0])  # blue
             fov = 30 / 180 * np.pi
-        else:  # 其他相机
-            color = np.array([1.0, 1.0, 0])  # 黄色
+        else:  # other cameras
+            color = np.array([1.0, 1.0, 0])  # yellow
             fov = 30 / 180 * np.pi
         
         server.scene.add_camera_frustum(
@@ -275,14 +276,14 @@ def main(input_root, novel_pose_folder, dataset, clip_id):
     camera_poses = get_sample(os.path.join(input_root, f"pose/{clip_id}.tar"))
     frame_num = len([x for x in camera_poses.keys() if x.endswith(f'pose.{all_cameras[0]}.npy')])
 
-    # 获取第0帧的第一个相机位置和姿态
+    # get the first camera position and pose of the 0th frame
     initial_camera_pose = camera_poses[f'000000.pose.{all_cameras[0]}.npy']
     initial_camera_position = initial_camera_pose[:3, 3]
     initial_camera_wxyz = tf.SE3.from_matrix(initial_camera_pose).wxyz_xyz[:4]
     
-    # 设置偏移量：在第一个相机位置基础上添加偏移
-    # 偏移量：x=0, y=-2(后方), z=3(上方) - 这样用户视角在第一个相机后方上方
-    camera_offset = np.array([0, -4, 3])  # 可以根据需要调整
+    # set the offset: add the offset to the first camera position
+    # offset: x=0, y=-2(back), z=3(up) - so the user's view is behind the first camera
+    camera_offset = np.array([0, -4, 3])  # can be adjusted as needed
     initial_camera_position_with_offset = initial_camera_position + camera_offset
 
     all_camera_to_front_camera = [
@@ -438,16 +439,16 @@ def main(input_root, novel_pose_folder, dataset, clip_id):
         assert client is not None
 
         try:
-            # 获取当前帧索引
+            # get the current frame index
             current_frame_idx = gui_frame_slider.value
 
-            # 获取当前帧第一个相机的姿态
+            # get the first camera pose of the current frame
             current_camera_pose = camera_poses[f'{current_frame_idx:06d}.pose.{all_cameras[0]}.npy']
             current_camera_position = current_camera_pose[:3, 3]
             current_camera_wxyz = tf.SE3.from_matrix(current_camera_pose).wxyz_xyz[:4]
 
-            # 设置偏移量：在当前帧第一个相机位置基础上添加偏移
-            camera_offset = np.array([0, -4, 3])  # 在相机后方上方
+            # set the offset: add the offset to the first camera position
+            camera_offset = np.array([0, -4, 3])  # behind the camera
             current_camera_position_with_offset = current_camera_position + camera_offset
 
             for client_id, client in server.get_clients().items():
@@ -558,7 +559,7 @@ def main(input_root, novel_pose_folder, dataset, clip_id):
     while-true loop for visualization
     """
     prev_frame_idx = 0
-    first_frame = True  # 标记是否是第一帧
+    first_frame = True  # mark if it is the first frame
     while True:
         current_frame_idx = gui_frame_slider.value
         current_frame_idx_divisible_by_3 = current_frame_idx // 3 * 3
@@ -566,7 +567,7 @@ def main(input_root, novel_pose_folder, dataset, clip_id):
         label_to_line_segments['current_dynamic_objects'] = frame_idx_to_dynamic_object_line_segments[current_frame_idx_divisible_by_3]
         label_to_line_segments['ego_car'] = frame_idx_to_ego_car_line_segments[current_frame_idx]
 
-        # 为所有相机创建视锥体
+        # create frustums for all cameras
         add_camera_frustums(server, camera_poses, current_frame_idx, all_cameras)
 
         # create bev projection for current frame
