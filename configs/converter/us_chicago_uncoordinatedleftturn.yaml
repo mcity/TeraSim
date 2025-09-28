@@ -1,0 +1,9 @@
+path_to_output: "/home/jiawei/data/terasim/terasim-world-github/global_case/US_Chicago_UncoordinatedLeftTurn"
+path_to_fcd: "/home/jiawei/data/terasim/test_cosmos/global_case/US_Chicago_UncoordinatedLeftTurn/fcd_all.xml"
+path_to_map: "/home/jiawei/data/terasim/test_cosmos/global_case/US_Chicago_UncoordinatedLeftTurn/map.net.xml"
+camera_setting_name: "default" # "waymo" or "default"
+vehicle_id: "vehicle77"
+time_start: 171.0
+time_end: 175.0
+agent_clip_distance: 80.0
+map_clip_distance: 100.0

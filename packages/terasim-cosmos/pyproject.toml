@@ -1,0 +1,48 @@
+[project]
+name = "terasim-cosmos"
+version = "0.1.0"
+description = "TeraSim to Cosmos-Drive bridge package for world model training and video generation"
+authors = [
+    {name = "TeraSim Team", email = "jiawe@umich.edu"},
+]
+readme = "README.md"
+requires-python = ">=3.10,<3.13"
+dependencies = [
+    "scipy",
+    "pyyaml",
+    "tensorflow>=2.11.0",
+    "opencv-python-headless",
+    "pyproj",
+    "webdataset",
+    "imageio",
+    "imageio-ffmpeg",
+    "decord",
+    "trimesh",
+    "termcolor",
+    "tqdm",
+    "click",
+    "pandas",
+    "torch",
+    "transformers",
+    "sumolib",
+    "python-dotenv",
+    "openai",
+    "requests",
+    "ray"
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.4.0",
+    "pytest-cov>=4.1.0",
+    "black>=23.7.0",
+    "ruff>=0.1.0",
+    "mypy>=1.5.1"
+]
+
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["terasim_cosmos*"]

@@ -76,6 +76,7 @@ def get_location(
     Returns:
         str: Location type.    
     """
+    return "roundabout"
     if sumo_net is not None:
         # Cache the sumo net globally
         global sumo_net_cache
