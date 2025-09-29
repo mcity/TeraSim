@@ -1,10 +1,8 @@
 import argparse
-import random
 import hydra
 from loguru import logger
 from omegaconf import DictConfig, OmegaConf
 from pathlib import Path
-from tqdm import tqdm
 from terasim.logger.infoextractor import InfoExtractor
 from terasim.simulator import Simulator
 
@@ -71,23 +69,25 @@ def main(config_path: str) -> None:
 
 
 if __name__ == "__main__":
-    # Get all yaml files in examples/scenarios directory
-    # config_dir = Path(__file__).parent / "examples" / "scenarios"
-    # yaml_files = sorted(config_dir.glob("*.yaml"), key=lambda x: int(''.join(filter(str.isdigit, x.stem)) or '0'))
-    # yaml_files = ["examples/scenarios/cutin.yaml"]
-    # yaml_files = [Path("sim_configs/Germany_Rossfeld_AggressiveMerge.yaml")]
-    yaml_files = [Path("configs/simulation/test.yaml")]
-    # Randomly shuffle yaml files
-    random.shuffle(yaml_files)
+    parser = argparse.ArgumentParser(description="Run TeraSim debug experiments with YAML configuration")
+    parser.add_argument(
+        "--config",
+        type=str,
+        default="configs/simulation/test.yaml",
+        help="Path to YAML configuration file (default: configs/simulation/test.yaml)"
+    )
 
-    # Run experiments for each yaml file
-    for yaml_file in tqdm(yaml_files):
-        print(yaml_file)
-        logger.info(f"Running experiment with config: {yaml_file}")
-        main(str(yaml_file))
-        # try:
-        #     main(str(yaml_file))
-        # except Exception as e:
-        #     logger.error(f"Error running {yaml_file}: {e}")
-        #     # yaml_file.unlink()  # Delete the yaml file
-        # continue
+    args = parser.parse_args()
+
+    # Convert to Path object and validate
+    config_path = Path(args.config)
+    if not config_path.exists():
+        logger.error(f"Configuration file not found: {config_path}")
+        exit(1)
+
+    if not config_path.suffix.lower() in ['.yaml', '.yml']:
+        logger.error(f"Configuration file must be a YAML file: {config_path}")
+        exit(1)
+
+    logger.info(f"Running experiment with config: {config_path}")
+    main(str(config_path))

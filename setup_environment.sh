@@ -1,16 +1,3 @@
-check_gcc_gpp() {
-    log_info "Checking for gcc and g++ compilers..."
-    if ! check_command gcc; then
-        log_error "gcc compiler not found. Please install gcc before proceeding."
-        exit 1
-    fi
-    if ! check_command g++; then
-        log_error "g++ compiler not found. Please install g++ before proceeding."
-        exit 1
-    fi
-    log_info "gcc version: $(gcc --version | head -n1)"
-    log_info "g++ version: $(g++ --version | head -n1)"
-}
 #!/bin/bash
 # TeraSim Monorepo Environment Setup Script (improved from original version)
 
@@ -45,11 +32,11 @@ check_python() {
     if check_command python3; then
         PYTHON_VERSION=$(python3 --version | cut -d' ' -f2)
         log_info "Python version: $PYTHON_VERSION"
-        
+
         # Check if Python version meets requirements
         PYTHON_MAJOR=$(echo $PYTHON_VERSION | cut -d. -f1)
         PYTHON_MINOR=$(echo $PYTHON_VERSION | cut -d. -f2)
-        
+
         if [ "$PYTHON_MAJOR" -lt 3 ] || ([ "$PYTHON_MAJOR" -eq 3 ] && [ "$PYTHON_MINOR" -lt 10 ]); then
             log_error "Python 3.10+ required, found $PYTHON_VERSION"
             exit 1
@@ -58,6 +45,20 @@ check_python() {
         log_error "Python3 not found. Please install Python 3.10 or higher"
         exit 1
     fi
+}
+
+check_gcc_gpp() {
+    log_info "Checking for gcc and g++ compilers..."
+    if ! check_command gcc; then
+        log_error "gcc compiler not found. Please install gcc before proceeding."
+        exit 1
+    fi
+    if ! check_command g++; then
+        log_error "g++ compiler not found. Please install g++ before proceeding."
+        exit 1
+    fi
+    log_info "gcc version: $(gcc --version | head -n1)"
+    log_info "g++ version: $(g++ --version | head -n1)"
 }
 
 
@@ -124,6 +125,7 @@ setup_monorepo() {
     pip install -e packages/terasim-envgen
     pip install -e packages/terasim-datazoo
     pip install -e packages/terasim-vis
+    pip install -e packages/terasim-cosmos
 
     # Install development dependencies
     pip install "pytest>=7.4.0" "pytest-cov>=4.1.0" "black>=23.7.0" "ruff>=0.1.0" "mypy>=1.5.1" "isort>=5.12.0"
@@ -159,6 +161,12 @@ try:
     print('✅ TeraSim Visualization imported successfully')
 except ImportError:
     print('⚠️  TeraSim Visualization not available (optional)')
+
+try:
+    import terasim_cosmos
+    print('✅ TeraSim Cosmos imported successfully')
+except ImportError:
+    print('⚠️  TeraSim Cosmos not available (optional)')
 
 print(f'TeraSim version: 0.2.0')
 "
@@ -230,7 +238,8 @@ packages = [
     ('terasim_vis', 'Visualization tools'),
     ('terasim_envgen', 'Environment generation tools'),
     ('terasim_datazoo', 'Data processing tools'),
-    ('terasim_service', 'Service API')
+    ('terasim_service', 'Service API'),
+    ('terasim_cosmos', 'Cosmos-Drive integration')
 ]
 
 for pkg_name, description in packages:

@@ -6,22 +6,7 @@ from pathlib import Path
 import sys
 import yaml
 
-# Import terasim-vis components
-try:
-    from terasim_vis import Net, Trajectories
-except ImportError:
-    try:
-        # Try to add the package to path if running from TeraSim directory
-        import os
-        terasim_vis_path = os.path.join(os.path.dirname(__file__), "packages", "terasim-vis")
-        if os.path.exists(terasim_vis_path):
-            sys.path.insert(0, terasim_vis_path)
-            from terasim_vis import Net, Trajectories
-        else:
-            raise ImportError
-    except ImportError:
-        print("Error: terasim-vis package not found. Please install it first.")
-        sys.exit(1)
+from terasim_vis import Net, Trajectories
 
 
 def load_config(config_path):

@@ -56,6 +56,7 @@ class TeraSimToCosmosConverter:
         self.time_end = self.config["time_end"]
         self.agent_clip_distance = self.config.get("agent_clip_distance", 30.0)
         self.map_clip_distance = self.config.get("map_clip_distance", 100.0)
+        self.streetview_retrieval = self.config.get("streetview_retrieval", True)
 
         self.path_to_output = self.path_to_output / f"{self.vehicle_id}_{self.time_start:.1f}_{self.time_end:.1f}".replace(".", "_")
 
@@ -107,15 +108,9 @@ class TeraSimToCosmosConverter:
             settings = json.load(f)
         return settings
 
-    def convert(self, streetview_retrieval: bool = False) -> bool:
+    def convert(self) -> bool:
         """
         Execute the full conversion pipeline.
-
-        Args:
-            streetview_retrieval: Whether to retrieve and analyze street view imagery
-
-        Returns:
-            True if conversion completed successfully
         """
         print(f"Processing fcd: {self.path_to_fcd}")
         print(f"Processing map: {self.path_to_map}")
@@ -129,7 +124,7 @@ class TeraSimToCosmosConverter:
             self.vehicle_id = self._load_vehicle_id_from_monitor()
 
         # Street view retrieval and analysis
-        if streetview_retrieval:
+        if self.streetview_retrieval:
             print("Retrieving and analyzing street view imagery...")
             self.streetview_analyzer.get_streetview_image_and_description(
                 path_to_output=self.path_to_output,

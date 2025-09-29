@@ -1,9 +1,0 @@
-path_to_output: "path_to_output"
-path_to_fcd: "path_to_fcd"
-path_to_map: "path_to_map"
-camera_setting_name: "default" # "waymo" or "default"
-vehicle_id: "vehicle77"
-time_start: 171.0
-time_end: 175.0
-agent_clip_distance: 80.0
-map_clip_distance: 100.0

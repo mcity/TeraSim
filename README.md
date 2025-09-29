@@ -26,6 +26,22 @@ Developed with **researchers, AV developers, and regulators** in mind, TeraSim i
 Built upon the open-source traffic simulation software [SUMO (Simulation of Urban MObility)](https://www.eclipse.org/sumo/), TeraSim extends its capabilities to provide specialized features for autonomous vehicle testing.
 
 
+## **🌎 New Feature: TeraSim-World**
+
+
+<img src="docs/figure/TeraSim_World.png" height="400px">
+
+
+**TeraSim-World** automatically synthesizes geographically grounded, safety-critical data for End-to-End autonomous driving **anywhere in the world**. See 📄 [paper](https://arxiv.org/abs/2503.03629) and 🌐 [videos](https://wjiawei.com/terasim-world-web/) for details.
+
+✨ **Key Capabilities:**
+- 🗺️ **Global Coverage**: Generate realistic driving scenarios for any location worldwide
+- 🎯 **Safety-Critical Data**: Automatically create safety-critical events for E2E AV safety testing
+- 🔄 **NVIDIA Cosmos-Drive Compatible**: Direct integration with video generation model training platforms
+
+🚀 **Source code is now available!** See [TeraSim_World.md](docs/TeraSim_World.md) for getting started guide.
+
+
 ## **🎥 Demo Video**
 
 [![TeraSim Demo Video](https://img.youtube.com/vi/9wc5QTAETTk/0.jpg)](https://www.youtube.com/watch?v=9wc5QTAETTk)

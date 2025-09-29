@@ -1,3 +1,13 @@
+input:
+  sumo_net_file: "path_to_net"
+  sumo_config_file: "path_to_config"
+
+output:
+  dir: "path_to_output"  # Output directory (use "output" for non-AV simulations)
+  name: "test"  # Experiment name
+  nth: "0_2"  # Experiment number
+  aggregated_dir: "aggregated"  # Directory for aggregated logs
+
 simulation_module: "my_simulations"
 simulation_class: "CarSimulation"
 parameters:
@@ -172,16 +182,7 @@ simulator:
 # - "cwd_relative": Relative paths are resolved from the current working directory
 path_resolution: "config_relative" 
 
-# New section for file paths
-input:
-  sumo_net_file: "path_to_net"
-  sumo_config_file: "path_to_config"
 
-output:
-  dir: "path_to_output"  # Output directory (use "output" for non-AV simulations)
-  name: "test"  # Experiment name
-  nth: "0_2"  # Experiment number
-  aggregated_dir: "aggregated"  # Directory for aggregated logs
 
 logging:
   levels:
