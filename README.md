@@ -30,7 +30,7 @@ This expanded scope enables a unified pipeline from map generation to perception
 
 ## 🚀 **Updates**
 
-- [09/29/2025]: TeraSim-World source codes are available. See [TeraSim_World.md](docs/TeraSim_World.md) to get started.
+- **[09/29/2025]**: TeraSim-World source codes are available. See [TeraSim_World.md](docs/TeraSim_World.md) to get started.
 
 
 
