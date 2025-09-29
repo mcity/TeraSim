@@ -28,6 +28,12 @@ The framework has evolved from its initial focus on planning-and-control testing
 
 This expanded scope enables a unified pipeline from map generation to perception and planning validation.
 
+## 🚀 **Updates**
+
+- [09/29/2025]: TeraSim-World source codes are available. See [TeraSim_World.md](docs/TeraSim_World.md) to get started.
+
+
+
 ## **🌎 New Feature: TeraSim-World**
 
 
