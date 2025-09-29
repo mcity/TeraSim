@@ -178,6 +178,9 @@ examples/maps/ann_arbor
 /phase1_results
 phase1_results.zip
 /sumo
+sim_configs
+vis_configs
+uv.lock
 texas_example
 README_QUICKSTART.md
 run_experiments_debug.py

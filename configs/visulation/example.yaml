@@ -1,0 +1,51 @@
+fcd: "path_to_fcd"  
+net: "path_to_net"        
+output_dir: "path_to_output"
+video_name: "bev_trajectory"  
+  
+
+start_time: 95         # Start time for visualization (default: 0)
+end_time: 99        # End time for visualization (null = use all data)
+ego_vehicle_id: "flow_0.6"
+adv_vehicle_id: "ped_flow_cross_1.15"
+
+animate: true        # true for animation, false for static plot
+speed_colors: false   # Color trajectories by speed (overrides other colors)
+lane_colors: false    # Color trajectories by lane (overrides vehicle type colors)
+
+# Plot appearance
+figsize: "9,12"       # Figure size in inches (width,height)
+dpi: 300              # Resolution for saved images/animations
+max_frames: 19        # Maximum number of frames to visualize
+
+# Map styling
+map_style:
+  style: "EUR"                    # Map style: EUR, USA, etc.
+  zoom_to_extents: false          # Auto-zoom to fit all roads (set false for custom view)
+  show_title: false               # Show plot title
+  show_labels: false              # Show axis labels
+  title: "Traffic Simulation"     # Custom title (if show_title: true)
+
+  
+  # Custom view settings (only used when zoom_to_extents: false)
+  view:
+    width: 60                    # View width in meters
+    height: 80                   # View height in meters
+    center_on_ego: true           # Center view on ego vehicle (if false, use fixed center)
+    center_x: 0                   # Fixed center X coordinate (only if center_on_ego: false)
+    center_y: 0                   # Fixed center Y coordinate (only if center_on_ego: false)
+  
+  # Colors for map elements
+  colors:
+    lane_color: '0.9'
+    lane_marking_color: '0.2'
+
+# Vehicle type coloring (when speed_colors and lane_colors are false):
+# - Regular vehicles (BV_*, AV): red
+# - Bicycles: yellow  
+# - Pedestrians (VRU_*): blue
+
+# Animation settings (only used when animate: true)
+# - Frame rate: 10 fps
+# - Marker sizes: vehicles=6, bicycles=4, pedestrians=2
+# - Uses ffmpeg writer for MP4 output
