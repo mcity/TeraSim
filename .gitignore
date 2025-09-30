@@ -184,3 +184,4 @@ uv.lock
 texas_example
 README_QUICKSTART.md
 run_experiments_debug.py
+test_docker.sh

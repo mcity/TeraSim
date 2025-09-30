@@ -125,6 +125,19 @@ cd TeraSim
 
 This script installs all required Python packages and dependencies, including [SUMO](https://www.eclipse.org/sumo/).
 
+### Docker Installation (Recommended for Production)
+
+For a containerized environment with all dependencies pre-installed:
+
+```bash
+git clone https://github.com/mcity/TeraSim.git
+cd TeraSim
+docker-compose up -d --build
+docker-compose exec terasim bash
+```
+
+See [README_DOCKER.md](README_DOCKER.md) for detailed Docker deployment instructions.
+
 ### Development Environment
 
 ```bash
@@ -140,6 +153,7 @@ cd TeraSim
 * Python 3.10–3.12
 * SUMO 1.23.1 (installed by the setup script)
 * Redis for service components
+* gcc/g++ compilers (for Cython extensions)
 
 ---
 
