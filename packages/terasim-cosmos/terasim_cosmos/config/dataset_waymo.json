@@ -1,0 +1,23 @@
+{
+    "CAMERAS": ["front"],
+    "MINIMAP_TYPES": [
+        "lanelines",
+        "road_boundaries",
+        "crosswalks"
+    ],
+    "CAMERAS_TO_RDS_HQ": {
+        "front": "camera_front_wide_120fov"
+    },
+    "INPUT_POSE_FPS": 30,
+    "INPUT_LIDAR_FPS": 10,
+    "NOT_POST_TRAINING": {
+        "CUT_LEN": 121,
+        "OVERLAP": 9,
+        "TARGET_RENDER_FPS": 30
+    },
+    "POST_TRAINING": {
+        "CUT_LEN": 190,
+        "OVERLAP": 9,
+        "TARGET_RENDER_FPS": 10
+    }
+}
