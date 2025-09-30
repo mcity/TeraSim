@@ -1,0 +1,56 @@
+version: '3.8'
+
+services:
+  terasim-cosmos:
+    build:
+      context: ../../  # Build from TeraSim root
+      dockerfile: packages/terasim-cosmos/Dockerfile.gpu
+    image: terasim-cosmos:gpu
+    container_name: terasim-cosmos-gpu
+    working_dir: /app/TeraSim
+    ports:
+      - "8000:8000"  # TeraSim FastAPI service
+      - "6379:6379"  # Redis
+      - "8888:8888"  # Jupyter Notebook (optional)
+    volumes:
+      # Mount outputs and logs to host for persistence
+      - ../../outputs:/app/TeraSim/outputs
+      - ../../logs:/app/TeraSim/logs
+      # Mount converter configs
+      - ../../configs:/app/TeraSim/configs
+      # Optional: mount source for development
+      # - ../../packages/terasim-cosmos:/app/TeraSim/packages/terasim-cosmos
+    environment:
+      - SUMO_HOME=/root/.terasim/deps/sumo
+      - PYTHONUNBUFFERED=1
+      - NVIDIA_VISIBLE_DEVICES=all
+      - NVIDIA_DRIVER_CAPABILITIES=compute,utility,graphics
+      # TensorFlow GPU configuration
+      - TF_FORCE_GPU_ALLOW_GROWTH=true
+      - TF_GPU_THREAD_MODE=gpu_private
+    # Start Redis and keep container running
+    command: sh -c "redis-server --daemonize yes && /bin/bash"
+    stdin_open: true
+    tty: true
+
+    # NVIDIA GPU support
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+          cpus: '4'
+          memory: 16G
+        limits:
+          cpus: '8'
+          memory: 32G
+
+# Alternative configuration without Docker Compose deploy (for older Docker versions)
+# Use this if the above doesn't work:
+#
+# services:
+#   terasim-cosmos:
+#     runtime: nvidia
+#     # ... rest of the configuration ...

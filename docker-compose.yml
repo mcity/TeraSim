@@ -1,0 +1,49 @@
+version: '3.8'
+
+services:
+  terasim:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: terasim:latest
+    container_name: terasim
+    working_dir: /app/TeraSim
+    ports:
+      - "8000:8000"  # TeraSim FastAPI service
+      - "6379:6379"  # Redis
+    volumes:
+      # Mount outputs and logs to host for persistence
+      - ./outputs:/app/TeraSim/outputs
+      - ./logs:/app/TeraSim/logs
+      # Optional: mount examples for easy editing
+      # - ./examples:/app/TeraSim/examples
+    environment:
+      - SUMO_HOME=/root/.terasim/deps/sumo
+      - PYTHONUNBUFFERED=1
+    # Start Redis and keep container running
+    command: sh -c "redis-server --daemonize yes && /bin/bash"
+    stdin_open: true
+    tty: true
+    # Resource limits (adjust as needed)
+    deploy:
+      resources:
+        limits:
+          cpus: '4'
+          memory: 8G
+        reservations:
+          cpus: '2'
+          memory: 4G
+
+  # Optional: Separate Redis service
+  # Uncomment if you prefer Redis as a separate container
+  # redis:
+  #   image: redis:7-alpine
+  #   container_name: terasim-redis
+  #   ports:
+  #     - "6379:6379"
+  #   volumes:
+  #     - redis-data:/data
+  #   command: redis-server --appendonly yes
+
+# volumes:
+#   redis-data:

@@ -129,9 +129,8 @@ After conversion, the output directory will contain:
 ### Setup
 ```bash
 # From the TeraSim root directory
-cd packages/terasim-world
-conda env create -f environment.yaml
-conda activate cosmos-av-toolkits
+cd packages/terasim-cosmos
+pip install -e .
 ```
 
 ### Additional Dependencies
