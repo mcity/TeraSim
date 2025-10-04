@@ -162,6 +162,8 @@ input/
 Current_NADE.py
 Pre_NADE.py
 *.json
+# Allow JSON files in terasim-cosmos config directory
+!packages/terasim-cosmos/terasim_cosmos/config/*.json
 Makefile
 classes.png
 packages.png
