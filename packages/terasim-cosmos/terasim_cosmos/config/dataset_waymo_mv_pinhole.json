@@ -5,14 +5,7 @@
         "road_boundaries",
         "crosswalks"
     ],
-    "CAMERAS_TO_RDS_HQ": {
-        "front": "camera_front_wide_120fov",
-        "front_left": "camera_cross_left_120fov",
-        "front_right": "camera_cross_right_120fov",
-        "side_left": "camera_rear_left_70fov",
-        "side_right": "camera_rear_right_70fov"
-    },
-    "CAMERA_TYPE": "ftheta",
+    "CAMERA_TYPE": "pinhole",
     "INPUT_POSE_FPS": 30,
     "INPUT_LIDAR_FPS": 10,
     "COSMOS_RESOLUTION": [1280,704],

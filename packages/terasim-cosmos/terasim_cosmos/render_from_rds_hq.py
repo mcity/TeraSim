@@ -115,8 +115,10 @@ def prepare_input(input_root, clip_id, settings, camera_type, post_training, res
                 intrinsic_this_cam = intrinsic_data[f"{camera_type}_intrinsic.{camera_name}.npy"]
                 print(f"loading intrinsic from {intrinsic_file}")
             else:
-                cprint(f"Ftheta intrinsic file does not exist: {intrinsic_file}", 'red')
-                cprint(f"===> So we will use default ftheta intrinsic for rendering", 'yellow', attrs=['bold'])
+                # cprint(f"Ftheta intrinsic file does not exist: {intrinsic_file}", 'red')
+                # cprint(f"===> So we will use default ftheta intrinsic for rendering", 'yellow', attrs=['bold'])
+                print(f"Ftheta intrinsic file does not exist: {intrinsic_file}")
+                print(f"===> So we will use default ftheta intrinsic for rendering")
                 # intrinsic_file = 'config/default_ftheta_intrinsic.tar'
                 package_root = Path(__file__).parent
                 intrinsic_file = package_root / "assets/example/ftheta_intrinsic/2d23a1f4-c269-46aa-8e7d-1bb595d1e421_2445376400000_2445396400000.tar"

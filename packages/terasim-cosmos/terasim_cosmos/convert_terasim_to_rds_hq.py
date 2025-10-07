@@ -336,8 +336,6 @@ WaymoProto2SemanticLabel = {
     label_pb2.Label.Type.TYPE_CYCLIST: "Cyclist",
 }
 
-CameraNames = ['front', 'front_left', 'front_right', 'side_left', 'side_right']
-
 SourceFps = 10 # waymo's recording fps
 TargetFps = 30 # cosmos's expected fps
 IndexScaleRatio = int(TargetFps / SourceFps)
@@ -356,17 +354,26 @@ if physical_devices:
 
 def convert_terasim_intrinsics(output_root: Path, clip_id: str, dataset: tf.data.TFRecordDataset):
     """
-    Use the front camera's intrinsics in Waymo openmotion dataset
+    Use the camera's intrinsics in Waymo openmotion dataset
 
     Minimal required format:
         sample['pinhole_intrinsic.{camera_name}.npy'] = np.ndarray with shape (4, 4)
     """
     sample = {'__key__': clip_id}
-    sample[f'pinhole_intrinsic.front.npy'] = np.array([2044.50, 2044.50, 949.57, 633.24, 1920, 1280])
-    sample['pinhole_intrinsic.front_left.npy'] = np.array([2046.63, 2046.63, 975.06, 640.91, 1920, 1280])
-    sample['pinhole_intrinsic.front_right.npy'] = np.array([2053.54, 2053.54, 944.36, 630.65, 1920, 1280])
-    sample['pinhole_intrinsic.side_left.npy'] = np.array([2046.63, 2046.63, 975.06, 640.91, 1920, 1280])
-    sample['pinhole_intrinsic.side_right.npy'] = np.array([2050.25, 2050.25, 970.31, 248.14, 1920, 1280])
+
+    example_id = "10017090168044687777_6380_000_6400_000"
+    package_root = Path(__file__).parent
+    npy_path = package_root / f"assets/waymo_pinhole_intrinsic_{example_id}.npy"
+    example_sample = np.load(npy_path, allow_pickle=True).item()
+    CameraNames = ['front', 'front_left', 'front_right', 'side_left', 'side_right']
+    for camera_name in CameraNames:
+        sample[f'pinhole_intrinsic.{camera_name}.npy'] = example_sample[f'pinhole_intrinsic.{camera_name}.npy']
+    
+    # sample[f'pinhole_intrinsic.front.npy'] = np.array([2044.50, 2044.50, 949.57, 633.24, 1920, 1280])
+    # sample['pinhole_intrinsic.front_left.npy'] = np.array([2046.63, 2046.63, 975.06, 640.91, 1920, 1280])
+    # sample['pinhole_intrinsic.front_right.npy'] = np.array([2053.54, 2053.54, 944.36, 630.65, 1920, 1280])
+    # sample['pinhole_intrinsic.side_left.npy'] = np.array([2046.63, 2046.63, 975.06, 640.91, 1920, 1280])
+    # sample['pinhole_intrinsic.side_right.npy'] = np.array([2050.25, 2050.25, 970.31, 248.14, 1920, 1280])
     write_to_tar(sample, output_root / 'pinhole_intrinsic' / f'{clip_id}.tar')
     return
 
@@ -445,39 +452,6 @@ def convert_terasim_hdmap(output_root: Path, clip_id: str, dataset: TeraSim_Data
         else:
             print(f"Unkown hdmap item name: {hdmap_name}, skip this item")
 
-    # # Plot all HDMap elements for visualization
-    # import matplotlib.pyplot as plt
-    
-    # plt.figure(figsize=(12, 8))
-    # colors = ['r', 'g', 'b', 'c', 'm', 'y']
-    
-    # for i, (hdmap_name, hdmap_data) in enumerate(hdmap_name_to_data.items()):
-    #     if len(hdmap_data) == 0:
-    #         continue
-            
-    #     color = colors[i % len(colors)]
-    #     for polyline in hdmap_data:
-    #         polyline = np.array(polyline)
-    #         if hdmap_name in hdmap_names_polyline:
-    #             # Plot polylines for lane, road_line, road_edge
-    #             plt.plot(polyline[:, 0], polyline[:, 1], color=color, alpha=0.5, label=hdmap_name)
-    #         else:
-    #             # Plot filled polygons for crosswalk, speed_bump, driveway
-    #             plt.fill(polyline[:, 0], polyline[:, 1], color=color, alpha=0.3, label=hdmap_name)
-    #             # Also plot the polygon outline
-    #             plt.plot(polyline[:, 0], polyline[:, 1], color=color, alpha=0.5, linestyle='--')
-        
-    # plt.title(f'HDMap Elements Visualization - {clip_id}')
-    # plt.xlabel('X (meters)')
-    # plt.ylabel('Y (meters)') 
-    # plt.axis('equal')
-    # plt.grid(True)
-    # plt.legend()
-    
-    # # Save plot
-    # plt.savefig("sumo_waymo_hdmap_visualize.png", dpi=300)
-    # plt.close()
-
     # convert to cosmos's name convention for easier processing
     hdmap_name_to_cosmos = {
         'lane': 'lanes',
@@ -524,34 +498,14 @@ def convert_terasim_pose(output_root: Path, clip_id: str, dataset: TeraSim_Datas
     """
     sample_camera_to_world = {'__key__': clip_id}
     sample_vehicle_to_world = {'__key__': clip_id}
+
     if camera_setting_name == "waymo":
-        camera_name_to_camera_to_vehicle = {
-            "front": np.array([
-                [ 0.99999432, -0.00276256,  0.00193296,  1.53863471],
-                [ 0.00274548,  0.99995762,  0.00878713, -0.02439434],
-                [-1.95715769e-03, -8.78177324e-03, 9.99959524e-01, 1.5],
-                [0., 0., 0., 1.]]),
-            "front_left": np.array([
-                [ 7.00459409e-01, -7.13517655e-01, -1.57852047e-02,  1.49588799e+00],
-                [ 7.13595870e-01,  7.00556959e-01, -9.38685058e-04,  9.58399088e-02],
-                [ 1.17282034e-02, -1.06067461e-02,  9.99874965e-01,  2.11583500e+00],
-                [0., 0., 0., 1.]]),
-            "front_right": np.array([
-                [ 7.14745341e-01,  6.99384780e-01,  1.64369685e-04,  1.49577652e+00],
-                [-6.99380300e-01,  7.14739880e-01,  3.75498469e-03, -9.60459719e-02],
-                [ 2.50869757e-03, -2.79881474e-03,  9.99992937e-01,  2.11601763e+00],
-                [0., 0., 0., 1.]]),
-            "side_left": np.array([
-                [-0.01330413, -0.99986702, -0.0094312,   1.43107005],
-                [ 0.99970386, -0.01349298,  0.02025173,  0.11573131],
-                [-0.02037629, -0.00915898,  0.99975043,  2.11555728],
-                [ 0., 0., 0., 1.]]),
-            "side_right": np.array([    
-                [ 0.01072168,  0.99990021,  0.00919854,  1.43093552],
-                [-0.99990666,  0.01079875, -0.00837033, -0.11586255],
-                [-0.00846883, -0.00910793,  0.99992266,  2.1157777 ],
-                [0., 0., 0., 1.]]),
-        }
+        package_root = Path(__file__).parent
+        CameraNames = ['front', 'front_left', 'front_right', 'side_left', 'side_right']
+        example_id = "10017090168044687777_6380_000_6400_000"
+        npy_path = package_root / f"assets/waymo_camera_name_to_camera_to_vehicle_{example_id}.npy"
+        camera_name_to_camera_to_vehicle = np.load(npy_path, allow_pickle=True).item()
+
     elif camera_setting_name == "default":
         import json
         camera_name_to_camera_to_vehicle = {}
@@ -706,17 +660,3 @@ def convert_terasim_to_wds(
     convert_terasim_intrinsics(output_wds_path, clip_id, dataset)
     
 
-# @click.command()
-# @click.option("--terasim_record_root", "-i", type=str, help="Terasim record root", default="terasim_mcity_dataset")
-# @click.option("--output_wds_path", "-o", type=str, help="Output wds path", default="/home/mtl/cosmos-av-sample-toolkits/terasim_demo_headon")
-# @click.option("--num_workers", "-n", type=int, default=1, help="Number of workers")
-# @click.option("--single_camera", "-s", type=bool, default=False, help="Convert only front camera")
-# def main(terasim_record_root: str, output_wds_path: str, num_workers: int, single_camera: bool):
-#     all_filenames = list(Path(terasim_record_root).iterdir())
-#     print(f"Found {len(all_filenames)} TeraSim records")
-#     for filename in all_filenames:
-#         if filename.stem.startswith("001001_headon"):
-#             convert_terasim_to_wds(filename, output_wds_path, single_camera, av_id="BV_3.20")
-
-# if __name__ == "__main__":
-#     main()

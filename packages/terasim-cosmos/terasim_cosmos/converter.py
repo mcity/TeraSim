@@ -98,7 +98,7 @@ class TeraSimToCosmosConverter:
         config_dir = package_root / "config"
 
         if self.camera_setting_name == "waymo":
-            config_path = config_dir / "dataset_waymo_mv.json"
+            config_path = config_dir / "dataset_waymo_mv_pinhole.json"
         elif self.camera_setting_name == "default":
             config_path = config_dir / "dataset_rds_hq_mv_terasim.json"
         else:
@@ -159,7 +159,7 @@ class TeraSimToCosmosConverter:
             output_root=self.path_to_output / "render",
             clip_id=self.path_to_output.stem,
             settings=settings,
-            camera_type="ftheta",
+            camera_type=settings['CAMERA_TYPE']
         )
 
         print("Conversion completed successfully!")

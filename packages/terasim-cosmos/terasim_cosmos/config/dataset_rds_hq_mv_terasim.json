@@ -5,6 +5,7 @@
     "road_boundaries",
     "crosswalks"
   ],
+  "CAMERA_TYPE": "ftheta",
   "INPUT_POSE_FPS": 30,
   "INPUT_LIDAR_FPS": 10,
   "COSMOS_RESOLUTION": [1280,704],
