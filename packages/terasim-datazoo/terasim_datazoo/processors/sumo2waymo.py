@@ -534,4 +534,7 @@ if __name__ == "__main__":
 
     converter = SUMO2Waymo("terasim_demo/e7078100-3635-4e58-a497-64e5528f08e8/map.net.xml")
     converter.parse(have_road_edges=True, have_road_lines=True)
-    converter.save_scenario(scenario_id="test", output_dir="terasim_demo/e7078100-3635-4e58-a497-64e5528f08e8")
+    scenario = converter.convert_to_scenario(scenario_id="test")
+    with open("test_map.pb", "wb") as f:
+        f.write(scenario.SerializeToString())
+    # converter.save_scenario(scenario_id="test", output_dir="terasim_demo/e7078100-3635-4e58-a497-64e5528f08e8")
