@@ -49,24 +49,6 @@ This expanded scope enables a unified pipeline from map generation to perception
 
 🚀 **Source code is now available!** See [TeraSim_World.md](docs/TeraSim_World.md) for getting started guide.
 
-
-## **🎥 Demo Video**
-
-## Background and Foundations
-
-TeraSim builds on prior research in naturalistic and adversarial driving environments:
-
-* **NDE** – Learning naturalistic driving environment with statistical realism
-  [Paper](https://doi.org/10.1038/s41467-023-37677-5) | [Code](https://github.com/michigan-traffic-lab/Learning-Naturalistic-Driving-Environment)
-
-* **NADE** – Intelligent driving intelligence test with naturalistic and adversarial environment
-  [Paper](https://doi.org/10.1038/s41467-021-21007-8) | [Code](https://github.com/michigan-traffic-lab/Naturalistic-and-Adversarial-Driving-Environment)
-
-* **D2RL** – Dense deep reinforcement learning for AV safety validation
-  [Paper](https://doi.org/10.1038/s41586-023-05732-2) | [Code](https://github.com/michigan-traffic-lab/Dense-Deep-Reinforcement-Learning)
-
-These works provide the statistical and algorithmic basis for TeraSim’s scenario generation and risk discovery.
-
 ---
 
 ## Key Capabilities
@@ -182,6 +164,19 @@ Contributions are welcome. Please read the [CONTRIBUTING.md](CONTRIBUTING.md) gu
 
 ---
 
+
+## Publications
+
+Explore our other research on autonomous driving testing!
+
+* **NDE** – Learning naturalistic driving environment with statistical realism
+  [Paper](https://doi.org/10.1038/s41467-023-37677-5) | [Code](https://github.com/michigan-traffic-lab/Learning-Naturalistic-Driving-Environment)
+
+* **NADE** – Intelligent driving intelligence test with naturalistic and adversarial environment
+  [Paper](https://doi.org/10.1038/s41467-021-21007-8) | [Code](https://github.com/michigan-traffic-lab/Naturalistic-and-Adversarial-Driving-Environment)
+
+* **D2RL** – Dense deep reinforcement learning for AV safety validation
+  [Paper](https://doi.org/10.1038/s41586-023-05732-2) | [Code](https://github.com/michigan-traffic-lab/Dense-Deep-Reinforcement-Learning)
 
 ## **📄 License**
 
