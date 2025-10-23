@@ -1,8 +1,0 @@
-<?xml version='1.0' encoding='utf-8'?>
-<connections>
-    <connection from="379.0" to="375.0" fromLane="2" toLane="2" />
-    <connection from="379.0" to="375.0" fromLane="1" toLane="1" />
-    <connection from="374.0" to="379.0" fromLane="1" toLane="1" />
-    <connection from="374.0" to="379.0" fromLane="2" toLane="2" />
-    <connection from="374.0" to="378.0" fromLane="0" toLane="0" />
-</connections>
