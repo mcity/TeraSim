@@ -1,0 +1,11 @@
+<?xml version='1.0' encoding='utf-8'?>
+<connections>
+    <connection from="215.0" to="213.0" fromLane="0" toLane="1" />
+    <connection from="215.0" to="213.0" fromLane="1" toLane="2" />
+    <connection from="201.0" to="212.0" fromLane="2" toLane="1" />
+    <connection from="201.0" to="212.0" fromLane="1" toLane="0" />
+    <connection from="201.0" to="220.0" fromLane="1" toLane="0" />
+    <connection from="223.0" to="225.0" fromLane="0" toLane="0" />
+    <connection from="223.0" to="222.0" fromLane="1" toLane="1" />
+    <connection from="223.0" to="222.0" fromLane="2" toLane="2" />
+</connections>

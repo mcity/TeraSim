@@ -1,0 +1,263 @@
+<?xml version='1.0' encoding='utf-8'?>
+<edges>
+    <edge id="0.0" from="node_0_start" to="junction_43" numLanes="3" speed="13.89" name="Road 0" type="town" shape="384.59,-0.02 348.23,-0.00">
+        <lane index="0" width="3.66" />
+        <lane index="1" width="3.66" type="shoulder" disallow="all" />
+        <lane index="2" width="3.66" />
+    </edge>
+    <edge id="0.1" from="junction_43" to="node_0_start" numLanes="3" speed="13.89" name="Road 0" type="town" shape="348.23,-0.00 384.59,-0.02">
+        <lane index="0" width="3.66" />
+        <lane index="1" width="3.66" type="shoulder" disallow="all" />
+        <lane index="2" width="3.66" />
+    </edge>
+    <edge id="1.0" from="junction_43" to="junction_26" numLanes="3" speed="13.89" name="Road 1" type="town" shape="325.63,0.01 290.58,0.03 290.58,0.03 290.36,0.03 196.77,0.04 196.77,0.04 168.08,0.04">
+        <lane index="0" width="3.66" />
+        <lane index="1" width="3.66" type="shoulder" disallow="all" />
+        <lane index="2" width="3.66" />
+    </edge>
+    <edge id="1.1" from="junction_26" to="junction_43" numLanes="3" speed="13.89" name="Road 1" type="town" shape="168.08,0.04 196.77,0.04 196.77,0.04 290.36,0.03 290.58,0.03 290.58,0.03 325.63,0.01">
+        <lane index="0" width="3.66" />
+        <lane index="1" width="3.66" type="shoulder" disallow="all" />
+        <lane index="2" width="3.66" />
+    </edge>
+    <edge id="10.0" from="junction_167" to="junction_111" numLanes="3" speed="13.89" name="Road 10" type="town" shape="167.17,-57.49 325.63,-57.47">
+        <lane index="0" width="3.66" />
+        <lane index="1" width="3.66" type="shoulder" disallow="all" />
+        <lane index="2" width="3.66" />
+    </edge>
+    <edge id="10.1" from="junction_111" to="junction_167" numLanes="3" speed="13.89" name="Road 10" type="town" shape="325.63,-57.47 167.17,-57.49">
+        <lane index="0" width="3.66" />
+        <lane index="1" width="3.66" type="shoulder" disallow="all" />
+        <lane index="2" width="3.66" />
+    </edge>
+    <edge id="11.0" from="node_0_start" to="node_11_end" numLanes="3" speed="13.89" name="Road 11" type="town" shape="384.59,-0.02 385.62,-0.02 385.62,-0.02 391.84,-2.66 394.38,-8.97 394.38,-9.85">
+        <lane index="0" width="3.66" />
+        <lane index="1" width="3.66" type="shoulder" disallow="all" />
+        <lane index="2" width="3.66" />
+    </edge>
+    <edge id="11.1" from="node_11_end" to="node_0_start" numLanes="3" speed="13.89" name="Road 11" type="town" shape="394.38,-9.85 394.38,-8.97 391.84,-2.66 385.62,-0.02 385.62,-0.02 384.59,-0.02">
+        <lane index="0" width="3.66" />
+        <lane index="1" width="3.66" type="shoulder" disallow="all" />
+        <lane index="2" width="3.66" />
+    </edge>
+    <edge id="12.0" from="junction_128" to="junction_94" numLanes="3" speed="13.89" name="Road 12" type="town" shape="101.42,-197.14 325.67,-197.16">
+        <lane index="0" width="3.66" />
+        <lane index="1" width="3.66" type="shoulder" disallow="all" />
+        <lane index="2" width="3.66" />
+    </edge>
+    <edge id="12.1" from="junction_94" to="junction_128" numLanes="3" speed="13.89" name="Road 12" type="town" shape="325.67,-197.16 101.42,-197.14">
+        <lane index="0" width="3.66" />
+        <lane index="1" width="3.66" type="shoulder" disallow="all" />
+        <lane index="2" width="3.66" />
+    </edge>
+    <edge id="13.0" from="node_13_start" to="node_13_end" numLanes="3" speed="13.89" name="Road 13" type="town" shape="-0.03,-9.96 -0.03,-8.58 -0.03,-8.58 2.75,-2.43 9.23,0.02 11.03,0.02">
+        <lane index="0" width="3.66" />
+        <lane index="1" width="3.66" type="shoulder" disallow="all" />
+        <lane index="2" width="3.66" />
+    </edge>
+    <edge id="13.1" from="node_13_end" to="node_13_start" numLanes="3" speed="13.89" name="Road 13" type="town" shape="11.03,0.02 9.23,0.02 2.75,-2.43 -0.03,-8.58 -0.03,-8.58 -0.03,-9.96">
+        <lane index="0" width="3.66" />
+        <lane index="1" width="3.66" type="shoulder" disallow="all" />
+        <lane index="2" width="3.66" />
+    </edge>
+    <edge id="14.0" from="node_14_start" to="node_14_end" numLanes="3" speed="13.89" name="Road 14" type="town" shape="394.35,-318.54 394.35,-319.71 394.35,-319.71 391.47,-326.08 384.75,-328.61 384.08,-328.61">
+        <lane index="0" width="3.66" />
+        <lane index="1" width="3.66" type="shoulder" disallow="all" />
+        <lane index="2" width="3.66" />
+    </edge>
+    <edge id="14.1" from="node_14_end" to="node_14_start" numLanes="3" speed="13.89" name="Road 14" type="town" shape="384.08,-328.61 384.75,-328.61 391.47,-326.08 394.35,-319.71 394.35,-319.71 394.35,-318.54">
+        <lane index="0" width="3.66" />
+        <lane index="1" width="3.66" type="shoulder" disallow="all" />
+        <lane index="2" width="3.66" />
+    </edge>
+    <edge id="15.0" from="node_13_start" to="node_15_end" numLanes="3" speed="13.89" name="Road 15" type="town" shape="-0.03,-9.96 -0.06,-87.61 -0.06,-87.61 -0.06,-88.07 -0.02,-164.42 -0.02,-164.42 0.02,-240.85 0.02,-240.85 0.02,-241.17 0.01,-317.60">
+        <lane index="0" width="3.66" />
+        <lane index="1" width="3.66" type="shoulder" disallow="all" />
+        <lane index="2" width="3.66" />
+    </edge>
+    <edge id="15.1" from="node_15_end" to="node_13_start" numLanes="3" speed="13.89" name="Road 15" type="town" shape="0.01,-317.60 0.02,-241.17 0.02,-240.85 0.02,-240.85 -0.02,-164.42 -0.02,-164.42 -0.06,-88.07 -0.06,-87.61 -0.06,-87.61 -0.03,-9.96">
+        <lane index="0" width="3.66" />
+        <lane index="1" width="3.66" type="shoulder" disallow="all" />
+        <lane index="2" width="3.66" />
+    </edge>
+    <edge id="16.0" from="junction_43" to="junction_111" numLanes="3" speed="13.89" name="Road 16" type="town" shape="336.89,-10.79 336.87,-46.42">
+        <lane index="0" width="3.66" />
+        <lane index="1" width="3.66" type="shoulder" disallow="all" />
+        <lane index="2" width="3.66" />
+    </edge>
+    <edge id="16.1" from="junction_111" to="junction_43" numLanes="3" speed="13.89" name="Road 16" type="town" shape="336.87,-46.42 336.89,-10.79">
+        <lane index="0" width="3.66" />
+        <lane index="1" width="3.66" type="shoulder" disallow="all" />
+        <lane index="2" width="3.66" />
+    </edge>
+    <edge id="17.0" from="junction_111" to="junction_139" numLanes="3" speed="13.89" name="Road 17" type="town" shape="336.86,-69.03 336.83,-120.58">
+        <lane index="0" width="3.66" />
+        <lane index="1" width="3.66" type="shoulder" disallow="all" />
+        <lane index="2" width="3.66" />
+    </edge>
+    <edge id="17.1" from="junction_139" to="junction_111" numLanes="3" speed="13.89" name="Road 17" type="town" shape="336.83,-120.58 336.86,-69.03">
+        <lane index="0" width="3.66" />
+        <lane index="1" width="3.66" type="shoulder" disallow="all" />
+        <lane index="2" width="3.66" />
+    </edge>
+    <edge id="18.0" from="junction_139" to="junction_94" numLanes="3" speed="13.89" name="Road 18" type="town" shape="336.81,-143.67 336.79,-185.65">
+        <lane index="0" width="3.66" />
+        <lane index="1" width="3.66" type="shoulder" disallow="all" />
+        <lane index="2" width="3.66" />
+    </edge>
+    <edge id="18.1" from="junction_94" to="junction_139" numLanes="3" speed="13.89" name="Road 18" type="town" shape="336.79,-185.65 336.81,-143.67">
+        <lane index="0" width="3.66" />
+        <lane index="1" width="3.66" type="shoulder" disallow="all" />
+        <lane index="2" width="3.66" />
+    </edge>
+    <edge id="19.0" from="junction_94" to="junction_60" numLanes="3" speed="13.89" name="Road 19" type="town" shape="336.77,-209.16 336.71,-317.45">
+        <lane index="0" width="3.66" />
+        <lane index="1" width="3.66" type="shoulder" disallow="all" />
+        <lane index="2" width="3.66" />
+    </edge>
+    <edge id="19.1" from="junction_60" to="junction_94" numLanes="3" speed="13.89" name="Road 19" type="town" shape="336.71,-317.45 336.77,-209.16">
+        <lane index="0" width="3.66" />
+        <lane index="1" width="3.66" type="shoulder" disallow="all" />
+        <lane index="2" width="3.66" />
+    </edge>
+    <edge id="2.0" from="junction_26" to="junction_77" numLanes="3" speed="13.89" name="Road 2" type="town" shape="144.96,0.05 103.19,0.05 103.19,0.05 102.97,0.05 102.69,0.05">
+        <lane index="0" width="3.66" />
+        <lane index="1" width="3.66" type="shoulder" disallow="all" />
+        <lane index="2" width="3.66" />
+    </edge>
+    <edge id="2.1" from="junction_77" to="junction_26" numLanes="3" speed="13.89" name="Road 2" type="town" shape="102.69,0.05 102.97,0.05 103.19,0.05 103.19,0.05 144.96,0.05">
+        <lane index="0" width="3.66" />
+        <lane index="1" width="3.66" type="shoulder" disallow="all" />
+        <lane index="2" width="3.66" />
+    </edge>
+    <edge id="20.0" from="node_20_start" to="node_15_end" numLanes="3" speed="13.89" name="Road 20" type="town" shape="10.01,-328.54 9.36,-328.54 9.36,-328.54 2.62,-325.34 0.01,-318.01 0.01,-317.60">
+        <lane index="0" width="3.66" />
+        <lane index="1" width="3.66" type="shoulder" disallow="all" />
+        <lane index="2" width="3.66" />
+    </edge>
+    <edge id="20.1" from="node_15_end" to="node_20_start" numLanes="3" speed="13.89" name="Road 20" type="town" shape="0.01,-317.60 0.01,-318.01 2.62,-325.34 9.36,-328.54 9.36,-328.54 10.01,-328.54">
+        <lane index="0" width="3.66" />
+        <lane index="1" width="3.66" type="shoulder" disallow="all" />
+        <lane index="2" width="3.66" />
+    </edge>
+    <edge id="21.0" from="junction_77" to="junction_184" numLanes="3" speed="13.89" name="Road 21" type="town" shape="90.37,-10.67 90.38,-46.15">
+        <lane index="0" width="3.66" />
+        <lane index="1" width="3.66" type="shoulder" disallow="all" />
+        <lane index="2" width="3.66" />
+    </edge>
+    <edge id="21.1" from="junction_184" to="junction_77" numLanes="3" speed="13.89" name="Road 21" type="town" shape="90.38,-46.15 90.37,-10.67">
+        <lane index="0" width="3.66" />
+        <lane index="1" width="3.66" type="shoulder" disallow="all" />
+        <lane index="2" width="3.66" />
+    </edge>
+    <edge id="22.0" from="junction_184" to="junction_156" numLanes="3" speed="13.89" name="Road 22" type="town" shape="90.38,-68.15 90.39,-119.84">
+        <lane index="0" width="3.66" />
+        <lane index="1" width="3.66" type="shoulder" disallow="all" />
+        <lane index="2" width="3.66" />
+    </edge>
+    <edge id="22.1" from="junction_156" to="junction_184" numLanes="3" speed="13.89" name="Road 22" type="town" shape="90.39,-119.84 90.38,-68.15">
+        <lane index="0" width="3.66" />
+        <lane index="1" width="3.66" type="shoulder" disallow="all" />
+        <lane index="2" width="3.66" />
+    </edge>
+    <edge id="23.0" from="junction_156" to="junction_128" numLanes="3" speed="13.89" name="Road 23" type="town" shape="90.39,-141.84 90.40,-186.33">
+        <lane index="0" width="3.66" />
+        <lane index="1" width="3.66" type="shoulder" disallow="all" />
+        <lane index="2" width="3.66" />
+    </edge>
+    <edge id="23.1" from="junction_128" to="junction_156" numLanes="3" speed="13.89" name="Road 23" type="town" shape="90.40,-186.33 90.39,-141.84">
+        <lane index="0" width="3.66" />
+        <lane index="1" width="3.66" type="shoulder" disallow="all" />
+        <lane index="2" width="3.66" />
+    </edge>
+    <edge id="24.0" from="junction_128" to="junction_195" numLanes="3" speed="13.89" name="Road 24" type="town" shape="90.40,-208.33 90.42,-317.30">
+        <lane index="0" width="3.66" />
+        <lane index="1" width="3.66" type="shoulder" disallow="all" />
+        <lane index="2" width="3.66" />
+    </edge>
+    <edge id="24.1" from="junction_195" to="junction_128" numLanes="3" speed="13.89" name="Road 24" type="town" shape="90.42,-317.30 90.40,-208.33">
+        <lane index="0" width="3.66" />
+        <lane index="1" width="3.66" type="shoulder" disallow="all" />
+        <lane index="2" width="3.66" />
+    </edge>
+    <edge id="25.0" from="junction_26" to="junction_167" numLanes="3" speed="13.89" name="Road 25" type="town" shape="156.07,-10.71 156.02,-46.20">
+        <lane index="0" width="3.66" />
+        <lane index="1" width="3.66" type="shoulder" disallow="all" />
+        <lane index="2" width="3.66" />
+    </edge>
+    <edge id="25.1" from="junction_167" to="junction_26" numLanes="3" speed="13.89" name="Road 25" type="town" shape="156.02,-46.20 156.07,-10.71">
+        <lane index="0" width="3.66" />
+        <lane index="1" width="3.66" type="shoulder" disallow="all" />
+        <lane index="2" width="3.66" />
+    </edge>
+    <edge id="3.0" from="junction_77" to="node_13_end" numLanes="3" speed="13.89" name="Road 3" type="town" shape="79.38,0.04 11.03,0.02">
+        <lane index="0" width="3.66" />
+        <lane index="1" width="3.66" type="shoulder" disallow="all" />
+        <lane index="2" width="3.66" />
+    </edge>
+    <edge id="3.1" from="node_13_end" to="junction_77" numLanes="3" speed="13.89" name="Road 3" type="town" shape="11.03,0.02 79.38,0.04">
+        <lane index="0" width="3.66" />
+        <lane index="1" width="3.66" type="shoulder" disallow="all" />
+        <lane index="2" width="3.66" />
+    </edge>
+    <edge id="4.0" from="junction_156" to="junction_139" numLanes="3" speed="13.89" name="Road 4" type="town" shape="101.42,-131.41 325.64,-131.52">
+        <lane index="0" width="3.66" />
+        <lane index="1" width="3.66" type="shoulder" disallow="all" />
+        <lane index="2" width="3.66" />
+    </edge>
+    <edge id="4.1" from="junction_139" to="junction_156" numLanes="3" speed="13.89" name="Road 4" type="town" shape="325.64,-131.52 101.42,-131.41">
+        <lane index="0" width="3.66" />
+        <lane index="1" width="3.66" type="shoulder" disallow="all" />
+        <lane index="2" width="3.66" />
+    </edge>
+    <edge id="5.0" from="node_20_start" to="junction_195" numLanes="3" speed="13.89" name="Road 5" type="town" shape="10.01,-328.54 79.41,-328.58">
+        <lane index="0" width="3.66" />
+        <lane index="1" width="3.66" type="shoulder" disallow="all" />
+        <lane index="2" width="3.66" />
+    </edge>
+    <edge id="5.1" from="junction_195" to="node_20_start" numLanes="3" speed="13.89" name="Road 5" type="town" shape="79.41,-328.58 10.01,-328.54">
+        <lane index="0" width="3.66" />
+        <lane index="1" width="3.66" type="shoulder" disallow="all" />
+        <lane index="2" width="3.66" />
+    </edge>
+    <edge id="6.0" from="junction_195" to="junction_60" numLanes="3" speed="13.89" name="Road 6" type="town" shape="101.62,-328.59 103.27,-328.59 103.27,-328.59 103.49,-328.59 196.97,-328.60 196.97,-328.60 290.53,-328.61 290.53,-328.61 290.59,-328.61 325.72,-328.61">
+        <lane index="0" width="3.66" />
+        <lane index="1" width="3.66" type="shoulder" disallow="all" />
+        <lane index="2" width="3.66" />
+    </edge>
+    <edge id="6.1" from="junction_60" to="junction_195" numLanes="3" speed="13.89" name="Road 6" type="town" shape="325.72,-328.61 290.59,-328.61 290.53,-328.61 290.53,-328.61 196.97,-328.60 196.97,-328.60 103.49,-328.59 103.27,-328.59 103.27,-328.59 101.62,-328.59">
+        <lane index="0" width="3.66" />
+        <lane index="1" width="3.66" type="shoulder" disallow="all" />
+        <lane index="2" width="3.66" />
+    </edge>
+    <edge id="7.0" from="junction_60" to="node_14_end" numLanes="3" speed="13.89" name="Road 7" type="town" shape="347.73,-328.61 384.08,-328.61">
+        <lane index="0" width="3.66" />
+        <lane index="1" width="3.66" type="shoulder" disallow="all" />
+        <lane index="2" width="3.66" />
+    </edge>
+    <edge id="7.1" from="node_14_end" to="junction_60" numLanes="3" speed="13.89" name="Road 7" type="town" shape="384.08,-328.61 347.73,-328.61">
+        <lane index="0" width="3.66" />
+        <lane index="1" width="3.66" type="shoulder" disallow="all" />
+        <lane index="2" width="3.66" />
+    </edge>
+    <edge id="8.0" from="node_14_start" to="node_11_end" numLanes="3" speed="13.89" name="Road 8" type="town" shape="394.35,-318.54 394.32,-241.32 394.32,-241.32 394.32,-241.24 394.30,-164.14 394.30,-164.14 394.29,-87.36 394.29,-87.36 394.29,-86.65 394.38,-9.85">
+        <lane index="0" width="3.66" />
+        <lane index="1" width="3.66" type="shoulder" disallow="all" />
+        <lane index="2" width="3.66" />
+    </edge>
+    <edge id="8.1" from="node_11_end" to="node_14_start" numLanes="3" speed="13.89" name="Road 8" type="town" shape="394.38,-9.85 394.29,-86.65 394.29,-87.36 394.29,-87.36 394.30,-164.14 394.30,-164.14 394.32,-241.24 394.32,-241.32 394.32,-241.32 394.35,-318.54">
+        <lane index="0" width="3.66" />
+        <lane index="1" width="3.66" type="shoulder" disallow="all" />
+        <lane index="2" width="3.66" />
+    </edge>
+    <edge id="9.0" from="junction_184" to="junction_167" numLanes="3" speed="13.89" name="Road 9" type="town" shape="101.39,-57.50 144.99,-57.49">
+        <lane index="0" width="3.66" />
+        <lane index="1" width="3.66" type="shoulder" disallow="all" />
+        <lane index="2" width="3.66" />
+    </edge>
+    <edge id="9.1" from="junction_167" to="junction_184" numLanes="3" speed="13.89" name="Road 9" type="town" shape="144.99,-57.49 101.39,-57.50">
+        <lane index="0" width="3.66" />
+        <lane index="1" width="3.66" type="shoulder" disallow="all" />
+        <lane index="2" width="3.66" />
+    </edge>
+</edges>

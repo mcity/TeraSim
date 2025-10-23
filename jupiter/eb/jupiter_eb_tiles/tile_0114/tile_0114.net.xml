@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- generated on 2025-10-19 17:35:18 by Eclipse SUMO netconvert Version 1.23.1
+<netconvertConfiguration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://sumo.dlr.de/xsd/netconvertConfiguration.xsd">
+
+    <input>
+        <node-files value="/home/sdai/harry/TeraSim/jupiter/eb/jupiter_eb_tiles/tile_0114/tile_0114.nod.xml"/>
+        <edge-files value="/home/sdai/harry/TeraSim/jupiter/eb/jupiter_eb_tiles/tile_0114/tile_0114.edg.xml"/>
+        <connection-files value="/home/sdai/harry/TeraSim/jupiter/eb/jupiter_eb_tiles/tile_0114/tile_0114.con.xml"/>
+    </input>
+
+    <output>
+        <output-file value="/home/sdai/harry/TeraSim/jupiter/eb/jupiter_eb_tiles/tile_0114/tile_0114.net.xml"/>
+        <output.street-names value="true"/>
+        <output.original-names value="true"/>
+    </output>
+
+    <processing>
+        <geometry.remove value="false"/>
+        <geometry.min-dist value="0.5"/>
+        <edges.join value="false"/>
+    </processing>
+
+    <junctions>
+        <no-internal-links value="false"/>
+        <no-turnarounds value="true"/>
+        <junctions.join value="true"/>
+        <junctions.join-dist value="10"/>
+        <junctions.corner-detail value="5"/>
+        <junctions.internal-link-detail value="5"/>
+        <junctions.limit-turn-speed value="5.5"/>
+        <rectangular-lane-cut value="true"/>
+        <check-lane-foes.all value="true"/>
+    </junctions>
+
+</netconvertConfiguration>
+-->
+
+<net version="1.20" junctionCornerDetail="5" junctionLinkDetail="5" rectangularLaneCut="true" limitTurnSpeed="5.50" checkLaneFoesAll="1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://sumo.dlr.de/xsd/net_file.xsd">
+
+    <location netOffset="-746616.37,-3290262.63" convBoundary="0.00,0.00,2914.33,656.55" origBoundary="0.00,0.00,749611.28,3290939.69" projParameter="!"/>
+
+    <edge id=":junction_110_0" function="internal">
+        <lane id=":junction_110_0_0" index="0" speed="13.89" length="88.90" width="3.66" shape="451.95,52.44 540.05,64.47"/>
+        <lane id=":junction_110_0_1" index="1" speed="13.89" length="88.90" width="3.66" shape="451.46,56.07 539.55,68.09"/>
+        <lane id=":junction_110_0_2" index="2" disallow="all" speed="13.89" length="88.90" width="3.66" shape="450.98,59.70 539.04,71.72"/>
+    </edge>
+    <edge id=":node_651_start_0" function="internal">
+        <lane id=":node_651_start_0_0" index="0" speed="13.89" length="0.10" width="3.66" shape="1447.17,274.98 1447.17,274.98"/>
+        <lane id=":node_651_start_0_1" index="1" speed="13.89" length="0.10" width="3.66" shape="1446.26,278.53 1446.26,278.53"/>
+    </edge>
+
+    <edge id="651.0" from="node_651_start" to="node_651_end" priority="-1" type="town" shape="1445.81,280.30 1475.99,288.01 1542.28,304.86 1619.38,324.64 1687.63,342.14 1781.96,366.44 1896.53,395.83 1957.40,411.31 2038.04,431.98 2079.25,443.17 2120.45,455.06 2153.93,464.16 2187.14,472.86 2237.34,485.68 2287.57,497.69 2338.64,509.38 2389.65,521.99 2496.67,549.48 2572.85,569.07 2647.14,588.17 2703.83,602.70 2750.17,614.50 2827.50,634.21 2885.14,648.99 2914.33,656.55">
+        <lane id="651.0_0" index="0" speed="13.89" length="1516.02" width="3.66" shape="1447.17,274.98 1477.35,282.69 1543.64,299.54 1620.75,319.32 1689.00,336.82 1783.33,361.12 1897.89,390.51 1958.76,405.99 2039.44,426.67 2080.73,437.88 2121.93,449.77 2155.35,458.86 2188.52,467.54 2238.66,480.35 2288.82,492.34 2339.91,504.04 2390.99,516.67 2498.04,544.16 2574.22,563.75 2648.51,582.85 2705.19,597.38 2751.53,609.18 2828.86,628.89 2886.51,643.67 2915.71,651.24"/>
+        <lane id="651.0_1" index="1" speed="13.89" length="1516.02" width="3.66" shape="1446.26,278.53 1476.44,286.24 1542.73,303.09 1619.84,322.87 1688.09,340.37 1782.42,364.67 1896.98,394.06 1957.85,409.54 2038.51,430.21 2079.75,441.41 2120.95,453.30 2154.40,462.39 2187.60,471.09 2237.78,483.90 2287.99,495.91 2339.07,507.60 2390.10,520.22 2497.13,547.71 2573.31,567.30 2647.60,586.40 2704.28,600.93 2750.62,612.73 2827.95,632.44 2885.60,647.22 2914.79,654.78"/>
+    </edge>
+    <edge id="652.0" from="node_893_end" to="node_651_start" priority="-1" type="town" shape="1181.01,212.21 1188.59,214.27 1247.58,229.50 1294.49,241.37 1346.41,254.65 1389.73,265.98 1445.81,280.30">
+        <lane id="652.0_0" index="0" speed="13.89" length="273.37" width="3.66" shape="1182.44,206.91 1190.00,208.96 1248.94,224.18 1295.85,236.05 1347.79,249.33 1391.11,260.66 1447.17,274.98"/>
+        <lane id="652.0_1" index="1" speed="13.89" length="273.37" width="3.66" shape="1181.48,210.44 1189.06,212.50 1248.04,227.73 1294.94,239.60 1346.87,252.88 1390.19,264.21 1446.26,278.53"/>
+    </edge>
+    <edge id="891.0" from="junction_51" to="junction_110" priority="-1" type="town" shape="0.00,0.00 50.29,6.96 100.22,13.74 150.20,20.50 201.28,27.51 251.38,34.37 300.87,41.05 350.63,47.83 400.55,54.77 450.73,61.51">
+        <lane id="891.0_0" index="0" disallow="all" speed="13.89" length="454.87" width="3.66" shape="2.26,-16.31 52.53,-9.36 102.43,-2.58 152.43,4.18 203.52,11.19 253.60,18.05 303.09,24.73 352.88,31.51 402.78,38.45 452.92,45.19" type="shoulder"/>
+        <lane id="891.0_1" index="1" speed="13.89" length="454.87" width="3.66" shape="1.76,-12.69 52.03,-5.73 101.94,1.05 151.93,7.81 203.02,14.82 253.11,21.68 302.59,28.36 352.38,35.14 402.29,42.08 452.44,48.81"/>
+        <lane id="891.0_2" index="2" speed="13.89" length="454.87" width="3.66" shape="1.25,-9.06 51.53,-2.11 101.45,4.67 151.44,11.43 202.52,18.44 252.61,25.30 302.10,31.98 351.88,38.77 401.79,45.70 451.95,52.44"/>
+        <lane id="891.0_3" index="3" speed="13.89" length="454.87" width="3.66" shape="0.75,-5.44 51.04,1.52 100.96,8.30 150.94,15.06 202.03,22.07 252.12,28.93 301.61,35.61 351.38,42.39 401.30,49.33 451.46,56.07"/>
+        <lane id="891.0_4" index="4" disallow="all" speed="13.89" length="454.87" width="3.66" shape="0.25,-1.81 50.54,5.15 100.47,11.93 150.45,18.69 201.53,25.70 251.63,32.56 301.12,39.24 350.88,46.02 400.80,52.96 450.98,59.70" type="shoulder"/>
+    </edge>
+    <edge id="893.0" from="junction_110" to="node_652_start" priority="-1" type="town" shape="538.79,73.53 578.34,79.04 587.08,80.43 605.07,85.53 632.05,89.74 659.90,95.05 680.38,98.41 717.70,104.91 740.05,109.16 781.19,117.29 821.87,125.68 862.24,134.69 881.89,139.17 902.42,144.01 942.27,153.36 982.42,162.43 1021.45,171.33 1041.68,176.18 1061.74,181.16 1081.39,186.11 1101.17,191.34 1142.49,202.68 1180.81,212.91">
+        <lane id="893.0_0" index="0" disallow="all" speed="13.89" length="658.34" width="3.66" shape="540.56,60.84 580.23,66.37 589.84,67.90 607.82,72.99 634.24,77.12 662.14,82.44 682.52,85.78 720.00,92.31 742.49,96.58 783.73,104.73 824.56,113.16 865.05,122.19 884.79,126.69 905.35,131.54 945.15,140.88 985.26,149.94 1024.37,158.86 1044.72,163.73 1064.85,168.73 1084.59,173.71 1104.50,178.97 1145.84,190.31 1184.12,200.53" type="shoulder"/>
+        <lane id="893.0_1" index="1" speed="13.89" length="658.34" width="3.66" shape="540.05,64.47 579.69,69.99 589.06,71.48 607.03,76.58 633.61,80.72 661.50,86.04 681.91,89.39 719.34,95.91 741.79,100.18 783.00,108.32 823.79,116.73 864.25,125.76 883.96,130.26 904.52,135.10 944.33,144.44 984.45,153.51 1023.54,162.42 1043.85,167.29 1063.96,172.28 1083.68,177.25 1103.55,182.50 1144.88,193.85 1183.18,204.07"/>
+        <lane id="893.0_2" index="2" speed="13.89" length="658.34" width="3.66" shape="539.55,68.09 579.15,73.61 588.27,75.06 606.25,80.16 632.99,84.33 660.86,89.64 681.30,93.00 718.69,99.51 741.10,103.77 782.28,111.91 823.02,120.31 863.45,129.33 883.13,133.82 903.68,138.67 943.50,148.01 983.64,157.08 1022.70,165.98 1042.98,170.85 1063.07,175.83 1082.76,180.79 1102.60,186.04 1143.93,197.38 1182.24,207.61"/>
+        <lane id="893.0_3" index="3" disallow="all" speed="13.89" length="658.34" width="3.66" shape="539.04,71.72 578.61,77.23 587.48,78.64 605.46,83.74 632.36,87.94 660.22,93.25 680.69,96.61 718.03,103.11 740.40,107.36 781.55,115.50 822.26,123.89 862.64,132.90 882.31,137.39 902.84,142.23 942.68,151.58 982.83,160.65 1021.87,169.55 1042.12,174.40 1062.19,179.38 1081.85,184.34 1101.65,189.57 1142.97,200.91 1181.28,211.14" type="shoulder"/>
+    </edge>
+
+    <junction id="junction_110" type="priority" x="494.76" y="67.52" incLanes="891.0_0 891.0_1 891.0_2 891.0_3 891.0_4" intLanes=":junction_110_0_0 :junction_110_0_1 :junction_110_0_2" shape="539.30,69.91 540.31,62.66 452.68,47.00 451.22,57.88">
+        <request index="0" response="000" foes="000" cont="0"/>
+        <request index="1" response="000" foes="000" cont="0"/>
+        <request index="2" response="000" foes="000" cont="0"/>
+    </junction>
+    <junction id="junction_51" type="dead_end" x="0.00" y="0.00" incLanes="" intLanes="" shape="0.50,-3.63 2.01,-14.50"/>
+    <junction id="node_651_end" type="dead_end" x="2914.33" y="656.55" incLanes="651.0_0 651.0_1" intLanes="" shape="2916.16,649.46 2914.33,656.55"/>
+    <junction id="node_651_start" type="priority" x="1445.81" y="280.30" incLanes="652.0_0 652.0_1" intLanes=":node_651_start_0_0 :node_651_start_0_1" shape="1445.81,280.30 1447.62,273.21 1445.81,280.30">
+        <request index="0" response="00" foes="00" cont="0"/>
+        <request index="1" response="00" foes="00" cont="0"/>
+    </junction>
+    <junction id="node_652_start" type="dead_end" x="1181.01" y="212.21" incLanes="893.0_0 893.0_1 893.0_2 893.0_3" intLanes="" shape="1183.65,202.30 1181.76,209.38"/>
+    <junction id="node_893_end" type="dead_end" x="1180.81" y="212.91" incLanes="" intLanes="" shape="1181.00,212.21 1182.92,205.14"/>
+
+    <connection from="652.0" to="651.0" fromLane="0" toLane="0" via=":node_651_start_0_0" dir="s" state="M"/>
+    <connection from="652.0" to="651.0" fromLane="1" toLane="1" via=":node_651_start_0_1" dir="s" state="M"/>
+    <connection from="891.0" to="893.0" fromLane="2" toLane="1" via=":junction_110_0_0" dir="s" state="M"/>
+    <connection from="891.0" to="893.0" fromLane="3" toLane="2" via=":junction_110_0_1" dir="s" state="M"/>
+    <connection from="891.0" to="893.0" fromLane="4" toLane="3" via=":junction_110_0_2" dir="s" state="M"/>
+
+    <connection from=":junction_110_0" to="893.0" fromLane="0" toLane="1" dir="s" state="M"/>
+    <connection from=":junction_110_0" to="893.0" fromLane="1" toLane="2" dir="s" state="M"/>
+    <connection from=":junction_110_0" to="893.0" fromLane="2" toLane="3" dir="s" state="M"/>
+    <connection from=":node_651_start_0" to="651.0" fromLane="0" toLane="0" dir="s" state="M"/>
+    <connection from=":node_651_start_0" to="651.0" fromLane="1" toLane="1" dir="s" state="M"/>
+
+</net>

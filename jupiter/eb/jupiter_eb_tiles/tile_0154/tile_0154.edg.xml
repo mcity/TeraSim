@@ -1,0 +1,16 @@
+<?xml version='1.0' encoding='utf-8'?>
+<edges>
+    <edge id="18.0" from="node_18_start" to="node_18_end" numLanes="5" speed="13.89" type="town" shape="805311.88,3298289.35 805403.57,3298292.51">
+        <lane index="0" width="3.66" />
+        <lane index="1" width="3.66" />
+        <lane index="2" width="3.66" />
+        <lane index="3" width="3.66" />
+        <lane index="4" width="3.66" type="shoulder" disallow="all" />
+    </edge>
+    <edge id="71.0" from="node_71_start" to="node_18_start" numLanes="4" speed="13.89" type="town" shape="805195.24,3298283.86 805224.57,3298285.74 805224.57,3298285.74 805271.41,3298287.89 805271.41,3298287.89 805311.88,3298289.35">
+        <lane index="0" width="3.66" />
+        <lane index="1" width="3.66" />
+        <lane index="2" width="3.66" />
+        <lane index="3" width="3.66" type="shoulder" disallow="all" />
+    </edge>
+</edges>

@@ -87,6 +87,47 @@ class OpenDriveRoad:
     road_type: str = "town"  # town, rural, motorway, etc.
     speed_limit: float = 13.89  # m/s (default 50 km/h)
 
+@dataclass
+class SpatialBounds:
+    """Spatial bounds for a region"""
+    min_x: float
+    min_y: float
+    max_x: float
+    max_y: float
+
+    def contains_point(self, x: float, y: float) -> bool:
+        """Check if a point is within bounds"""
+        return self.min_x <= x <= self.max_x and self.min_y <= y <= self.max_y
+
+    def intersects_road(self, road_geometry: List[Dict]) -> bool:
+        """Check if a road intersects with this boundary"""
+        if not road_geometry:
+            return False
+        # Check if any geometry point is within bounds
+        for geom in road_geometry:
+            # Check start point
+            if 'x' in geom and 'y' in geom:
+                if self.contains_point(geom['x'], geom['y']):
+                    return True
+            # Check end point if available
+            if 'end_x' in geom and 'end_y' in geom:
+                if self.contains_point(geom['end_x'], geom['end_y']):
+                    return True
+            # Check points list format (alternative)
+            elif 'points' in geom:
+                for x, y in geom['points']:
+                    if self.contains_point(x, y):
+                        return True
+        return False
+
+    def get_width(self) -> float:
+        """Get width in meters"""
+        return self.max_x - self.min_x
+
+    def get_height(self) -> float:
+        """Get height in meters"""
+        return self.max_y - self.min_y
+
 class OpenDriveToSumoConverter:
     """
     OpenDRIVE to SUMO Converter
@@ -130,27 +171,216 @@ class OpenDriveToSumoConverter:
         
         # Geographic projection
         self.geo_reference = None  # type: Optional[str]
-        
+
         # Coordinate offset attributes for relative coordinate system
         self.net_offset = None  # type: Optional[Tuple[float, float]]
         self.conv_boundary = None  # type: Optional[Tuple[float, float, float, float]]
         self.orig_boundary = None  # type: Optional[Tuple[float, float, float, float]]
+
+        # XML tree for fallback geometry parsing
+        self.xml_root = None  # type: Optional[ET.Element]
     
     def _decode_if_bytes(self, value):
-        """将 bytes 转换为 str，如果已经是 str 则直接返回"""
+        """ decode bytes to str if it is bytes, otherwise return the value """
         if isinstance(value, bytes):
             return value.decode('utf-8')
         return value
-        
-    def convert(self, xodr_file: str, output_prefix: str, use_netconvert: bool = True) -> bool:
+
+    def _calculate_map_bounds(self) -> Optional[SpatialBounds]:
         """
-        Convert OpenDRIVE file to SUMO format
-        
+        Calculate the spatial bounds of the entire map from road geometries
+        Must be called after parsing the XODR file
+        """
+        if not self.road_map:
+            logger.error("No roads loaded. Cannot calculate bounds.")
+            return None
+
+        min_x = float('inf')
+        min_y = float('inf')
+        max_x = float('-inf')
+        max_y = float('-inf')
+
+        # Iterate through all roads and their geometry points
+        for road_id, road in self.road_map.items():
+            if road.geometry:
+                for geom in road.geometry:
+                    # Handle geometry format from XML parsing (x, y keys)
+                    if 'x' in geom and 'y' in geom:
+                        min_x = min(min_x, geom['x'])
+                        min_y = min(min_y, geom['y'])
+                        max_x = max(max_x, geom['x'])
+                        max_y = max(max_y, geom['y'])
+
+                    # Also check end points if available
+                    if 'end_x' in geom and 'end_y' in geom:
+                        min_x = min(min_x, geom['end_x'])
+                        min_y = min(min_y, geom['end_y'])
+                        max_x = max(max_x, geom['end_x'])
+                        max_y = max(max_y, geom['end_y'])
+
+                    # Handle alternative format with points list
+                    if 'points' in geom:
+                        for x, y in geom['points']:
+                            min_x = min(min_x, x)
+                            min_y = min(min_y, y)
+                            max_x = max(max_x, x)
+                            max_y = max(max_y, y)
+
+        if min_x == float('inf'):
+            logger.error("No valid geometry points found in roads")
+            return None
+
+        bounds = SpatialBounds(min_x, min_y, max_x, max_y)
+        logger.info(f"Map bounds: ({bounds.min_x:.2f}, {bounds.min_y:.2f}) to ({bounds.max_x:.2f}, {bounds.max_y:.2f})")
+        logger.info(f"Map dimensions: {bounds.get_width():.2f}m x {bounds.get_height():.2f}m")
+        return bounds
+
+    def _create_tiles(self, bounds: SpatialBounds, tile_size_meters: float = 8046.72) -> List[SpatialBounds]:
+        """
+        Split the map bounds into tiles of specified size
+
+        Args:
+            bounds: Overall map bounds
+            tile_size_meters: Size of each tile in meters (default: 5 miles = 8046.72 meters)
+
+        Returns:
+            List of SpatialBounds representing each tile
+        """
+        tiles = []
+
+        # Calculate number of tiles needed in each direction
+        num_tiles_x = math.ceil(bounds.get_width() / tile_size_meters)
+        num_tiles_y = math.ceil(bounds.get_height() / tile_size_meters)
+
+        logger.info(f"Splitting map into {num_tiles_x} x {num_tiles_y} = {num_tiles_x * num_tiles_y} tiles")
+        logger.info(f"Tile size: {tile_size_meters:.2f}m x {tile_size_meters:.2f}m ({tile_size_meters/1609.34:.2f} mi)")
+
+        # Create tiles
+        for i in range(num_tiles_x):
+            for j in range(num_tiles_y):
+                tile_min_x = bounds.min_x + i * tile_size_meters
+                tile_min_y = bounds.min_y + j * tile_size_meters
+                tile_max_x = min(tile_min_x + tile_size_meters, bounds.max_x)
+                tile_max_y = min(tile_min_y + tile_size_meters, bounds.max_y)
+
+                tile = SpatialBounds(tile_min_x, tile_min_y, tile_max_x, tile_max_y)
+                tiles.append(tile)
+                logger.debug(f"Tile [{i},{j}]: ({tile.min_x:.2f}, {tile.min_y:.2f}) to ({tile.max_x:.2f}, {tile.max_y:.2f})")
+
+        return tiles
+
+    def _get_roads_in_tile(self, tile: SpatialBounds, include_adjacent: bool = True) -> Dict[str, OpenDriveRoad]:
+        """
+        Get all roads that intersect with a tile
+
+        Args:
+            tile: Spatial bounds of the tile
+            include_adjacent: If True, include roads connected to roads in the tile
+
+        Returns:
+            Dictionary of road_id -> OpenDriveRoad for roads in the tile
+        """
+        roads_in_tile = {}
+
+        # First pass: find roads that intersect the tile
+        for road_id, road in self.road_map.items():
+            if tile.intersects_road(road.geometry):
+                roads_in_tile[road_id] = road
+
+        # Second pass: include connected roads and junction roads if requested
+        if include_adjacent:
+            additional_roads = {}
+            junctions_to_include = set()
+
+            for road_id in list(roads_in_tile.keys()):
+                road = roads_in_tile[road_id]
+
+                # Include predecessor road
+                if road.predecessor and road.predecessor['elementType'] == 'road':
+                    pred_id = road.predecessor['elementId']
+                    if pred_id in self.road_map and pred_id not in roads_in_tile:
+                        additional_roads[pred_id] = self.road_map[pred_id]
+
+                # Include successor road
+                if road.successor and road.successor['elementType'] == 'road':
+                    succ_id = road.successor['elementId']
+                    if succ_id in self.road_map and succ_id not in roads_in_tile:
+                        additional_roads[succ_id] = self.road_map[succ_id]
+
+                # If road belongs to a junction, mark junction for complete inclusion
+                if road.junction != '-1':
+                    junctions_to_include.add(road.junction)
+
+                # If road connects to a junction, mark it for complete inclusion
+                if road.predecessor and road.predecessor['elementType'] == 'junction':
+                    junctions_to_include.add(road.predecessor['elementId'])
+                if road.successor and road.successor['elementType'] == 'junction':
+                    junctions_to_include.add(road.successor['elementId'])
+
+            # Third pass: include ALL roads for any junction that we're using
+            # This ensures junction integrity - we never split a junction
+            for junction_id in junctions_to_include:
+                if junction_id in self.junction_roads:
+                    for junc_road_id in self.junction_roads[junction_id]:
+                        if junc_road_id not in roads_in_tile and junc_road_id not in additional_roads:
+                            if junc_road_id in self.road_map:
+                                additional_roads[junc_road_id] = self.road_map[junc_road_id]
+
+                # Also include all incoming/outgoing roads referenced in junction connections
+                if junction_id in self.junction_connections:
+                    for connection in self.junction_connections[junction_id]:
+                        # Add incoming road
+                        incoming_road_id = connection.get('incomingRoad')
+                        if incoming_road_id and incoming_road_id in self.road_map:
+                            if incoming_road_id not in roads_in_tile and incoming_road_id not in additional_roads:
+                                additional_roads[incoming_road_id] = self.road_map[incoming_road_id]
+
+                        # Add connecting road (internal road)
+                        connecting_road_id = connection.get('connectingRoad')
+                        if connecting_road_id and connecting_road_id in self.road_map:
+                            if connecting_road_id not in roads_in_tile and connecting_road_id not in additional_roads:
+                                additional_roads[connecting_road_id] = self.road_map[connecting_road_id]
+
+            roads_in_tile.update(additional_roads)
+
+        logger.debug(f"Found {len(roads_in_tile)} roads in tile")
+        return roads_in_tile
+
+    def _get_junctions_for_roads(self, roads: Dict[str, OpenDriveRoad]) -> List[str]:
+        """
+        Get all junctions referenced by the given roads
+
+        Args:
+            roads: Dictionary of roads
+
+        Returns:
+            List of junction IDs
+        """
+        junction_ids = set()
+
+        for road_id, road in roads.items():
+            # Check if road is part of a junction
+            if road.junction != '-1':
+                junction_ids.add(road.junction)
+
+            # Check if road connects to a junction
+            if road.predecessor and road.predecessor['elementType'] == 'junction':
+                junction_ids.add(road.predecessor['elementId'])
+            if road.successor and road.successor['elementType'] == 'junction':
+                junction_ids.add(road.successor['elementId'])
+
+        return list(junction_ids)
+
+    def convert(self, xodr_file: str, output_prefix: str, use_netconvert: bool = True, tile_size_miles: float = 5.0) -> bool:
+        """
+        Convert OpenDRIVE file to SUMO format with tiling support
+
         Args:
             xodr_file: Input OpenDRIVE file path
-            output_prefix: Output file prefix
+            output_prefix: Output file prefix (if None, uses input directory)
             use_netconvert: Whether to use netconvert to generate final network
-            
+            tile_size_miles: Size of each tile in miles (default: 5 miles)
+
         Returns:
             Whether conversion was successful
         """
@@ -163,28 +393,231 @@ class OpenDriveToSumoConverter:
         else:
             raise ValueError("Unsupported parsing method")
 
-        # 2. Convert to Plain XML elements
-        logger.info("Converting to Plain XML format...")
-        self._create_nodes()
-        self._create_edges()
-        self._create_connections()
-        
-        # 3. Calculate and apply coordinate offset if we have geo reference
-        if self.geo_reference:
-            logger.info("Applying coordinate transformation for relative coordinate system")
-            self._calculate_coordinate_bounds()
-            self._apply_coordinate_offset()
-        
-        # 4. Write Plain XML files
-        logger.info(f"Writing Plain XML files with prefix: {output_prefix}")
-        self._write_plain_xml(output_prefix)
-        
-        # 4. Use netconvert to generate final network
-        if use_netconvert:
-            logger.info("Running netconvert to generate final network...")
-            return self._run_netconvert(output_prefix)
-        
-        return True
+        # 2. Determine output directory structure
+        input_dir = os.path.dirname(os.path.abspath(xodr_file))
+        input_basename = os.path.splitext(os.path.basename(xodr_file))[0]
+
+        # Create tiles directory
+        tiles_dir = os.path.join(input_dir, f"{input_basename}_tiles")
+        os.makedirs(tiles_dir, exist_ok=True)
+        logger.info(f"Tiles will be stored in: {tiles_dir}")
+
+        # 3. First, create complete map without tiling
+        logger.info(f"\n{'='*60}")
+        logger.info("Creating complete map (no tiling)...")
+        logger.info(f"{'='*60}")
+
+        complete_output_prefix = os.path.join(input_dir, input_basename)
+        complete_success = self._process_complete_map(complete_output_prefix, use_netconvert)
+
+        if complete_success:
+            logger.info("Complete map generated successfully!")
+        else:
+            logger.warning("Complete map generation failed")
+
+        # 4. Calculate map bounds and create tiles
+        logger.info("\nCalculating map spatial bounds for tiling...")
+        bounds = self._calculate_map_bounds()
+        if bounds is None:
+            logger.error("Failed to calculate map bounds")
+            return False
+
+        # Convert miles to meters (1 mile = 1609.34 meters)
+        tile_size_meters = tile_size_miles * 1609.34
+        tiles = self._create_tiles(bounds, tile_size_meters)
+
+        if not tiles:
+            logger.error("Failed to create tiles")
+            return False
+
+        logger.info(f"\nProcessing {len(tiles)} tiles...")
+
+        # 5. Process each tile separately
+        all_success = True
+        for tile_idx, tile in enumerate(tiles):
+            logger.info(f"\n{'='*60}")
+            logger.info(f"Processing Tile {tile_idx + 1}/{len(tiles)}")
+            logger.info(f"Bounds: ({tile.min_x:.2f}, {tile.min_y:.2f}) to ({tile.max_x:.2f}, {tile.max_y:.2f})")
+            logger.info(f"{'='*60}")
+
+            # Create tile-specific directory
+            tile_dir = os.path.join(tiles_dir, f"tile_{tile_idx:04d}")
+            os.makedirs(tile_dir, exist_ok=True)
+
+            # Create output prefix for this tile
+            tile_output_prefix = os.path.join(tile_dir, f"tile_{tile_idx:04d}")
+
+            # Process this tile
+            success = self._process_tile(tile, tile_idx, tile_output_prefix, use_netconvert)
+            if not success:
+                logger.error(f"Failed to process tile {tile_idx}")
+                all_success = False
+                # Continue processing other tiles even if one fails
+
+        if all_success:
+            logger.info(f"\n{'='*60}")
+            logger.info("All tiles processed successfully!")
+            logger.info(f"{'='*60}")
+        else:
+            logger.warning(f"\n{'='*60}")
+            logger.warning("Some tiles failed to process")
+            logger.warning(f"{'='*60}")
+
+        return complete_success and all_success
+
+    def _process_complete_map(self, output_prefix: str, use_netconvert: bool) -> bool:
+        """
+        Process the complete map without tiling
+
+        Args:
+            output_prefix: Output file prefix
+            use_netconvert: Whether to run netconvert
+
+        Returns:
+            Whether processing was successful
+        """
+        # Save current state
+        saved_nodes = self.nodes
+        saved_edges = self.edges
+        saved_connections = self.connections
+        saved_node_map = self.node_map.copy()
+        saved_lane_mapping = self.lane_mapping.copy()
+        saved_node_counter = self.node_counter
+
+        # Reset state
+        self.nodes = []
+        self.edges = []
+        self.connections = []
+        self.node_map = {}
+        self.lane_mapping = {}
+        self.node_counter = 0
+
+        try:
+            # Convert to Plain XML elements (using all roads)
+            logger.info("Converting complete map to Plain XML format...")
+            self._create_nodes()
+            self._create_edges()
+            self._create_connections()
+
+            # Skip coordinate offset for consistency with tiles
+            logger.info("Skipping coordinate offset (using original XODR coordinates)")
+
+            # Write Plain XML files
+            logger.info(f"Writing complete map Plain XML files with prefix: {output_prefix}")
+            self._write_plain_xml(output_prefix)
+
+            # Use netconvert to generate final network
+            if use_netconvert:
+                logger.info("Running netconvert to generate complete network...")
+                if not self._run_netconvert(output_prefix):
+                    logger.error("netconvert failed for complete map")
+                    return False
+
+            logger.info("Complete map processed successfully")
+            return True
+
+        except Exception as e:
+            logger.error(f"Error processing complete map: {e}")
+            import traceback
+            traceback.print_exc()
+            return False
+
+        finally:
+            # Restore original state
+            self.nodes = saved_nodes
+            self.edges = saved_edges
+            self.connections = saved_connections
+            self.node_map = saved_node_map
+            self.lane_mapping = saved_lane_mapping
+            self.node_counter = saved_node_counter
+
+    def _process_tile(self, tile: SpatialBounds, tile_idx: int, output_prefix: str, use_netconvert: bool) -> bool:
+        """
+        Process a single tile: extract roads/junctions and convert to SUMO format
+
+        Args:
+            tile: Spatial bounds of the tile
+            tile_idx: Tile index
+            output_prefix: Output file prefix for this tile
+            use_netconvert: Whether to run netconvert
+
+        Returns:
+            Whether tile processing was successful
+        """
+        # Save current state BEFORE any processing
+        saved_nodes = self.nodes
+        saved_edges = self.edges
+        saved_connections = self.connections
+        saved_node_map = self.node_map.copy()
+        saved_lane_mapping = self.lane_mapping.copy()
+        saved_node_counter = self.node_counter
+        original_road_map = self.road_map  # Save this early for finally block
+
+        # Reset state for this tile
+        self.nodes = []
+        self.edges = []
+        self.connections = []
+        self.node_map = {}
+        self.lane_mapping = {}
+        self.node_counter = 0
+
+        try:
+            # 1. Get roads in this tile
+            logger.info("Extracting roads for tile...")
+            tile_roads = self._get_roads_in_tile(tile, include_adjacent=True)
+
+            if not tile_roads:
+                logger.warning(f"No roads found in tile {tile_idx}, skipping...")
+                return True  # Not an error, just an empty tile
+
+            logger.info(f"Found {len(tile_roads)} roads in tile (including adjacent)")
+
+            # 2. Get junctions for these roads
+            junction_ids = self._get_junctions_for_roads(tile_roads)
+            logger.info(f"Found {len(junction_ids)} junctions for tile")
+
+            # 3. Filter road_map for this tile
+            self.road_map = tile_roads
+
+            # 4. Convert to Plain XML elements for this tile
+            logger.info("Converting tile to Plain XML format...")
+            self._create_nodes()
+            self._create_edges()
+            self._create_connections()
+
+            # 5. Skip coordinate offset for tiled output - causes projection issues
+            # The tiles already have reasonable local coordinates from XODR geometry
+            logger.info("Skipping coordinate offset (using original XODR coordinates)")
+
+            # 6. Write Plain XML files for this tile
+            logger.info(f"Writing Plain XML files with prefix: {output_prefix}")
+            self._write_plain_xml(output_prefix)
+
+            # 7. Use netconvert to generate final network for this tile
+            if use_netconvert:
+                logger.info("Running netconvert to generate final network for tile...")
+                if not self._run_netconvert(output_prefix):
+                    logger.error(f"netconvert failed for tile {tile_idx}")
+                    return False
+
+            logger.info(f"Tile {tile_idx} processed successfully")
+            return True
+
+        except Exception as e:
+            logger.error(f"Error processing tile {tile_idx}: {e}")
+            import traceback
+            traceback.print_exc()
+            return False
+
+        finally:
+            # Restore original state
+            self.road_map = original_road_map
+            self.nodes = saved_nodes
+            self.edges = saved_edges
+            self.connections = saved_connections
+            self.node_map = saved_node_map
+            self.lane_mapping = saved_lane_mapping
+            self.node_counter = saved_node_counter
 
     
     def _parse_with_pyopendrive(self, xodr_file: str) -> bool:
@@ -193,13 +626,15 @@ class OpenDriveToSumoConverter:
             # First parse geoReference from XML (pyOpenDRIVE may not expose this)
             tree = ET.parse(xodr_file)
             root = tree.getroot()
+            self.xml_root = root  # Store for geometry fallback parsing
+
             geo_ref = root.find('.//geoReference')
             if geo_ref is not None:
                 self.geo_reference = geo_ref.text.strip() if geo_ref.text else None
                 logger.info(f"Found geoReference: {self.geo_reference}")
             else:
                 logger.warning("No geoReference found in OpenDRIVE file")
-            
+
             # Load the OpenDRIVE map with pyOpenDRIVE
             self.odr_map = PyOpenDriveMap(xodr_file.encode())
             
@@ -334,37 +769,71 @@ class OpenDriveToSumoConverter:
             logger.error(f"Failed to parse OpenDRIVE with pyOpenDRIVE: {e}")
     
     def _extract_geometry_from_pyopendrive(self, py_road) -> List[Dict]:
-        """Extract geometry data from pyOpenDRIVE road object"""
+        """
+        Extract geometry data from pyOpenDRIVE road object
+        Falls back to XML parsing due to bug in pyOpenDRIVE get_xyz method
+        """
         geometry = []
-        
+
         try:
-            # Sample points along the road centerline
-            # For most use cases, we need start point, some intermediate points, and end point
-            num_samples = max(5, int(py_road.length / 10))  # At least 5 points, or one every 10 meters
-            
-            for i in range(num_samples + 1):
-                s = (i / num_samples) * py_road.length
-                
-                # Get coordinates at (s, t=0, h=0) for centerline
-                xyz = py_road.get_xyz(s, 0, 0)
-                coords = xyz.array
-                
-                # Store in format compatible with existing code
+            road_id = self._decode_if_bytes(py_road.id)
+
+            # Find road element in XML
+            if self.xml_root is None:
+                logger.warning(f"XML root not available for road {road_id}")
+                return []
+
+            road_elem = self.xml_root.find(f".//road[@id='{road_id}']")
+            if road_elem is None:
+                logger.warning(f"Road {road_id} not found in XML")
+                return []
+
+            # Get all geometry elements
+            geom_elems = road_elem.findall('.//planView/geometry')
+
+            for geom_elem in geom_elems:
+                x = float(geom_elem.get('x', 0))
+                y = float(geom_elem.get('y', 0))
+                hdg = float(geom_elem.get('hdg', 0))
+                length = float(geom_elem.get('length', 0))
+                s = float(geom_elem.get('s', 0))
+
+                # Determine geometry type
+                geom_type = 'line'
+                if geom_elem.find('line') is not None:
+                    geom_type = 'line'
+                elif geom_elem.find('arc') is not None:
+                    geom_type = 'arc'
+                elif geom_elem.find('spiral') is not None:
+                    geom_type = 'spiral'
+                elif geom_elem.find('poly3') is not None:
+                    geom_type = 'poly3'
+
+                # Store geometry data
                 geom_data = {
-                    'x': coords[0],
-                    'y': coords[1], 
-                    'hdg': 0,  # We'll calculate heading if needed
+                    'x': x,
+                    'y': y,
+                    'hdg': hdg,
                     's': s,
-                    'length': py_road.length / num_samples if i < num_samples else 0,
-                    'type': 'line'  # Assume line segments for now
+                    'length': length,
+                    'type': geom_type
                 }
+
+                # For better tiling, also sample end point
+                if geom_type == 'line' and length > 0:
+                    end_x = x + length * math.cos(hdg)
+                    end_y = y + length * math.sin(hdg)
+                    geom_data['end_x'] = end_x
+                    geom_data['end_y'] = end_y
+
                 geometry.append(geom_data)
-            
+
         except Exception as e:
-            logger.warning(f"Failed to extract geometry from pyOpenDRIVE road {py_road.id}: {e}")
-            # Return empty geometry, will fall back to (0, 0) coordinates
+            logger.warning(f"Failed to extract geometry for road {py_road.id}: {e}")
+            import traceback
+            traceback.print_exc()
             return []
-        
+
         return geometry
     
     def _get_lane_width(self, lane_elem: ET.Element) -> float:
@@ -430,25 +899,30 @@ class OpenDriveToSumoConverter:
     def _determine_junction_type(self, junction_id: str, internal_road_ids: List[str]) -> str:
         """
         Determine junction type based on junction complexity
-        
+
         Returns:
             Junction type: 'traffic_light', 'priority', 'right_before_left', etc.
         """
         # Count incoming/outgoing roads (not internal junction roads)
         connected_roads = set()
         total_lanes = 0
-        
+
         for road_id in internal_road_ids:
+            # Skip roads that aren't in our filtered road_map (shouldn't happen with proper filtering)
+            if road_id not in self.road_map:
+                logger.warning(f"Internal road {road_id} for junction {junction_id} not found in road_map - skipping")
+                continue
+
             road = self.road_map[road_id]
-            
+
             # Check predecessor
             if road.predecessor and road.predecessor['elementType'] == 'road':
                 connected_roads.add(road.predecessor['elementId'])
-            
-            # Check successor  
+
+            # Check successor
             if road.successor and road.successor['elementType'] == 'road':
                 connected_roads.add(road.successor['elementId'])
-            
+
             # Count lanes
             total_lanes += len(road.lanes_left) + len(road.lanes_right)
         
@@ -1320,7 +1794,7 @@ class OpenDriveToSumoConverter:
                         lane_dict['disallow'] = 'all'   # Disallow all vehicles
                     lane_data.append(lane_dict)
                     
-                    # 🆕 构建车道映射：(road_id, lane_id, direction) -> (edge_id, sumo_index)
+                    # 🆕 build lane mapping: (road_id, lane_id, direction) -> (edge_id, sumo_index)
                     opendrive_lane_id = lane_info['id']
                     mapping_key = (road_id, opendrive_lane_id, 'forward')
                     self.lane_mapping[mapping_key] = (edge_id, sumo_index)
@@ -1356,7 +1830,7 @@ class OpenDriveToSumoConverter:
                         lane_dict['disallow'] = 'all'   # Disallow all vehicles
                     lane_data.append(lane_dict)
                     
-                    # 🆕 构建车道映射：(road_id, lane_id, direction) -> (edge_id, sumo_index)
+                    # 🆕 build lane mapping: (road_id, lane_id, direction) -> (edge_id, sumo_index)
                     opendrive_lane_id = lane_info['id']
                     mapping_key = (road_id, opendrive_lane_id, 'backward')
                     self.lane_mapping[mapping_key] = (edge_id, sumo_index)
@@ -1643,20 +2117,20 @@ class OpenDriveToSumoConverter:
                 # Process lane links
                 connection_created = False
                 for lane_link in conn.get('laneLinks', []):
-                    from_lane_id = lane_link.get('from')        # incoming road车道ID
-                    connecting_lane_id = lane_link.get('to')    # connecting road车道ID
+                    from_lane_id = lane_link.get('from')        # incoming road lane ID
+                    connecting_lane_id = lane_link.get('to')    # connecting road lane ID
                     
-                    # 🆕 使用全局映射表查找SUMO lane indices
-                    # 1. 查找incoming road的SUMO mapping
+                    # 🆕 use the global mapping table to find the SUMO lane indices
+                    # 1. find the SUMO mapping of the incoming road
                     incoming_direction = 'forward' if from_lane_id < 0 else 'backward'
                     from_mapping = self._get_sumo_lane_index(incoming_road_id, from_lane_id, incoming_direction)
                     
-                    # 2. 获取真正的outgoing road车道ID
+                    # 2. get the actual outgoing road lane ID
                     outgoing_lane_id = self._get_outgoing_lane_from_connecting_road(
                         connecting_road, connecting_lane_id, contact_point)
                     
                     # if outgoing_lane_id is None:
-                    #     # 使用fallback映射
+                    #     # use fallback mapping
                     #     outgoing_lane_id = self._fallback_lane_mapping(
                     #         connecting_road, connecting_lane_id, outgoing_road_id, contact_point)
                     
@@ -1664,7 +2138,7 @@ class OpenDriveToSumoConverter:
                         logger.warning(f"Cannot map connecting road {connecting_road_id} lane {connecting_lane_id} to outgoing road {outgoing_road_id}")
                         continue
                     
-                    # 3. 查找outgoing road的SUMO mapping
+                    # 3. find the SUMO mapping of the outgoing road
                     outgoing_direction = 'forward' if outgoing_lane_id < 0 else 'backward'
                     to_mapping = self._get_sumo_lane_index(outgoing_road_id, outgoing_lane_id, outgoing_direction)
                     
@@ -1940,12 +2414,12 @@ class OpenDriveToSumoConverter:
 
     def _get_sumo_lane_index(self, road_id: str, lane_id: int, direction: str = 'forward') -> Optional[Tuple[str, int]]:
         """
-        从全局映射表中获取SUMO edge ID和lane index
+        get the SUMO edge ID and lane index from the global mapping table
         
         Args:
             road_id: OpenDRIVE road ID
             lane_id: OpenDRIVE lane ID
-            direction: 'forward' 或 'backward'
+            direction: 'forward' or 'backward'
             
         Returns:
             Tuple of (edge_id, lane_index) if found, None otherwise
@@ -2077,68 +2551,70 @@ class OpenDriveToSumoConverter:
     
     def _map_opendrive_lane_to_sumo_index(self, road: OpenDriveRoad, target_lane_id: int, edge_direction: str = 'forward') -> Optional[int]:
         """
-        智能映射OpenDRIVE车道ID到SUMO车道索引，正确处理shoulder车道差异
+        smart mapping OpenDRIVE lane ID to SUMO lane index, correctly handle shoulder lane differences
         
         Args:
-            road: OpenDRIVE road对象
-            target_lane_id: 目标车道ID（OpenDRIVE格式）
-            edge_direction: 'forward' 或 'backward'
+            road: OpenDRIVE road object
+            target_lane_id: target lane ID (OpenDRIVE format)
+            edge_direction: 'forward' or 'backward'
             
         Returns:
-            SUMO车道索引，如果找不到则返回None
+            SUMO lane index, if not found return None
         """
         if edge_direction == 'forward' and target_lane_id < 0:
-            # 前向边，右侧车道
+            # forward edge, right lane
             lanes = road.lanes_right
         elif edge_direction == 'backward' and target_lane_id > 0:
-            # 后向边，左侧车道
+            # backward edge, left lane
             lanes = road.lanes_left
         elif edge_direction == 'forward' and target_lane_id > 0:
-            # 前向边，左侧车道（实际用于backward edge）
+            # forward edge, left lane (actually used for backward edge)
             lanes = road.lanes_left
         elif edge_direction == 'backward' and target_lane_id < 0:
-            # 后向边，右侧车道（实际用于backward edge）
+            # backward edge, right lane (actually used for backward edge)
             lanes = road.lanes_right
         else:
             return None
         
-        # 1. 首先尝试精确匹配
+        # 1. first try exact match
         driving_lanes = [lane for lane in lanes if lane['type'] == 'driving']
-        # 对于右侧车道（负ID），按绝对值从小到大排序（-1, -2, -3...）
-        # 对于左侧车道（正ID），按值从小到大排序（1, 2, 3...）
+        # for right lane (negative ID), sort by absolute value (-1, -2, -3...）
+        # for left lane (positive ID), sort by value (-1, -2, -3...）
         if target_lane_id < 0:
-            # 右侧车道：-1是最内侧，-2, -3...向外，SUMO索引0是最右侧
-            # 所以按绝对值倒序排列：-3, -2, -1 → SUMO indices [0, 1, 2]
+            # right lane: -1 is the innermost, -2, -3... outward, SUMO index 0 is the rightmost
+            # so sort by absolute value: -3, -2, -1 → SUMO indices [0, 1, 2]
+            # Sort using absolute value: -3, -2, -1 → SUMO indices [0, 1, 2]
             sorted_driving_lanes = sorted(driving_lanes, key=lambda x: -x['id'])
         else:
-            # 左侧车道：1是最内侧，2, 3...向外
+            # left lane: 1 is the innermost, 2, 3... outward, SUMO index 0 is the leftmost
+            # so sort by value: 1, 2, 3 → SUMO indices [0, 1, 2]
             sorted_driving_lanes = sorted(driving_lanes, key=lambda x: x['id'])
         
         logger.debug(f"Road {road.id} lane mapping: target={target_lane_id}, direction={edge_direction}")
         logger.debug(f"  All lanes: {[lane['id'] for lane in lanes]}")
         logger.debug(f"  Driving lanes: {[lane['id'] for lane in sorted_driving_lanes]}")
         
-        # 精确匹配
+        # exact match
         for idx, lane_info in enumerate(sorted_driving_lanes):
             if lane_info['id'] == target_lane_id:
                 logger.debug(f"  Exact match: lane {target_lane_id} -> index {idx}")
                 return idx
         
-        # 2. 如果没有精确匹配，使用智能映射策略
+        # 2. if no exact match, use intelligent mapping strategy
         return self._intelligent_lane_mapping(road, target_lane_id, sorted_driving_lanes, edge_direction)
     
     def _intelligent_lane_mapping(self, road: OpenDriveRoad, target_lane_id: int, driving_lanes: List[Dict], edge_direction: str) -> Optional[int]:
         """
-        智能车道映射策略，处理shoulder车道和车道不匹配的情况
+        intelligent lane mapping strategy, handle shoulder lane and lane mismatch
         
         Args:
-            road: OpenDRIVE road对象
-            target_lane_id: 目标车道ID
-            driving_lanes: 已排序的driving车道列表
-            edge_direction: 边的方向
+            road: OpenDRIVE road object
+            target_lane_id: target lane ID
+            driving_lanes: sorted driving lanes list
+            edge_direction: edge direction
             
         Returns:
-            最佳匹配的SUMO车道索引
+            best matched SUMO lane index
         """
         if not driving_lanes:
             logger.warning(f"Road {road.id}: No driving lanes found for lane {target_lane_id}")
@@ -2146,13 +2622,13 @@ class OpenDriveToSumoConverter:
         
         logger.info(f"Road {road.id}: Applying intelligent mapping for lane {target_lane_id}")
         
-        # 策略1：基于车道相对位置的映射
-        if target_lane_id < 0:  # 右侧车道
-            # 计算目标车道在所有右侧车道中的相对位置
+        # strategy 1: mapping based on lane relative position
+        if target_lane_id < 0:  # right lane
+            # calculate the relative position of the target lane in all right lanes
             all_right_lanes = sorted([lane['id'] for lane in road.lanes_right], key=abs)
             try:
                 target_position = all_right_lanes.index(target_lane_id)
-                # 将相对位置映射到driving车道
+                # map relative position to driving lane
                 if target_position < len(driving_lanes):
                     mapped_idx = target_position
                     logger.info(f"  Position-based mapping: lane {target_lane_id} (pos {target_position}) -> index {mapped_idx}")
@@ -2160,30 +2636,30 @@ class OpenDriveToSumoConverter:
             except ValueError:
                 pass
         
-        # 策略2：基于车道数值的智能匹配
-        # 找到最接近的driving车道
+        # strategy 2: intelligent matching based on lane value
+        # find the closest driving lane
         driving_lane_ids = [lane['id'] for lane in driving_lanes]
         
-        if target_lane_id < 0:  # 右侧车道
-            # 对于右侧车道，找到绝对值最接近的driving车道
+        if target_lane_id < 0:  # right lane
+            # for right lane, find the driving lane with the closest absolute value
             closest_lane_id = min(driving_lane_ids, key=lambda x: abs(abs(x) - abs(target_lane_id)))
             closest_idx = next(idx for idx, lane in enumerate(driving_lanes) if lane['id'] == closest_lane_id)
             logger.info(f"  Closest-match mapping: lane {target_lane_id} -> lane {closest_lane_id} (index {closest_idx})")
             return closest_idx
-        else:  # 左侧车道
+        else:  # left lane
             closest_lane_id = min(driving_lane_ids, key=lambda x: abs(abs(x) - abs(target_lane_id)))
             closest_idx = next(idx for idx, lane in enumerate(driving_lanes) if lane['id'] == closest_lane_id)
             logger.info(f"  Closest-match mapping: lane {target_lane_id} -> lane {closest_lane_id} (index {closest_idx})")
             return closest_idx
         
-        # 策略3：默认映射
+        # strategy 3: default mapping
         if target_lane_id < 0:
-            # 右侧车道默认映射到最右侧driving车道
+            # right lane default mapping to the rightmost driving lane
             default_idx = len(driving_lanes) - 1
             logger.info(f"  Default mapping: lane {target_lane_id} -> rightmost driving lane (index {default_idx})")
             return default_idx
         else:
-            # 左侧车道默认映射到最左侧driving车道
+            # left lane default mapping to the leftmost driving lane
             logger.info(f"  Default mapping: lane {target_lane_id} -> leftmost driving lane (index 0)")
             return 0
 
@@ -2308,48 +2784,39 @@ class OpenDriveToSumoConverter:
     
     def _get_road_centerline_pyopendrive(self, road_id: str, eps: float = 0.5) -> Optional[List[Tuple[float, float]]]:
         """
-        Get road centerline using pyOpenDRIVE coordinate transformation
-        
+        Get road centerline from extracted geometry data
+        Note: pyOpenDRIVE get_xyz has a bug, so we use pre-extracted geometry from XML
+
         Args:
             road_id: Road ID
-            eps: Step size for sampling along the road
-            
+            eps: Step size for sampling along the road (not used with XML approach)
+
         Returns:
             List of (x, y) tuples representing road centerline
         """
-        if not self.use_pyopendrive or road_id not in self.py_roads:
+        if road_id not in self.road_map:
             return None
-            
+
         try:
-            py_road = self.py_roads[road_id]
-            road_length = py_road.length
-            
-            # Sample points along the road centerline
+            road = self.road_map[road_id]
+
+            if not road.geometry:
+                return None
+
+            # Build centerline from geometry
             centerline_points = []
-            s_step = eps
-            current_s = 0.0
-            
-            while current_s <= road_length:
-                # Get global coordinates for this s position at the road center (t=0)
-                xyz = py_road.get_xyz(current_s, 0.0, 0.0)
-                
-                if hasattr(xyz, 'array'):
-                    coords = xyz.array
-                    centerline_points.append((coords[0], coords[1]))
-                else:
-                    logger.warning(f"Unexpected coordinate format from get_xyz: {type(xyz)}")
-                
-                current_s += s_step
-            
-            # Ensure we get the end point
-            if current_s - s_step < road_length:
-                xyz = py_road.get_xyz(road_length, 0.0, 0.0)
-                if hasattr(xyz, 'array'):
-                    coords = xyz.array
-                    centerline_points.append((coords[0], coords[1]))
-            
+
+            for geom in road.geometry:
+                # Add start point
+                if 'x' in geom and 'y' in geom:
+                    centerline_points.append((geom['x'], geom['y']))
+
+                    # Add end point for line segments
+                    if 'end_x' in geom and 'end_y' in geom:
+                        centerline_points.append((geom['end_x'], geom['end_y']))
+
             return centerline_points if centerline_points else None
-            
+
         except Exception as e:
             logger.warning(f"Error extracting centerline for road {road_id}: {e}")
             return None
@@ -2788,17 +3255,19 @@ class OpenDriveToSumoConverter:
         """Write nodes file"""
         root = ET.Element('nodes')
         
-        # Add location tag if we have coordinate offset and projection info
-        if self.net_offset and self.geo_reference:
+        # Add location tag if we have coordinate offset
+        if self.net_offset:
             location_elem = ET.SubElement(root, 'location')
             location_elem.set('netOffset', f'{self.net_offset[0]:.2f},{self.net_offset[1]:.2f}')
-            location_elem.set('convBoundary', 
+            location_elem.set('convBoundary',
                             f'{self.conv_boundary[0]:.2f},{self.conv_boundary[1]:.2f},'
                             f'{self.conv_boundary[2]:.2f},{self.conv_boundary[3]:.2f}')
-            location_elem.set('origBoundary', 
+            location_elem.set('origBoundary',
                             f'{self.orig_boundary[0]:.2f},{self.orig_boundary[1]:.2f},'
                             f'{self.orig_boundary[2]:.2f},{self.orig_boundary[3]:.2f}')
-            location_elem.set('projParameter', self.geo_reference)
+            # Use a simple Cartesian projection since the geo_reference may be incomplete
+            # This allows netconvert to work with plain meter coordinates
+            location_elem.set('projParameter', '+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0 +k=1.0 +units=m +nadgrids=@null +wktext +no_defs')
         
         for node in self.nodes:
             node_elem = ET.SubElement(root, 'node')
@@ -2977,34 +3446,31 @@ class OpenDriveToSumoConverter:
 def main():
     """Main function"""
     parser = argparse.ArgumentParser(
-        description='Convert OpenDRIVE to SUMO using Plain XML format (SUMO recommended method)'
+        description='Convert OpenDRIVE to SUMO using Plain XML format with tiling support (SUMO recommended method)'
     )
     parser.add_argument('--input', '-i',
-                     help='Input OpenDRIVE file (.xodr)',
-                     default="texas_example/test_map_junction_end_pt.xodr")
+                     required=True,
+                     help='Input OpenDRIVE file (.xodr)')
     parser.add_argument('--output', '-o',
-                     help='Output prefix (default: based on input name)',
-                     default="test")
-    parser.add_argument('--no-netconvert', action='store_true', 
+                     help='Output prefix (optional, uses input directory by default)',
+                     default=None)
+    parser.add_argument('--tile-size', '-t', type=float, default=5.0,
+                       help='Size of each tile in miles (default: 5.0 miles)')
+    parser.add_argument('--no-netconvert', action='store_true',
                        help='Only generate Plain XML files without running netconvert')
-    parser.add_argument('--no-pyopendrive', action='store_true', 
+    parser.add_argument('--no-pyopendrive', action='store_true',
                        help='Disable pyOpenDRIVE enhanced geometry processing (use XML parsing only)')
     parser.add_argument('--verbose', '-v', action='store_true', help='Verbose output')
-    
+
     args = parser.parse_args()
-    
-    # Determine output prefix
-    if args.output:
-        output_prefix = args.output
-    else:
-        # Generate based on input filename
-        base_name = os.path.splitext(os.path.basename(args.input))[0]
-        output_prefix = base_name
-    
+
+    # Determine output prefix (not used anymore, but kept for compatibility)
+    output_prefix = args.output if args.output else "output"
+
     # Set logging level
     if args.verbose:
         logging.getLogger().setLevel(logging.DEBUG)
-    
+
     # Execute conversion
     use_pyopendrive = not args.no_pyopendrive  # Invert the flag
     converter = OpenDriveToSumoConverter(verbose=args.verbose, use_pyopendrive=use_pyopendrive)
@@ -3012,24 +3478,46 @@ def main():
     if use_pyopendrive and not PYOPENDRIVE_AVAILABLE:
         raise ImportError("pyOpenDRIVE is not installed. Please install it or run with --no-pyopendrive.")
 
+    input_dir = os.path.dirname(os.path.abspath(args.input))
+    input_basename = os.path.splitext(os.path.basename(args.input))[0]
+
     print("="*60)
-    print("OpenDRIVE to SUMO Converter")
+    print("OpenDRIVE to SUMO Converter with Tiling")
     print("Using SUMO Official Plain XML Method")
+    print(f"Input: {args.input}")
+    print(f"Output directory: {input_dir}")
+    print(f"Tile Size: {args.tile_size} miles")
     print("="*60)
-    
+
     success = converter.convert(
-        args.input, 
-        output_prefix, 
-        use_netconvert=not args.no_netconvert
+        args.input,
+        output_prefix,
+        use_netconvert=not args.no_netconvert,
+        tile_size_miles=args.tile_size
     )
-    
+
     if success:
-        print("\n✓ Conversion completed successfully!")
-        print(f"  Plain XML files: {output_prefix}.nod.xml, {output_prefix}.edg.xml, {output_prefix}.con.xml")
+        print("\n" + "="*60)
+        print("Conversion completed successfully!")
+        print("="*60)
+        print(f"\nComplete Map (no tiling):")
+        print(f"  {input_dir}/{input_basename}.nod.xml")
+        print(f"  {input_dir}/{input_basename}.edg.xml")
+        print(f"  {input_dir}/{input_basename}.con.xml")
         if not args.no_netconvert:
-            print(f"  SUMO network: {output_prefix}.net.xml")
+            print(f"  {input_dir}/{input_basename}.net.xml")
+
+        print(f"\nTiled Maps:")
+        print(f"  Directory: {input_dir}/{input_basename}_tiles/")
+        print(f"  Each tile in its own folder: tile_XXXX/")
+        print(f"  Files per tile:")
+        print(f"    - tile_XXXX.nod.xml (nodes)")
+        print(f"    - tile_XXXX.edg.xml (edges)")
+        print(f"    - tile_XXXX.con.xml (connections)")
+        if not args.no_netconvert:
+            print(f"    - tile_XXXX.net.xml (final SUMO network)")
     else:
-        print("\n✗ Conversion failed!")
+        print("\nConversion failed!")
         sys.exit(1)
 
 if __name__ == '__main__':

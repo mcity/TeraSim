@@ -1,0 +1,16 @@
+<?xml version='1.0' encoding='utf-8'?>
+<connections>
+    <connection from="562.0" to="560.0" fromLane="0" toLane="1" />
+    <connection from="562.0" to="560.0" fromLane="1" toLane="2" />
+    <connection from="607.0" to="585.0" fromLane="0" toLane="1" />
+    <connection from="607.0" to="585.0" fromLane="1" toLane="2" />
+    <connection from="548.0" to="567.0" fromLane="1" toLane="0" />
+    <connection from="548.0" to="568.0" fromLane="2" toLane="1" />
+    <connection from="548.0" to="568.0" fromLane="1" toLane="0" />
+    <connection from="560.0" to="565.0" fromLane="2" toLane="1" />
+    <connection from="560.0" to="565.0" fromLane="1" toLane="0" />
+    <connection from="560.0" to="563.0" fromLane="1" toLane="0" />
+    <connection from="585.0" to="596.0" fromLane="1" toLane="0" />
+    <connection from="585.0" to="574.0" fromLane="1" toLane="0" />
+    <connection from="585.0" to="574.0" fromLane="2" toLane="1" />
+</connections>

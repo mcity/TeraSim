@@ -1,0 +1,12 @@
+<?xml version='1.0' encoding='utf-8'?>
+<connections>
+    <connection from="346.0" to="merge_zone_24" fromLane="0" toLane="1" />
+    <connection from="346.0" to="merge_zone_24" fromLane="1" toLane="2" />
+    <connection from="merge_zone_24" to="348.0" fromLane="1" toLane="1" />
+    <connection from="merge_zone_24" to="348.0" fromLane="2" toLane="2" />
+    <connection from="352.0" to="merge_zone_24" fromLane="0" toLane="0" />
+    <connection from="merge_zone_24" to="348.0" fromLane="0" toLane="2" dir="r" state="m" />
+    <connection from="370.0" to="363.0" fromLane="2" toLane="1" />
+    <connection from="370.0" to="363.0" fromLane="1" toLane="0" />
+    <connection from="370.0" to="380.0" fromLane="1" toLane="0" />
+</connections>

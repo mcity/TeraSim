@@ -1,0 +1,13 @@
+<?xml version='1.0' encoding='utf-8'?>
+<connections>
+    <connection from="816.0" to="818.0" fromLane="0" toLane="0" />
+    <connection from="816.0" to="818.0" fromLane="1" toLane="1" />
+    <connection from="816.0" to="823.0" fromLane="0" toLane="0" />
+    <connection from="111.0" to="merge_zone_48" fromLane="2" toLane="2" />
+    <connection from="111.0" to="merge_zone_48" fromLane="1" toLane="1" />
+    <connection from="merge_zone_48" to="859.0" fromLane="2" toLane="4" />
+    <connection from="merge_zone_48" to="859.0" fromLane="3" toLane="5" />
+    <connection from="merge_zone_48" to="859.0" fromLane="1" toLane="3" />
+    <connection from="886.0" to="merge_zone_48" fromLane="0" toLane="0" />
+    <connection from="merge_zone_48" to="859.0" fromLane="0" toLane="5" dir="r" state="m" />
+</connections>

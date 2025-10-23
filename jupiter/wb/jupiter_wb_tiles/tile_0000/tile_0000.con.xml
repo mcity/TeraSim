@@ -1,0 +1,31 @@
+<?xml version='1.0' encoding='utf-8'?>
+<connections>
+    <connection from="718.0" to="734.0" fromLane="0" toLane="0" />
+    <connection from="718.0" to="729.0" fromLane="3" toLane="3" />
+    <connection from="718.0" to="729.0" fromLane="2" toLane="2" />
+    <connection from="718.0" to="729.0" fromLane="4" toLane="4" />
+    <connection from="718.0" to="729.0" fromLane="1" toLane="1" />
+    <connection from="721.0" to="722.0" fromLane="4" toLane="4" />
+    <connection from="721.0" to="722.0" fromLane="3" toLane="3" />
+    <connection from="721.0" to="722.0" fromLane="2" toLane="2" />
+    <connection from="721.0" to="722.0" fromLane="1" toLane="1" />
+    <connection from="859.0" to="731.0" fromLane="1" toLane="0" />
+    <connection from="859.0" to="856.0" fromLane="4" toLane="3" />
+    <connection from="859.0" to="856.0" fromLane="3" toLane="2" />
+    <connection from="859.0" to="856.0" fromLane="1" toLane="0" />
+    <connection from="859.0" to="856.0" fromLane="2" toLane="1" />
+    <connection from="747.0" to="merge_zone_54" fromLane="4" toLane="5" />
+    <connection from="747.0" to="merge_zone_54" fromLane="3" toLane="4" />
+    <connection from="747.0" to="merge_zone_54" fromLane="1" toLane="2" />
+    <connection from="747.0" to="merge_zone_54" fromLane="2" toLane="3" />
+    <connection from="merge_zone_54" to="740.0" fromLane="5" toLane="5" />
+    <connection from="merge_zone_54" to="740.0" fromLane="4" toLane="4" />
+    <connection from="merge_zone_54" to="740.0" fromLane="2" toLane="2" />
+    <connection from="merge_zone_54" to="740.0" fromLane="3" toLane="3" />
+    <connection from="749.0" to="merge_zone_54" fromLane="0" toLane="0" />
+    <connection from="merge_zone_54" to="740.0" fromLane="0" toLane="5" dir="r" state="m" />
+    <connection from="717.0" to="863.0" fromLane="3" toLane="4" />
+    <connection from="717.0" to="863.0" fromLane="0" toLane="1" />
+    <connection from="717.0" to="863.0" fromLane="1" toLane="2" />
+    <connection from="717.0" to="863.0" fromLane="2" toLane="3" />
+</connections>

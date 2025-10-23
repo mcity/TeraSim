@@ -1,0 +1,31 @@
+<?xml version='1.0' encoding='utf-8'?>
+<connections>
+    <connection from="771.0" to="785.0" fromLane="1" toLane="0" />
+    <connection from="771.0" to="785.0" fromLane="2" toLane="1" />
+    <connection from="771.0" to="785.0" fromLane="3" toLane="2" />
+    <connection from="771.0" to="785.0" fromLane="4" toLane="3" />
+    <connection from="771.0" to="788.0" fromLane="1" toLane="1" />
+    <connection from="771.0" to="788.0" fromLane="0" toLane="0" />
+    <connection from="297.0" to="merge_zone_23" fromLane="0" toLane="0" />
+    <connection from="merge_zone_23" to="308.0" fromLane="0" toLane="4" dir="r" state="m" />
+    <connection from="291.0" to="merge_zone_23" fromLane="2" toLane="3" />
+    <connection from="291.0" to="merge_zone_23" fromLane="0" toLane="1" />
+    <connection from="291.0" to="merge_zone_23" fromLane="3" toLane="4" />
+    <connection from="291.0" to="merge_zone_23" fromLane="1" toLane="2" />
+    <connection from="merge_zone_23" to="308.0" fromLane="3" toLane="3" />
+    <connection from="merge_zone_23" to="308.0" fromLane="1" toLane="1" />
+    <connection from="merge_zone_23" to="308.0" fromLane="4" toLane="4" />
+    <connection from="merge_zone_23" to="308.0" fromLane="2" toLane="2" />
+    <connection from="278.0" to="merge_zone_55" fromLane="0" toLane="0" />
+    <connection from="merge_zone_55" to="797.0" fromLane="0" toLane="4" dir="r" state="m" />
+    <connection from="290.0" to="merge_zone_56" fromLane="0" toLane="0" />
+    <connection from="309.0" to="merge_zone_56" fromLane="2" toLane="3" />
+    <connection from="309.0" to="merge_zone_56" fromLane="1" toLane="2" />
+    <connection from="309.0" to="merge_zone_56" fromLane="0" toLane="1" />
+    <connection from="309.0" to="merge_zone_56" fromLane="3" toLane="4" />
+    <connection from="310.0" to="261.0" fromLane="4" toLane="3" />
+    <connection from="310.0" to="261.0" fromLane="1" toLane="0" />
+    <connection from="310.0" to="261.0" fromLane="2" toLane="1" />
+    <connection from="310.0" to="261.0" fromLane="3" toLane="2" />
+    <connection from="310.0" to="276.0" fromLane="1" toLane="0" />
+</connections>

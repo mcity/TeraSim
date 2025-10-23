@@ -59,7 +59,7 @@ def main(config_path: str) -> None:
         gui_flag=config.simulator.parameters.gui_flag,
         realtime_flag=config.simulator.parameters.realtime_flag,
         output_path=base_dir,
-        sumo_output_file_types=["collision", "fcd_all"],
+        sumo_output_file_types=["collision"],
         traffic_scale=(
             config.simulator.parameters.traffic_scale
             if hasattr(config.simulator.parameters, "traffic_scale")

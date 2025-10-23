@@ -1,0 +1,21 @@
+<?xml version='1.0' encoding='utf-8'?>
+<connections>
+    <connection from="511.0" to="merge_zone_31" fromLane="0" toLane="0" />
+    <connection from="merge_zone_31" to="502.0" fromLane="0" toLane="2" dir="r" state="m" />
+    <connection from="505.0" to="merge_zone_31" fromLane="1" toLane="2" />
+    <connection from="505.0" to="merge_zone_31" fromLane="0" toLane="1" />
+    <connection from="merge_zone_31" to="502.0" fromLane="2" toLane="2" />
+    <connection from="merge_zone_31" to="502.0" fromLane="1" toLane="1" />
+    <connection from="518.0" to="merge_zone_32" fromLane="0" toLane="1" />
+    <connection from="518.0" to="merge_zone_32" fromLane="1" toLane="2" />
+    <connection from="merge_zone_32" to="532.0" fromLane="1" toLane="1" />
+    <connection from="merge_zone_32" to="532.0" fromLane="2" toLane="2" />
+    <connection from="538.0" to="merge_zone_32" fromLane="0" toLane="0" />
+    <connection from="merge_zone_32" to="532.0" fromLane="0" toLane="2" dir="r" state="m" />
+    <connection from="499.0" to="507.0" fromLane="2" toLane="1" />
+    <connection from="499.0" to="507.0" fromLane="1" toLane="0" />
+    <connection from="499.0" to="497.0" fromLane="1" toLane="0" />
+    <connection from="515.0" to="514.0" fromLane="2" toLane="1" />
+    <connection from="515.0" to="514.0" fromLane="1" toLane="0" />
+    <connection from="515.0" to="528.0" fromLane="1" toLane="0" />
+</connections>

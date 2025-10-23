@@ -1,0 +1,6 @@
+<?xml version='1.0' encoding='utf-8'?>
+<connections>
+    <connection from="400.0" to="417.0" fromLane="1" toLane="0" />
+    <connection from="400.0" to="414.0" fromLane="2" toLane="1" />
+    <connection from="400.0" to="414.0" fromLane="1" toLane="0" />
+</connections>

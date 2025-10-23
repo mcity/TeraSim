@@ -1,0 +1,47 @@
+<?xml version='1.0' encoding='utf-8'?>
+<connections>
+    <connection from="35.0" to="merge_zone_3" fromLane="0" toLane="0" />
+    <connection from="merge_zone_3" to="10.0" fromLane="0" toLane="4" dir="r" state="m" />
+    <connection from="62.0" to="merge_zone_3" fromLane="2" toLane="3" />
+    <connection from="62.0" to="merge_zone_3" fromLane="1" toLane="2" />
+    <connection from="62.0" to="merge_zone_3" fromLane="0" toLane="1" />
+    <connection from="62.0" to="merge_zone_3" fromLane="3" toLane="4" />
+    <connection from="merge_zone_3" to="10.0" fromLane="3" toLane="3" />
+    <connection from="merge_zone_3" to="10.0" fromLane="2" toLane="2" />
+    <connection from="merge_zone_3" to="10.0" fromLane="1" toLane="1" />
+    <connection from="merge_zone_3" to="10.0" fromLane="4" toLane="4" />
+    <connection from="65.0" to="13.0" fromLane="3" toLane="4" />
+    <connection from="65.0" to="13.0" fromLane="2" toLane="3" />
+    <connection from="65.0" to="13.0" fromLane="0" toLane="1" />
+    <connection from="65.0" to="13.0" fromLane="1" toLane="2" />
+    <connection from="40.0" to="merge_zone_5" fromLane="0" toLane="0" />
+    <connection from="merge_zone_5" to="16.0" fromLane="0" toLane="4" dir="r" state="m" />
+    <connection from="68.0" to="merge_zone_5" fromLane="3" toLane="4" />
+    <connection from="68.0" to="merge_zone_5" fromLane="2" toLane="3" />
+    <connection from="68.0" to="merge_zone_5" fromLane="0" toLane="1" />
+    <connection from="68.0" to="merge_zone_5" fromLane="1" toLane="2" />
+    <connection from="merge_zone_5" to="16.0" fromLane="4" toLane="4" />
+    <connection from="merge_zone_5" to="16.0" fromLane="3" toLane="3" />
+    <connection from="merge_zone_5" to="16.0" fromLane="1" toLane="1" />
+    <connection from="merge_zone_5" to="16.0" fromLane="2" toLane="2" />
+    <connection from="10.0" to="32.0" fromLane="1" toLane="0" />
+    <connection from="10.0" to="63.0" fromLane="3" toLane="2" />
+    <connection from="10.0" to="63.0" fromLane="1" toLane="0" />
+    <connection from="10.0" to="63.0" fromLane="2" toLane="1" />
+    <connection from="10.0" to="63.0" fromLane="4" toLane="3" />
+    <connection from="13.0" to="66.0" fromLane="3" toLane="2" />
+    <connection from="13.0" to="66.0" fromLane="2" toLane="1" />
+    <connection from="13.0" to="66.0" fromLane="1" toLane="0" />
+    <connection from="13.0" to="66.0" fromLane="4" toLane="3" />
+    <connection from="13.0" to="37.0" fromLane="1" toLane="0" />
+    <connection from="16.0" to="69.0" fromLane="3" toLane="2" />
+    <connection from="16.0" to="69.0" fromLane="1" toLane="0" />
+    <connection from="16.0" to="69.0" fromLane="2" toLane="1" />
+    <connection from="16.0" to="69.0" fromLane="4" toLane="3" />
+    <connection from="16.0" to="41.0" fromLane="1" toLane="0" />
+    <connection from="47.0" to="60.0" fromLane="4" toLane="3" />
+    <connection from="47.0" to="60.0" fromLane="3" toLane="2" />
+    <connection from="47.0" to="60.0" fromLane="1" toLane="0" />
+    <connection from="47.0" to="60.0" fromLane="2" toLane="1" />
+    <connection from="47.0" to="30.0" fromLane="1" toLane="0" />
+</connections>

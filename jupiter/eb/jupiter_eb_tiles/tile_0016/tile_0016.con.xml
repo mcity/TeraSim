@@ -1,0 +1,30 @@
+<?xml version='1.0' encoding='utf-8'?>
+<connections>
+    <connection from="145.0" to="131.0" fromLane="2" toLane="2" />
+    <connection from="145.0" to="131.0" fromLane="1" toLane="1" />
+    <connection from="144.0" to="141.0" fromLane="2" toLane="2" />
+    <connection from="144.0" to="141.0" fromLane="1" toLane="1" />
+    <connection from="162.0" to="merge_zone_12" fromLane="1" toLane="2" />
+    <connection from="162.0" to="merge_zone_12" fromLane="0" toLane="1" />
+    <connection from="merge_zone_12" to="175.0" fromLane="2" toLane="2" />
+    <connection from="merge_zone_12" to="175.0" fromLane="1" toLane="1" />
+    <connection from="167.0" to="merge_zone_12" fromLane="0" toLane="0" />
+    <connection from="merge_zone_12" to="175.0" fromLane="0" toLane="2" dir="r" state="m" />
+    <connection from="166.0" to="193.0" fromLane="1" toLane="2" />
+    <connection from="166.0" to="193.0" fromLane="0" toLane="1" />
+    <connection from="122.0" to="146.0" fromLane="2" toLane="1" />
+    <connection from="122.0" to="146.0" fromLane="1" toLane="0" />
+    <connection from="122.0" to="125.0" fromLane="1" toLane="0" />
+    <connection from="133.0" to="161.0" fromLane="1" toLane="0" />
+    <connection from="133.0" to="161.0" fromLane="2" toLane="1" />
+    <connection from="133.0" to="190.0" fromLane="1" toLane="0" />
+    <connection from="147.0" to="149.0" fromLane="1" toLane="0" />
+    <connection from="147.0" to="149.0" fromLane="2" toLane="1" />
+    <connection from="147.0" to="148.0" fromLane="1" toLane="0" />
+    <connection from="159.0" to="157.0" fromLane="1" toLane="0" />
+    <connection from="159.0" to="157.0" fromLane="2" toLane="1" />
+    <connection from="159.0" to="171.0" fromLane="1" toLane="0" />
+    <connection from="179.0" to="182.0" fromLane="1" toLane="0" />
+    <connection from="179.0" to="182.0" fromLane="2" toLane="1" />
+    <connection from="179.0" to="194.0" fromLane="1" toLane="0" />
+</connections>

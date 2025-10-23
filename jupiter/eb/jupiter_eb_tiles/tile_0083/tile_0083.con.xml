@@ -1,0 +1,10 @@
+<?xml version='1.0' encoding='utf-8'?>
+<connections>
+    <connection from="453.0" to="merge_zone_29" fromLane="0" toLane="0" />
+    <connection from="merge_zone_29" to="464.0" fromLane="0" toLane="2" dir="r" state="m" />
+    <connection from="471.0" to="478.0" fromLane="0" toLane="1" />
+    <connection from="471.0" to="478.0" fromLane="1" toLane="2" />
+    <connection from="464.0" to="468.0" fromLane="1" toLane="0" />
+    <connection from="464.0" to="474.0" fromLane="2" toLane="1" />
+    <connection from="464.0" to="474.0" fromLane="1" toLane="0" />
+</connections>
