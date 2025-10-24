@@ -17,15 +17,7 @@ logging.basicConfig(level=logging.INFO)
 
 from terasim_envgen.core.map_searcher import MapSearcher
 from terasim_envgen.core.traffic_flow_generator import TrafficFlowGenerator
-
-# Try to import MapConverter, but make it optional
-try:
-    from terasim_envgen.core.map_converter import MapConverter
-    MAP_CONVERTER_AVAILABLE = True
-except ImportError as e:
-    print(e)
-    MAP_CONVERTER_AVAILABLE = False
-    logger.warning("MapConverter not available - map conversion features will be limited")
+from terasim_envgen.core.map_converter import MapConverter
 
 
 class IntegratedScenarioGenerator:
@@ -43,7 +35,7 @@ class IntegratedScenarioGenerator:
         """
         self.config_path = config_path
         self.map_searcher = MapSearcher(config_path)
-        self.map_converter = MapConverter() if MAP_CONVERTER_AVAILABLE else None
+        self.map_converter = MapConverter()
         self.traffic_generator = TrafficFlowGenerator(config_path)
         
     def generate_from_latlon(
@@ -125,68 +117,41 @@ class IntegratedScenarioGenerator:
         # Step 2: Convert map to requested formats
         logger.info(f"Step 2: Converting map to {convert_formats}...")
         
-        if not self.map_converter:
-            logger.warning("MapConverter not available - using simplified conversion")
-            # Use netconvert directly for SUMO conversion
+        try:
+            # Set converter types based on requested formats
+            converter_types = []
             if "sumo" in convert_formats:
-                try:
-                    import subprocess
-                    net_file = scene_dir / "map.net.xml"
-                    cmd = [
-                        "netconvert",
-                        "--osm-files", str(osm_path),
-                        "--output-file", str(net_file),
-                        "--geometry.remove",
-                        "--ramps.guess",
-                        "--junctions.join",
-                        "--tls.guess-signals",
-                        "--tls.discard-simple",
-                        "--tls.join",
-                        "--no-turnarounds"
-                    ]
-                    subprocess.run(cmd, check=True, capture_output=True)
-                    if net_file.exists():
-                        results["generated_files"]["sumo_network"] = str(net_file)
-                        logger.info(f"SUMO network saved to {net_file}")
-                except Exception as e:
-                    logger.error(f"Error converting to SUMO: {e}")
-                    results["conversion_error"] = str(e)
-        else:
-            try:
-                # Set converter types based on requested formats
-                converter_types = []
-                if "sumo" in convert_formats:
-                    converter_types.append("sumo")
-                if "opendrive" in convert_formats:
-                    converter_types.append("opendrive")
-                if "lanelet2" in convert_formats:
-                    converter_types.append("lanelet2")
-                    
-                self.map_converter.convert_types = converter_types
+                converter_types.append("sumo")
+            if "opendrive" in convert_formats:
+                converter_types.append("opendrive")
+            if "lanelet2" in convert_formats:
+                converter_types.append("lanelet2")
                 
-                # Call the convert method
-                net_path, xodr_path, ll2_path = self.map_converter.convert(
-                    osm_path=str(osm_path),
-                    scene_id=scenario_name,
-                    scenario_name="autonomous_driving"
-                )
+            self.map_converter.convert_types = converter_types
+            
+            # Call the convert method
+            net_path, xodr_path, ll2_path = self.map_converter.convert(
+                osm_path=str(osm_path),
+                scene_id=scenario_name,
+                scenario_name="autonomous_driving"
+            )
+            
+            conversion_results = {}
+            if net_path:
+                conversion_results["sumo_network"] = net_path
+                logger.info(f"SUMO network saved to {net_path}")
+            if xodr_path:
+                conversion_results["opendrive"] = xodr_path
+                logger.info(f"OpenDRIVE map saved to {xodr_path}")
+            if ll2_path:
+                conversion_results["lanelet2"] = ll2_path
+                logger.info(f"Lanelet2 map saved to {ll2_path}")
                 
-                conversion_results = {}
-                if net_path:
-                    conversion_results["sumo_network"] = net_path
-                    logger.info(f"SUMO network saved to {net_path}")
-                if xodr_path:
-                    conversion_results["opendrive"] = xodr_path
-                    logger.info(f"OpenDRIVE map saved to {xodr_path}")
-                if ll2_path:
-                    conversion_results["lanelet2"] = ll2_path
-                    logger.info(f"Lanelet2 map saved to {ll2_path}")
-                    
-                results["generated_files"].update(conversion_results)
-                
-            except Exception as e:
-                logger.error(f"Error converting map: {e}")
-                results["conversion_error"] = str(e)
+            results["generated_files"].update(conversion_results)
+            
+        except Exception as e:
+            logger.error(f"Error converting map: {e}")
+            results["conversion_error"] = str(e)
         
         # Step 3: Generate traffic flows for different densities
         if "sumo_network" in results["generated_files"]:

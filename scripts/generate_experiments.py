@@ -8,7 +8,7 @@ to create ready-to-use simulation environments for autonomous vehicle testing.
 
 Usage Examples:
     # Single scenario generation
-    python generate_experiments.py --lat 42.2775 --lon -83.7347 --bbox 500 --name ann_arbor
+    python generate_experiments.py --lat 42.2803162048774 --lon -83.72897525866705 --bbox 6000 --name ann_arbor
     
     # Batch generation from file
     python generate_experiments.py --batch coordinates.txt --bbox 300

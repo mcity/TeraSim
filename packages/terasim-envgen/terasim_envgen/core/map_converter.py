@@ -129,7 +129,6 @@ class MapConverter:
                         "true",
                         "--tls.guess",
                         "true",
-                        
                     ]
                     subprocess.run(netconvert_cmd, capture_output=True, text=True, check=True)
 
