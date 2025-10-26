@@ -25,7 +25,6 @@ logger = logging.getLogger(__name__)
 import googlemaps
 from googlemaps.convert import decode_polyline
 from shapely.geometry import LineString, Polygon
-import geopandas as gpd
 from pyproj import Geod
 import polyline
 
@@ -240,25 +239,37 @@ class MapSearcher:
         plt.savefig("route.png")
         plt.close()
     
-    def get_av_route(self, line_geod, center_point, bbox_size, interpolate_distance=50):
+    def get_av_route(self, line_geod, center_point, bbox_size=None, bbox_width=None, bbox_height=None, interpolate_distance=50):
         """
         Get AV route for a center point within a bounding box
-        
+
         Args:
             line_geod: Shapely LineString of the route in geod format [(lon, lat), ...]
             center_point: (lat, lon) center point of the bounding box
-            bbox_size: Size of bounding box in meters
-            
+            bbox_size: Size of square bounding box in meters (deprecated, use bbox_width/bbox_height)
+            bbox_width: Width (east-west) of bounding box in meters
+            bbox_height: Height (north-south) of bounding box in meters
+            interpolate_distance: Distance between interpolated points in meters
+
         Returns:
             List of coordinates [(lat, lon), ...] within the bounding box
         """
+        # Handle bbox parameters with backward compatibility
+        if bbox_width is None and bbox_height is None:
+            if bbox_size is None:
+                bbox_size = self.bbox_size
+            bbox_width = bbox_size
+            bbox_height = bbox_size
+        elif bbox_width is None or bbox_height is None:
+            raise ValueError("Both bbox_width and bbox_height must be specified together")
+
         # Convert center_point to (lon, lat) format for consistency
         center_lon, center_lat = center_point[1], center_point[0]
-        
+
         # Calculate bounding box coordinates
         earth_radius = 6371000  # Earth's radius in meters
-        lat_offset = (bbox_size / earth_radius) * (180 / math.pi)
-        lon_offset = (bbox_size / earth_radius) * (180 / math.pi) / math.cos(center_lat * math.pi / 180)
+        lat_offset = (bbox_height / earth_radius) * (180 / math.pi)
+        lon_offset = (bbox_width / earth_radius) * (180 / math.pi) / math.cos(center_lat * math.pi / 180)
         
         # Define bbox coordinates
         north = center_lat + lat_offset
@@ -290,7 +301,9 @@ class MapSearcher:
             return [] # TODO: handle this case
     
 
-        num_interpolate_points = int(2 * bbox_size / interpolate_distance) + 1
+        # Use the maximum dimension for interpolation to ensure adequate sampling
+        max_bbox_dim = max(bbox_width, bbox_height)
+        num_interpolate_points = int(2 * max_bbox_dim / interpolate_distance) + 1
         points = [route_section.interpolate(i/float(num_interpolate_points-1), normalized=True) for i in range(num_interpolate_points)]
         interpolated_coords_geod = [(point.x, point.y) for point in points]
         route_points_in_bbox = [(coord[1], coord[0]) for coord in interpolated_coords_geod] # revert lon, lat to lat, lon
@@ -323,77 +336,94 @@ class MapSearcher:
             center_points.append(point_data)
         return center_points
 
-    def save_osm_and_visualization_for_point(self, point_data, scene_dir, bbox_size=None, av_route=None):
+    def save_osm_and_visualization_for_point(self, point_data, scene_dir, bbox_size=None, bbox_width=None, bbox_height=None, av_route=None):
         """
         Save OSM data and visualization for a single center point.
-        
+
         Args:
             point_data: (lat, lon)
             scene_dir: Directory to save the output
-            bbox_size: Size of bounding box in meters
+            bbox_size: Size of square bounding box in meters (deprecated, use bbox_width/bbox_height)
+            bbox_width: Width (east-west) of bounding box in meters
+            bbox_height: Height (north-south) of bounding box in meters
             av_route: Optional list of route coordinates [(lat, lon), ...] within the bounding box
-            
+
         Returns:
             bool: True if successful, False otherwise
         """
+        # Handle bbox parameters with backward compatibility
+        if bbox_width is None and bbox_height is None:
+            if bbox_size is None:
+                bbox_size = self.bbox_size
+            bbox_width = bbox_size
+            bbox_height = bbox_size
+        elif bbox_width is None or bbox_height is None:
+            raise ValueError("Both bbox_width and bbox_height must be specified together")
         # Ensure the scene directory exists
         scene_dir = Path(scene_dir)
         scene_dir.mkdir(exist_ok=True, parents=True)
         
         # Get center coordinates
         mid_lat, mid_lon = point_data
-        
+
         # Create metadata.json for the scene
         metadata = {
             "center_coordinates": (mid_lat, mid_lon),
-            "bbox_size": bbox_size,
+            "bbox_width": bbox_width,
+            "bbox_height": bbox_height,
             "scene_id": scene_dir.name,
             "av_route": av_route
         }
-        
+
         metadata_path = scene_dir / "metadata.json"
         save_metadata(metadata_path, metadata)
-        
+
         # Save OSM data
         try:
-            osm_path = self._save_osm_data_webwizard(mid_lat, mid_lon, scene_dir, bbox_size)
+            osm_path = self._save_osm_data_webwizard(mid_lat, mid_lon, scene_dir, bbox_width, bbox_height)
         except Exception as e:
             logger.warning(f"Failed to save OSM WebWizard data for scene {scene_dir.name}: {str(e)}")
         # try:
-        #     osm_path = self._save_osm_data_osmnx(mid_lat, mid_lon, scene_dir, bbox_size)
+        #     osm_path = self._save_osm_data_osmnx(mid_lat, mid_lon, scene_dir, bbox_width, bbox_height)
         # except Exception as e:
         #     logger.warning(f"Failed to save OSM OSMNX data for scene {scene_dir.name}: {str(e)}")
         #     return False
         if not osm_path:
             logger.error(f"Failed to save OSM data for scene {scene_dir.name}")
             return False
-        
-        # Create visualization for < 500m
-        if bbox_size < 500:
-            self._create_visualization(mid_lat, mid_lon, scene_dir, bbox_size, av_route)
+
+        # Create visualization for small bboxes (both dimensions < 500m)
+        max_bbox_dim = max(bbox_width, bbox_height)
+        if max_bbox_dim < 500:
+            self._create_visualization(mid_lat, mid_lon, scene_dir, bbox_width, bbox_height, av_route)
         else:
-            logger.warning(f"Bbox size is too large for visualization: {bbox_size}, skipping visualization")
+            logger.warning(f"Bbox size is too large for visualization: {bbox_width}m x {bbox_height}m, skipping visualization")
         
         return True
 
-    def _create_visualization(self, mid_lat, mid_lon, scene_dir, bbox_size, av_route=None):
+    def _create_visualization(self, mid_lat, mid_lon, scene_dir, bbox_width, bbox_height, av_route=None):
         """
         Create and save visualization for a center point.
-        
+
         Args:
             mid_lat: Latitude of center point
             mid_lon: Longitude of center point
             scene_dir: Directory to save visualization
-            bbox_size: Size of bounding box in meters
+            bbox_width: Width (east-west) of bounding box in meters
+            bbox_height: Height (north-south) of bounding box in meters
             av_route: Optional list of route coordinates [(lat, lon), ...] within the bounding box
         """
+        # For osmnx, use the maximum dimension to ensure we capture the entire area
+        # osmnx only supports circular/square bounding boxes
+        bbox_dist = max(bbox_width, bbox_height)
+
         # Create subgraph around the point
         subgraph = ox.graph_from_point(
-            (mid_lat, mid_lon), 
-            dist=bbox_size, 
-            network_type="drive", 
-            simplify=False, 
-            retain_all=True, 
+            (mid_lat, mid_lon),
+            dist=bbox_dist,
+            network_type="drive",
+            simplify=False,
+            retain_all=True,
             truncate_by_edge=True
         )
         
@@ -594,20 +624,29 @@ class MapSearcher:
         ox.save_graph_xml(graph, osm_file)
         return osm_file
     
-    def _save_osm_data_webwizard(self, lat, lon, output_dir, bbox_size=None):
+    def _save_osm_data_webwizard(self, lat, lon, output_dir, bbox_width=None, bbox_height=None):
         """
         Save OSM data for a given location using SUMO's osmWebWizard.
+
+        Args:
+            lat: Latitude of center point
+            lon: Longitude of center point
+            output_dir: Output directory
+            bbox_width: Width (east-west) of bounding box in meters
+            bbox_height: Height (north-south) of bounding box in meters
         """
-        if bbox_size is None:
-            bbox_size = self.bbox_size
+        if bbox_width is None or bbox_height is None:
+            bbox_width = bbox_height = self.bbox_size
 
         abs_output_dir = os.path.abspath(output_dir)
 
         # Calculate bounding box coordinates
         earth_radius = 6371000  # Earth's radius in meters
-        lat_offset = (bbox_size / earth_radius) * (180 / math.pi)
-        lon_offset = (bbox_size / earth_radius) * (180 / math.pi) / math.cos(lat * math.pi / 180)
-        
+        # Use bbox_height for north-south offset
+        lat_offset = (bbox_height / earth_radius) * (180 / math.pi)
+        # Use bbox_width for east-west offset
+        lon_offset = (bbox_width / earth_radius) * (180 / math.pi) / math.cos(lat * math.pi / 180)
+
         # Define bbox coordinates
         north = lat + lat_offset
         south = lat - lat_offset

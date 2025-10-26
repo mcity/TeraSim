@@ -9,7 +9,9 @@ to create ready-to-use simulation environments for autonomous vehicle testing.
 Usage Examples:
     # Single scenario generation
     python generate_experiments.py --lat 42.2803162048774 --lon -83.72897525866705 --bbox 6000 --name ann_arbor
-    
+
+    python generate_experiments.py --lat 42.30008917506487 --lon -83.70276593636989 --bbox-width 2000 --bbox-height 3000 --name ann_arbor_test --formats sumo opendrive lanelet2
+
     # Batch generation from file
     python generate_experiments.py --batch coordinates.txt --bbox 300
     
@@ -82,7 +84,19 @@ def parse_arguments():
         "--bbox",
         type=int,
         default=500,
-        help="Size of bounding box in meters (default: 500)"
+        help="Size of square bounding box in meters (default: 500). Ignored if --bbox-width and --bbox-height are specified."
+    )
+
+    parser.add_argument(
+        "--bbox-width",
+        type=int,
+        help="Width (east-west) of rectangular bounding box in meters. Must be used with --bbox-height."
+    )
+
+    parser.add_argument(
+        "--bbox-height",
+        type=int,
+        help="Height (north-south) of rectangular bounding box in meters. Must be used with --bbox-width."
     )
     
     parser.add_argument(
@@ -203,18 +217,22 @@ def generate_single_scenario(
     lat: float,
     lon: float,
     args: argparse.Namespace,
+    bbox_width: int,
+    bbox_height: int,
     scenario_name: Optional[str] = None
 ) -> Dict:
     """
     Generate a single scenario.
-    
+
     Args:
         generator: The integrated scenario generator instance
         lat: Latitude of center point
         lon: Longitude of center point
         args: Command line arguments
+        bbox_width: Width of bounding box in meters
+        bbox_height: Height of bounding box in meters
         scenario_name: Optional name for the scenario
-        
+
     Returns:
         Dictionary with generation results
     """
@@ -227,7 +245,10 @@ def generate_single_scenario(
     
     logger.info(f"Generating scenario: {scenario_name}")
     logger.info(f"  Location: ({lat}, {lon})")
-    logger.info(f"  Bounding box: {args.bbox}m")
+    if bbox_width == bbox_height:
+        logger.info(f"  Bounding box: {bbox_width}m x {bbox_height}m (square)")
+    else:
+        logger.info(f"  Bounding box: {bbox_width}m (width) x {bbox_height}m (height)")
     logger.info(f"  Traffic densities: {args.traffic}")
     logger.info(f"  Map formats: {args.formats}")
     
@@ -242,7 +263,8 @@ def generate_single_scenario(
         result = generator.generate_from_latlon(
             lat=lat,
             lon=lon,
-            bbox_size=args.bbox,
+            bbox_width=bbox_width,
+            bbox_height=bbox_height,
             output_dir=args.output,
             scenario_name=scenario_name,
             traffic_densities=args.traffic,
@@ -285,6 +307,21 @@ def main():
     if args.lat is not None and args.lon is None:
         logger.error("Longitude (--lon) is required when using --lat")
         sys.exit(1)
+
+    # Validate bbox-width and bbox-height
+    if (args.bbox_width is not None) != (args.bbox_height is not None):
+        logger.error("Both --bbox-width and --bbox-height must be specified together")
+        sys.exit(1)
+
+    # Determine effective bbox parameters
+    if args.bbox_width is not None and args.bbox_height is not None:
+        bbox_width = args.bbox_width
+        bbox_height = args.bbox_height
+        logger.info(f"Using rectangular bbox: {bbox_width}m (width) x {bbox_height}m (height)")
+    else:
+        bbox_width = args.bbox
+        bbox_height = args.bbox
+        logger.info(f"Using square bbox: {args.bbox}m x {args.bbox}m")
     
     # Initialize generator
     logger.info("Initializing TeraSim scenario generator...")
@@ -339,7 +376,7 @@ def main():
         if len(coordinates) > 1:
             scenario_name = f"batch_{i:03d}_{lat:.6f}_{lon:.6f}"
         
-        result = generate_single_scenario(generator, lat, lon, args, scenario_name)
+        result = generate_single_scenario(generator, lat, lon, args, bbox_width, bbox_height, scenario_name)
         results.append(result)
         
         if result.get("status") == "success":
@@ -363,7 +400,8 @@ def main():
             "successful": success_count,
             "failed": len(coordinates) - success_count,
             "parameters": {
-                "bbox_size": args.bbox,
+                "bbox_width": bbox_width,
+                "bbox_height": bbox_height,
                 "traffic_densities": args.traffic,
                 "map_formats": args.formats,
                 "output_directory": args.output

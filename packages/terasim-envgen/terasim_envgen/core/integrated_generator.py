@@ -39,10 +39,12 @@ class IntegratedScenarioGenerator:
         self.traffic_generator = TrafficFlowGenerator(config_path)
         
     def generate_from_latlon(
-        self, 
-        lat: float, 
-        lon: float, 
-        bbox_size: int = 500,
+        self,
+        lat: float,
+        lon: float,
+        bbox_size: int = None,
+        bbox_width: int = None,
+        bbox_height: int = None,
         output_dir: str = "generated_scenarios",
         scenario_name: Optional[str] = None,
         traffic_densities: List[str] = ["low", "medium", "high"],
@@ -51,37 +53,56 @@ class IntegratedScenarioGenerator:
     ) -> Dict:
         """
         Generate a complete simulation scenario from latitude/longitude coordinates.
-        
+
         Args:
             lat: Latitude of the center point
             lon: Longitude of the center point
-            bbox_size: Size of bounding box in meters (default: 500)
+            bbox_size: Size of square bounding box in meters (default: 500). Deprecated, use bbox_width/bbox_height.
+            bbox_width: Width (east-west) of bounding box in meters. If not specified, uses bbox_size.
+            bbox_height: Height (north-south) of bounding box in meters. If not specified, uses bbox_size.
             output_dir: Base output directory for generated files
             scenario_name: Optional name for the scenario (auto-generated if None)
             traffic_densities: List of traffic density levels to generate
             convert_formats: List of formats to convert map to ("sumo", "opendrive", "lanelet2")
             av_route: Optional list of route coordinates [(lat, lon), ...] within the bounding box
-            
+
         Returns:
             Dictionary containing paths to all generated files and status information
         """
+        # Handle bbox parameters with backward compatibility
+        if bbox_width is None and bbox_height is None:
+            # Use bbox_size for both dimensions (backward compatibility)
+            if bbox_size is None:
+                bbox_size = 500
+            bbox_width = bbox_size
+            bbox_height = bbox_size
+        elif bbox_width is None or bbox_height is None:
+            raise ValueError("Both bbox_width and bbox_height must be specified together")
+        # If both bbox_width and bbox_height are provided, use them directly
         results = {
             "status": "success",
             "center_coordinates": (lat, lon),
-            "bbox_size": bbox_size,
+            "bbox_width": bbox_width,
+            "bbox_height": bbox_height,
             "generated_files": {}
         }
-        
+
         # Generate scenario name if not provided
         if scenario_name is None:
-            scenario_name = f"scenario_{lat:.6f}_{lon:.6f}_{bbox_size}m"
-        
+            if bbox_width == bbox_height:
+                scenario_name = f"scenario_{lat:.6f}_{lon:.6f}_{bbox_width}m"
+            else:
+                scenario_name = f"scenario_{lat:.6f}_{lon:.6f}_{bbox_width}x{bbox_height}m"
+
         # Create output directory
         scene_dir = Path(output_dir) / scenario_name
         scene_dir.mkdir(parents=True, exist_ok=True)
-        
+
         logger.info(f"Starting integrated scenario generation for {scenario_name}")
-        logger.info(f"Center: ({lat}, {lon}), BBox: {bbox_size}m")
+        if bbox_width == bbox_height:
+            logger.info(f"Center: ({lat}, {lon}), BBox: {bbox_width}m (square)")
+        else:
+            logger.info(f"Center: ({lat}, {lon}), BBox: {bbox_width}m x {bbox_height}m (width x height)")
         
         # Step 1: Download OSM map and create visualization
         logger.info("Step 1: Downloading OSM map...")
@@ -89,7 +110,8 @@ class IntegratedScenarioGenerator:
             success = self.map_searcher.save_osm_and_visualization_for_point(
                 point_data=(lat, lon),
                 scene_dir=str(scene_dir),
-                bbox_size=bbox_size,
+                bbox_width=bbox_width,
+                bbox_height=bbox_height,
                 av_route=av_route
             )
             
@@ -223,38 +245,44 @@ class IntegratedScenarioGenerator:
     def generate_batch(
         self,
         coordinates_list: List[Tuple[float, float]],
-        bbox_size: int = 500,
+        bbox_size: int = None,
+        bbox_width: int = None,
+        bbox_height: int = None,
         output_dir: str = "generated_scenarios",
         **kwargs
     ) -> List[Dict]:
         """
         Generate multiple scenarios from a list of coordinate pairs.
-        
+
         Args:
             coordinates_list: List of (lat, lon) tuples
-            bbox_size: Size of bounding box in meters
+            bbox_size: Size of square bounding box in meters (deprecated, use bbox_width/bbox_height)
+            bbox_width: Width of bounding box in meters
+            bbox_height: Height of bounding box in meters
             output_dir: Base output directory
             **kwargs: Additional arguments passed to generate_from_latlon
-            
+
         Returns:
             List of result dictionaries for each scenario
         """
         results = []
-        
+
         for i, (lat, lon) in enumerate(coordinates_list):
             logger.info(f"Processing scenario {i+1}/{len(coordinates_list)}")
             scenario_name = kwargs.pop("scenario_name", None) or f"batch_scenario_{i+1}"
-            
+
             result = self.generate_from_latlon(
                 lat=lat,
                 lon=lon,
                 bbox_size=bbox_size,
+                bbox_width=bbox_width,
+                bbox_height=bbox_height,
                 output_dir=output_dir,
                 scenario_name=scenario_name,
                 **kwargs
             )
             results.append(result)
-            
+
         return results
 
 
