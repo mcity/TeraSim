@@ -29,6 +29,11 @@ def _setup_sumo_environment():
         tools_path = os.path.join(sumo_home, "tools")
         if os.path.exists(tools_path):
             logger.debug(f"SUMO_HOME already set: {sumo_home}")
+            # Add tools to Python path
+            if tools_path not in sys.path:
+                sys.path.insert(0, tools_path)
+            if sumo_home not in sys.path:
+                sys.path.insert(0, sumo_home)
             return True
     
     # List of possible SUMO locations (in priority order)
@@ -99,6 +104,7 @@ from .core.map_searcher import MapSearcher
 from .core.map_converter import MapConverter
 from .core.traffic_flow_generator import TrafficFlowGenerator
 from .core.integrated_generator import IntegratedScenarioGenerator
+from osmWebWizard import Builder
 
 __all__ = [
     "MapSearcher",
