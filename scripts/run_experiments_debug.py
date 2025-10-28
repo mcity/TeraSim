@@ -29,8 +29,8 @@ def main(config_path: str) -> None:
 
     base_dir = Path(config.output.dir) / config.output.name / "raw_data" / config.output.nth
     base_dir.mkdir(parents=True, exist_ok=True)
-    env = NADEWithAV( # NADEWithAV or NADE
-        av_cfg = config.environment.parameters.AV_cfg,
+    env = NADE( # NADEWithAV or NADE
+        # av_cfg = config.environment.parameters.AV_cfg,
         vehicle_factory=NDEVehicleFactory(cfg=config.environment.parameters),
         vru_factory=NDEVulnerableRoadUserFactory(cfg=config.environment.parameters),
         info_extractor=InfoExtractor,
@@ -40,7 +40,7 @@ def main(config_path: str) -> None:
         warmup_time_ub=config.environment.parameters.warmup_time_ub,
         run_time=1200,
         configuration=config.environment.parameters,
-        av_debug_control=True, # Enable debug control for AV, will use SUMO
+        # av_debug_control=True, # Enable debug control for AV, will use SUMO
     )
 
     # Paths already resolved in config

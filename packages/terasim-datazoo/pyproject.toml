@@ -9,7 +9,12 @@ readme = "README.md"
 license = "Apache-2.0"
 requires-python = ">=3.10,<3.13"
 dependencies = [
+    "numpy==1.26.4",  # Lock numpy version to prevent rebuilding
     "terasim>=0.2.0",
+    "shapelysmooth==0.2.1",
+    "transforms3d==0.4.2",
+    "tensorflow>=2.11.0",
+    "protobuf>=3.19.6",
 ]
 
 [tool.setuptools.packages.find]

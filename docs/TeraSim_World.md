@@ -13,15 +13,13 @@
 ### 1. Installation
 
 ```bash
-# Clone the repository
 git clone https://github.com/mcity/TeraSim.git
 cd TeraSim
+conda create -n terasim python=3.10 -y
+conda activate terasim
 
 # Run automated setup (installs all components including TeraSim-World)
 ./setup_environment.sh
-
-# Activate environment
-conda activate terasim
 
 # Configure API keys in .env file
 # Required: OPENAI_API_KEY and GOOGLE_MAPS_API_KEY

@@ -28,7 +28,8 @@ dependencies = [
     "python-dotenv",
     "openai",
     "requests",
-    "ray"
+    "ray",
+    "python-pycg"
 ]
 
 [project.optional-dependencies]

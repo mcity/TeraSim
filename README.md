@@ -102,6 +102,8 @@ TeraSim/
 ```bash
 git clone https://github.com/mcity/TeraSim.git
 cd TeraSim
+conda create -n terasim python=3.10 -y
+conda activate terasim
 ./setup_environment.sh
 ```
 

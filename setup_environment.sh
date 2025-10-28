@@ -119,6 +119,7 @@ setup_monorepo() {
     # Initialize workspace and install dependencies
     log_info "Installing workspace packages..."
     # Install packages explicitly for conda compatibility
+    pip install waymo-open-dataset-tf-2-11-0
     pip install -e packages/terasim
     pip install -e packages/terasim-nde-nade
     pip install -e packages/terasim-service

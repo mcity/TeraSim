@@ -92,9 +92,12 @@ class TrajectoryConverter:
                         waymo_obj_type = scenario_pb2.Track.ObjectType.TYPE_PEDESTRIAN
                     elif 'cyc' in vehicle_type.lower():
                         waymo_obj_type = scenario_pb2.Track.ObjectType.TYPE_CYCLIST
-                    else:
+                    elif 'cone' in vehicle_type.lower():
                         waymo_obj_type = scenario_pb2.Track.ObjectType.TYPE_OTHER
-                        print(f"Warning: Unknown vehicle type {vehicle_type}, setting to TYPE_OTHER.")
+                        print(f"Note: Construction cone object type {vehicle_type}, setting to TYPE_OTHER.")
+                    else:
+                        waymo_obj_type = scenario_pb2.Track.ObjectType.TYPE_UNSET
+                        print(f"Warning: Unknown vehicle type {vehicle_type}, setting to TYPE_UNSET.")
 
                     if vehicle_id not in self.obj_dict:
                         print(f"{timestamp} adding vehicle {vehicle_id} to obj_dict")

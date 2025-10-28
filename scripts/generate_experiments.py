@@ -28,6 +28,10 @@ from pathlib import Path
 from typing import List, Tuple, Optional, Dict
 import time
 
+# Add package path if needed
+sys.path.append(str(Path(__file__).parent))
+sys.path.append("/home/jiawei/.terasim/deps/sumo/tools")
+
 try:
     from terasim_envgen import IntegratedScenarioGenerator
 except ImportError as e:
