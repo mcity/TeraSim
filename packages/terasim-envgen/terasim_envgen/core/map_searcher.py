@@ -355,15 +355,15 @@ class MapSearcher:
         save_metadata(metadata_path, metadata)
         
         # Save OSM data
-        try:
-            osm_path = self._save_osm_data_webwizard(mid_lat, mid_lon, scene_dir, bbox_size)
-        except Exception as e:
-            logger.warning(f"Failed to save OSM WebWizard data for scene {scene_dir.name}: {str(e)}")
         # try:
-        #     osm_path = self._save_osm_data_osmnx(mid_lat, mid_lon, scene_dir, bbox_size)
+        #     osm_path = self._save_osm_data_webwizard(mid_lat, mid_lon, scene_dir, bbox_size)
         # except Exception as e:
-        #     logger.warning(f"Failed to save OSM OSMNX data for scene {scene_dir.name}: {str(e)}")
-        #     return False
+        #     logger.warning(f"Failed to save OSM WebWizard data for scene {scene_dir.name}: {str(e)}")
+        try:
+            osm_path = self._save_osm_data_osmnx(mid_lat, mid_lon, scene_dir, bbox_size)
+        except Exception as e:
+            logger.warning(f"Failed to save OSM OSMNX data for scene {scene_dir.name}: {str(e)}")
+            return False
         if not osm_path:
             logger.error(f"Failed to save OSM data for scene {scene_dir.name}")
             return False
