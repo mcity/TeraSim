@@ -38,9 +38,9 @@ This expanded scope enables a unified pipeline from map generation to perception
 
 [<img src="docs/figure/TeraSim_World.png" height="400px">](https://www.youtube.com/watch?v=75T1-2Ce0Ds)
 
-<p align="center">
-<font size="5">📄 <a href="https://arxiv.org/abs/2503.03629">arXiv</a> | 🌐 <a href="https://wjiawei.com/terasim-world-web/">Website</a> | 🎥 <a href="https://www.youtube.com/watch?v=75T1-2Ce0Ds">Video</a></font>
-</p>
+<h3 align="center">
+📄 <a href="https://arxiv.org/abs/2503.03629">arXiv</a> | 🌐 <a href="https://wjiawei.com/terasim-world-web/">Website</a> | 🎥 <a href="https://www.youtube.com/watch?v=75T1-2Ce0Ds">Video</a>
+</h3>
 
 **TeraSim-World** automatically synthesizes geographically grounded, safety-critical data for End-to-End autonomous driving **anywhere in the world**. 
 
