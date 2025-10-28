@@ -124,16 +124,6 @@ docker-compose exec terasim bash
 
 See [README_DOCKER.md](README_DOCKER.md) for detailed Docker deployment instructions. -->
 
-### Development Environment
-
-```bash
-conda create -n terasim python=3.10
-conda activate terasim
-git clone https://github.com/mcity/TeraSim.git
-cd TeraSim
-./setup_environment.sh
-```
-
 **Requirements**
 
 * Python 3.10–3.12
