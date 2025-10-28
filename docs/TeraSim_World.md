@@ -29,11 +29,11 @@ conda activate terasim
 
 ```bash
 python scripts/generate_experiments.py \
-    --lat 42.331936167160165 \
-    --lon -83.70812725301244 \
+    --lat 42.31708742783425 \
+    --lon -83.70771003426997 \
     --bbox 500 \
     --output generated_experiments \
-    --name ann_arbor_four_way_stop
+    --name ann_arbor_roudabout
 ```
 
 **Key Parameters:**
@@ -51,7 +51,7 @@ Run simulations with visual debugging and real-time monitoring:
 python scripts/run_experiments_debug.py --config path/to/your/config.yaml
 ```
 
-Example configurations are available in `configs/simulation/example.yaml`.
+Example configurations are available in `configs/simulation/example_ann_arbor.yaml`.
 
 ### 4. Convert to Cosmos-Drive Format
 

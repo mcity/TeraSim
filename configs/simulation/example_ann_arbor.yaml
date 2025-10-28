@@ -1,11 +1,11 @@
 input:
-  sumo_net_file: "path_to_net"
-  sumo_config_file: "path_to_config"
+  sumo_net_file: "generated_experiments/ann_arbor_roundabout/map.net.xml"
+  sumo_config_file: "generated_experiments/ann_arbor_roundabout/simulation.sumocfg"
 
 output:
-  dir: "path_to_output"  # Output directory (use "output" for non-AV simulations)
+  dir: "generated_experiments/ann_arbor_roundabout"  # Output directory (use "output" for non-AV simulations)
   name: "test"  # Experiment name
-  nth: "0_2"  # Experiment number
+  nth: "0_0"  # Experiment number
   aggregated_dir: "aggregated"  # Directory for aggregated logs
 
 simulation_module: "my_simulations"
@@ -170,7 +170,7 @@ simulator:
   class: "Simulator"
   parameters:
     num_tries: 10
-    gui_flag: false
+    gui_flag: true
     realtime_flag: false  # Only applicable for AV mode
     sumo_output_file_types: 
       - "fcd_all"
@@ -180,7 +180,7 @@ simulator:
 # Path resolution mode:
 # - "config_relative": Relative paths are resolved from the config file's directory
 # - "cwd_relative": Relative paths are resolved from the current working directory
-path_resolution: "config_relative" 
+path_resolution: "cwd_relative" 
 
 
 
