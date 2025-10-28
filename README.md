@@ -7,11 +7,10 @@
 </div>
 
 
----
 
-# TeraSim
-
-**Generative AI–Driven Autonomous Vehicle Simulation for Unknown Unsafe Events Discovery**
+<p align="center">
+<strong>Generative AI–Driven Autonomous Vehicle Simulation for Unknown Unsafe Events Discovery</strong>
+</p>
 
 ---
 
@@ -37,10 +36,13 @@ This expanded scope enables a unified pipeline from map generation to perception
 ## **🌎 New Feature: TeraSim-World**
 
 
-<img src="docs/figure/TeraSim_World.png" height="400px">
+[<img src="docs/figure/TeraSim_World.png" height="400px">](https://www.youtube.com/watch?v=75T1-2Ce0Ds)
 
+<p align="center">
+<font size="5">📄 <a href="https://arxiv.org/abs/2503.03629">arXiv</a> | 🌐 <a href="https://wjiawei.com/terasim-world-web/">Website</a> | 🎥 <a href="https://www.youtube.com/watch?v=75T1-2Ce0Ds">Video</a></font>
+</p>
 
-**TeraSim-World** automatically synthesizes geographically grounded, safety-critical data for End-to-End autonomous driving **anywhere in the world**. See 📄 [paper](https://arxiv.org/abs/2503.03629) and 🌐 [videos](https://wjiawei.com/terasim-world-web/) for details.
+**TeraSim-World** automatically synthesizes geographically grounded, safety-critical data for End-to-End autonomous driving **anywhere in the world**. 
 
 ✨ **Key Capabilities:**
 - 🗺️ **Global Coverage**: Generate realistic driving scenarios for any location worldwide
