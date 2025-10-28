@@ -163,6 +163,7 @@ class TeraSimToCosmosConverter:
         )
 
         print("Conversion completed successfully!")
+        print(f"Output directory: {self.path_to_output}")
         return True
 
     @classmethod
