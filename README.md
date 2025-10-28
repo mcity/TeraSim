@@ -109,7 +109,7 @@ conda activate terasim
 
 This script installs all required Python packages and dependencies, including [SUMO](https://www.eclipse.org/sumo/).
 
-### Docker Installation (Recommended for Production)
+<!-- ### Docker Installation (Recommended for Production)
 
 For a containerized environment with all dependencies pre-installed:
 
@@ -120,7 +120,7 @@ docker-compose up -d --build
 docker-compose exec terasim bash
 ```
 
-See [README_DOCKER.md](README_DOCKER.md) for detailed Docker deployment instructions.
+See [README_DOCKER.md](README_DOCKER.md) for detailed Docker deployment instructions. -->
 
 ### Development Environment
 
@@ -143,18 +143,7 @@ cd TeraSim
 
 ## Quick Start Example
 
-```python
-from terasim import Simulator
-from terasim.envs import EnvTemplate
-
-sim = Simulator("examples/maps/Mcity/sim.sumocfg")
-env = EnvTemplate()
-sim.bind_env(env)
-
-sim.start()
-sim.run(steps=1000)
-sim.close()
-```
+See [TeraSim_World.md](docs/TeraSim_World.md) for Quick Start Example.
 
 Additional examples are available in the [`examples/`](examples/) directory.
 
