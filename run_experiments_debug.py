@@ -83,7 +83,7 @@ if __name__ == "__main__":
     config_dir = Path(__file__).parent / "examples" / "scenarios"
     # yaml_files = sorted(config_dir.glob("*.yaml"), key=lambda x: int(''.join(filter(str.isdigit, x.stem)) or '0'))
     # yaml_files = ["examples/scenarios/cutin.yaml"]
-    yaml_files = [Path("/home/sdai/harry/TeraSim/texas_example/test_configs/construction_zone_merge_lane.yaml")]
+    yaml_files = [Path("/home/sdai/harry/TeraSim/jupiter/eb/test_config.yaml")]
     # Randomly shuffle yaml files
     random.shuffle(yaml_files)
 

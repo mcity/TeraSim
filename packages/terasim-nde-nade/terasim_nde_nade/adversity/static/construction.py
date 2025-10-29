@@ -645,7 +645,8 @@ class ConstructionAdversity(AbstractStaticAdversity):
 
                     # Place the object on boundary lane
                     self._place_object(current_pos, lateral_offset, type_id, zone_type, boundary_lane, visible_to_AV=True)
-                    if self._spacing > 0:
+                    # Only place extra invisible cones in taper_in, taper_out, work, and buffer zones
+                    if self._spacing > 0 and zone_type in ['taper_in', 'taper_out', 'work', 'buffer']:
                         next_visible_pos = current_pos + spacing
                         intermediate_pos = current_pos + self._spacing
                         while intermediate_pos < next_visible_pos and intermediate_pos < zone_end:

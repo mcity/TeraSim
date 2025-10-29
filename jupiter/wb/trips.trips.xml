@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- generated on 2025-10-23 00:34:35.005050 by Eclipse SUMO randomTrips.py 23d18e1e9
+<configuration>
+    <net-file value="/home/sdai/harry/TeraSim/jupiter/wb/jupiter_wb.net.xml"/>
+    <output-trip-file value="/home/sdai/harry/TeraSim/jupiter/wb/trips.trips.xml"/>
+    <route-file value="/home/sdai/harry/TeraSim/jupiter/wb/bicycles.rou.xml"/>
+    <prefix value="bicycle"/>
+    <vehicle-class value="bicycle"/>
+    <allow-fringe value="True"/>
+    <vclass value="bicycle"/>
+    <seed value="9282"/>
+    <random value="True"/>
+    <validate value="True"/>
+    <period value="7.0"/>
+</configuration>
+-->
+
+<!-- generated on 2025-10-23 00:34:34 by Eclipse SUMO duarouter Version 1.23.1
+<duarouterConfiguration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://sumo.dlr.de/xsd/duarouterConfiguration.xsd">
+
+    <input>
+        <net-file value="/home/sdai/harry/TeraSim/jupiter/wb/jupiter_wb.net.xml"/>
+        <route-files value="/home/sdai/harry/TeraSim/jupiter/wb/trips.trips.xml"/>
+    </input>
+
+    <output>
+        <output-file value="/home/sdai/harry/TeraSim/jupiter/wb/trips.trips.xml.tmp"/>
+        <alternatives-output value="NUL"/>
+        <write-trips value="true"/>
+    </output>
+
+    <time>
+        <begin value="0"/>
+        <end value="3600.0"/>
+    </time>
+
+    <report>
+        <no-warnings value="true"/>
+        <ignore-errors value="true"/>
+        <no-step-log value="true"/>
+    </report>
+
+</duarouterConfiguration>
+-->
+
+<routes xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://sumo.dlr.de/xsd/routes_file.xsd">
+    <vType id="bicycle_bicycle" vClass="bicycle"/>
+    <trip id="bicycle1" type="bicycle_bicycle" depart="7.00" from="353.0" to="561.0"/>
+    <trip id="bicycle5" type="bicycle_bicycle" depart="35.00" from="334.0" to="614.0"/>
+    <trip id="bicycle7" type="bicycle_bicycle" depart="49.00" from="merge_zone_17" to="644.0"/>
+    <trip id="bicycle12" type="bicycle_bicycle" depart="84.00" from="646.0" to="700.0"/>
+    <trip id="bicycle20" type="bicycle_bicycle" depart="140.00" from="633.0" to="701.0"/>
+    <trip id="bicycle25" type="bicycle_bicycle" depart="175.00" from="789.0" to="184.0"/>
+    <trip id="bicycle46" type="bicycle_bicycle" depart="322.00" from="640.0" to="873.0"/>
+    <trip id="bicycle47" type="bicycle_bicycle" depart="329.00" from="479.0" to="671.0"/>
+    <trip id="bicycle54" type="bicycle_bicycle" depart="378.00" from="158.0" to="645.0"/>
+    <trip id="bicycle58" type="bicycle_bicycle" depart="406.00" from="601.0" to="632.0"/>
+    <trip id="bicycle66" type="bicycle_bicycle" depart="462.00" from="412.0" to="540.0"/>
+    <trip id="bicycle70" type="bicycle_bicycle" depart="490.00" from="184.0" to="221.0"/>
+    <trip id="bicycle76" type="bicycle_bicycle" depart="532.00" from="merge_zone_17" to="432.0"/>
+    <trip id="bicycle79" type="bicycle_bicycle" depart="553.00" from="merge_zone_25" to="401.0"/>
+    <trip id="bicycle81" type="bicycle_bicycle" depart="567.00" from="376.0" to="603.0"/>
+    <trip id="bicycle93" type="bicycle_bicycle" depart="651.00" from="907.0" to="589.0"/>
+    <trip id="bicycle99" type="bicycle_bicycle" depart="693.00" from="343.0" to="512.0"/>
+    <trip id="bicycle115" type="bicycle_bicycle" depart="805.00" from="904.0" to="323.0"/>
+    <trip id="bicycle127" type="bicycle_bicycle" depart="889.00" from="202.0" to="446.0"/>
+    <trip id="bicycle134" type="bicycle_bicycle" depart="938.00" from="merge_zone_25" to="698.0"/>
+    <trip id="bicycle145" type="bicycle_bicycle" depart="1015.00" from="212.0" to="560.0"/>
+    <trip id="bicycle147" type="bicycle_bicycle" depart="1029.00" from="626.0" to="merge_zone_60"/>
+    <trip id="bicycle151" type="bicycle_bicycle" depart="1057.00" from="434.0" to="621.0"/>
+    <trip id="bicycle155" type="bicycle_bicycle" depart="1085.00" from="375.0" to="568.0"/>
+    <trip id="bicycle174" type="bicycle_bicycle" depart="1218.00" from="790.0" to="653.0"/>
+    <trip id="bicycle177" type="bicycle_bicycle" depart="1239.00" from="181.0" to="373.0"/>
+    <trip id="bicycle178" type="bicycle_bicycle" depart="1246.00" from="143.0" to="408.0"/>
+    <trip id="bicycle180" type="bicycle_bicycle" depart="1260.00" from="447.0" to="708.0"/>
+    <trip id="bicycle183" type="bicycle_bicycle" depart="1281.00" from="63.0" to="67.0"/>
+    <trip id="bicycle187" type="bicycle_bicycle" depart="1309.00" from="440.0" to="530.0"/>
+    <trip id="bicycle195" type="bicycle_bicycle" depart="1365.00" from="819.0" to="373.0"/>
+    <trip id="bicycle208" type="bicycle_bicycle" depart="1456.00" from="144.0" to="333.0"/>
+    <trip id="bicycle212" type="bicycle_bicycle" depart="1484.00" from="150.0" to="357.0"/>
+    <trip id="bicycle226" type="bicycle_bicycle" depart="1582.00" from="193.0" to="403.0"/>
+    <trip id="bicycle227" type="bicycle_bicycle" depart="1589.00" from="905.0" to="180.0"/>
+    <trip id="bicycle241" type="bicycle_bicycle" depart="1687.00" from="160.0" to="434.0"/>
+    <trip id="bicycle248" type="bicycle_bicycle" depart="1736.00" from="150.0" to="330.0"/>
+    <trip id="bicycle251" type="bicycle_bicycle" depart="1757.00" from="142.0" to="215.0"/>
+    <trip id="bicycle253" type="bicycle_bicycle" depart="1771.00" from="174.0" to="425.0"/>
+    <trip id="bicycle256" type="bicycle_bicycle" depart="1792.00" from="165.0" to="554.0"/>
+    <trip id="bicycle257" type="bicycle_bicycle" depart="1799.00" from="334.0" to="557.0"/>
+    <trip id="bicycle265" type="bicycle_bicycle" depart="1855.00" from="472.0" to="589.0"/>
+    <trip id="bicycle266" type="bicycle_bicycle" depart="1862.00" from="155.0" to="583.0"/>
+    <trip id="bicycle286" type="bicycle_bicycle" depart="2002.00" from="70.0" to="81.0"/>
+    <trip id="bicycle294" type="bicycle_bicycle" depart="2058.00" from="408.0" to="673.0"/>
+    <trip id="bicycle304" type="bicycle_bicycle" depart="2128.00" from="149.0" to="370.0"/>
+    <trip id="bicycle312" type="bicycle_bicycle" depart="2184.00" from="239.0" to="332.0"/>
+    <trip id="bicycle315" type="bicycle_bicycle" depart="2205.00" from="344.0" to="687.0"/>
+    <trip id="bicycle320" type="bicycle_bicycle" depart="2240.00" from="340.0" to="882.0"/>
+    <trip id="bicycle328" type="bicycle_bicycle" depart="2296.00" from="200.0" to="380.0"/>
+    <trip id="bicycle329" type="bicycle_bicycle" depart="2303.00" from="629.0" to="625.0"/>
+    <trip id="bicycle331" type="bicycle_bicycle" depart="2317.00" from="512.0" to="696.0"/>
+    <trip id="bicycle336" type="bicycle_bicycle" depart="2352.00" from="499.0" to="508.0"/>
+    <trip id="bicycle340" type="bicycle_bicycle" depart="2380.00" from="353.0" to="397.0"/>
+    <trip id="bicycle344" type="bicycle_bicycle" depart="2408.00" from="269.0" to="24.0"/>
+    <trip id="bicycle347" type="bicycle_bicycle" depart="2429.00" from="334.0" to="664.0"/>
+    <trip id="bicycle348" type="bicycle_bicycle" depart="2436.00" from="195.0" to="389.0"/>
+    <trip id="bicycle362" type="bicycle_bicycle" depart="2534.00" from="475.0" to="merge_zone_48"/>
+    <trip id="bicycle366" type="bicycle_bicycle" depart="2562.00" from="380.0" to="429.0"/>
+    <trip id="bicycle369" type="bicycle_bicycle" depart="2583.00" from="merge_zone_13" to="324.0"/>
+    <trip id="bicycle384" type="bicycle_bicycle" depart="2688.00" from="386.0" to="525.0"/>
+    <trip id="bicycle385" type="bicycle_bicycle" depart="2695.00" from="809.0" to="633.0"/>
+    <trip id="bicycle391" type="bicycle_bicycle" depart="2737.00" from="538.0" to="613.0"/>
+    <trip id="bicycle394" type="bicycle_bicycle" depart="2758.00" from="476.0" to="698.0"/>
+    <trip id="bicycle395" type="bicycle_bicycle" depart="2765.00" from="355.0" to="merge_zone_60"/>
+    <trip id="bicycle399" type="bicycle_bicycle" depart="2793.00" from="488.0" to="584.0"/>
+    <trip id="bicycle408" type="bicycle_bicycle" depart="2856.00" from="325.0" to="366.0"/>
+    <trip id="bicycle414" type="bicycle_bicycle" depart="2898.00" from="141.0" to="371.0"/>
+    <trip id="bicycle422" type="bicycle_bicycle" depart="2954.00" from="344.0" to="363.0"/>
+    <trip id="bicycle425" type="bicycle_bicycle" depart="2975.00" from="143.0" to="340.0"/>
+    <trip id="bicycle432" type="bicycle_bicycle" depart="3024.00" from="153.0" to="611.0"/>
+    <trip id="bicycle436" type="bicycle_bicycle" depart="3052.00" from="589.0" to="584.0"/>
+    <trip id="bicycle437" type="bicycle_bicycle" depart="3059.00" from="812.0" to="516.0"/>
+    <trip id="bicycle456" type="bicycle_bicycle" depart="3192.00" from="911.0" to="174.0"/>
+    <trip id="bicycle457" type="bicycle_bicycle" depart="3199.00" from="375.0" to="568.0"/>
+    <trip id="bicycle468" type="bicycle_bicycle" depart="3276.00" from="379.0" to="887.0"/>
+    <trip id="bicycle474" type="bicycle_bicycle" depart="3318.00" from="365.0" to="551.0"/>
+    <trip id="bicycle475" type="bicycle_bicycle" depart="3325.00" from="386.0" to="528.0"/>
+    <trip id="bicycle490" type="bicycle_bicycle" depart="3430.00" from="505.0" to="592.0"/>
+    <trip id="bicycle496" type="bicycle_bicycle" depart="3472.00" from="474.0" to="577.0"/>
+    <trip id="bicycle502" type="bicycle_bicycle" depart="3514.00" from="397.0" to="631.0"/>
+    <trip id="bicycle511" type="bicycle_bicycle" depart="3577.00" from="577.0" to="681.0"/>
+    <trip id="bicycle513" type="bicycle_bicycle" depart="3591.00" from="332.0" to="886.0"/>
+    <trip id="bicycle514" type="bicycle_bicycle" depart="3598.00" from="767.0" to="506.0"/>
+</routes>

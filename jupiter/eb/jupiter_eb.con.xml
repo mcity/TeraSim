@@ -12,6 +12,7 @@
     <connection from="merge_zone_1" to="3.0" fromLane="0" toLane="4" dir="r" state="m" />
     <connection from="145.0" to="131.0" fromLane="1" toLane="1" />
     <connection from="145.0" to="131.0" fromLane="2" toLane="2" />
+    <connection from="145.0" to="131.0" fromLane="1" toLane="0" />
     <connection from="753.0" to="773.0" fromLane="1" toLane="0" />
     <connection from="753.0" to="751.0" fromLane="3" toLane="2" />
     <connection from="753.0" to="751.0" fromLane="4" toLane="3" />
@@ -59,6 +60,7 @@
     <connection from="882.0" to="880.0" fromLane="1" toLane="0" />
     <connection from="144.0" to="141.0" fromLane="2" toLane="2" />
     <connection from="144.0" to="141.0" fromLane="1" toLane="1" />
+    <connection from="144.0" to="141.0" fromLane="1" toLane="0" />
     <connection from="891.0" to="893.0" fromLane="4" toLane="3" />
     <connection from="891.0" to="893.0" fromLane="3" toLane="2" />
     <connection from="891.0" to="893.0" fromLane="2" toLane="1" />
@@ -76,29 +78,36 @@
     <connection from="merge_zone_12" to="175.0" fromLane="1" toLane="1" />
     <connection from="merge_zone_12" to="175.0" fromLane="2" toLane="2" />
     <connection from="167.0" to="merge_zone_12" fromLane="0" toLane="0" />
-    <connection from="merge_zone_12" to="175.0" fromLane="0" toLane="2" dir="r" state="m" />
+    <connection from="merge_zone_12" to="175.0" fromLane="0" toLane="1" dir="r" state="m" />
     <connection from="166.0" to="193.0" fromLane="0" toLane="1" />
     <connection from="166.0" to="193.0" fromLane="1" toLane="2" />
     <connection from="827.0" to="196.0" fromLane="1" toLane="2" />
     <connection from="827.0" to="196.0" fromLane="0" toLane="1" />
+    <connection from="827.0" to="196.0" fromLane="0" toLane="0" />
     <connection from="197.0" to="208.0" fromLane="2" toLane="2" />
     <connection from="197.0" to="208.0" fromLane="1" toLane="1" />
+    <connection from="197.0" to="208.0" fromLane="1" toLane="0" />
     <connection from="206.0" to="211.0" fromLane="1" toLane="2" />
     <connection from="206.0" to="211.0" fromLane="0" toLane="1" />
     <connection from="196.0" to="223.0" fromLane="1" toLane="1" />
     <connection from="196.0" to="223.0" fromLane="2" toLane="2" />
+    <connection from="196.0" to="223.0" fromLane="0" toLane="0" />
     <connection from="243.0" to="247.0" fromLane="1" toLane="2" />
     <connection from="243.0" to="247.0" fromLane="2" toLane="3" />
+    <connection from="243.0" to="247.0" fromLane="0" toLane="1" />
     <connection from="239.0" to="270.0" fromLane="1" toLane="2" />
     <connection from="239.0" to="270.0" fromLane="2" toLane="3" />
+    <connection from="239.0" to="270.0" fromLane="1" toLane="1" />
     <connection from="50.0" to="5.0" fromLane="1" toLane="2" />
     <connection from="50.0" to="5.0" fromLane="4" toLane="5" />
     <connection from="50.0" to="5.0" fromLane="3" toLane="4" />
     <connection from="50.0" to="5.0" fromLane="2" toLane="3" />
     <connection from="276.0" to="275.0" fromLane="1" toLane="2" />
     <connection from="276.0" to="275.0" fromLane="2" toLane="3" />
+    <connection from="276.0" to="275.0" fromLane="1" toLane="1" />
     <connection from="291.0" to="279.0" fromLane="1" toLane="1" />
     <connection from="291.0" to="279.0" fromLane="2" toLane="2" />
+    <connection from="291.0" to="279.0" fromLane="1" toLane="0" />
     <connection from="336.0" to="merge_zone_22" fromLane="1" toLane="2" />
     <connection from="336.0" to="merge_zone_22" fromLane="0" toLane="1" />
     <connection from="merge_zone_22" to="320.0" fromLane="2" toLane="2" />
@@ -106,7 +115,7 @@
     <connection from="339.0" to="merge_zone_22" fromLane="0" toLane="0" />
     <connection from="merge_zone_22" to="320.0" fromLane="0" toLane="2" dir="r" state="m" />
     <connection from="323.0" to="merge_zone_23" fromLane="0" toLane="0" />
-    <connection from="merge_zone_23" to="334.0" fromLane="0" toLane="2" dir="r" state="m" />
+    <connection from="merge_zone_23" to="334.0" fromLane="0" toLane="1" dir="r" state="m" />
     <connection from="341.0" to="merge_zone_23" fromLane="0" toLane="1" />
     <connection from="341.0" to="merge_zone_23" fromLane="1" toLane="2" />
     <connection from="merge_zone_23" to="334.0" fromLane="1" toLane="1" />
@@ -116,7 +125,7 @@
     <connection from="merge_zone_24" to="348.0" fromLane="2" toLane="2" />
     <connection from="merge_zone_24" to="348.0" fromLane="1" toLane="1" />
     <connection from="352.0" to="merge_zone_24" fromLane="0" toLane="0" />
-    <connection from="merge_zone_24" to="348.0" fromLane="0" toLane="2" dir="r" state="m" />
+    <connection from="merge_zone_24" to="348.0" fromLane="0" toLane="1" dir="r" state="m" />
     <connection from="374.0" to="merge_zone_25" fromLane="0" toLane="0" />
     <connection from="merge_zone_25" to="373.0" fromLane="0" toLane="2" dir="r" state="m" />
     <connection from="382.0" to="merge_zone_25" fromLane="1" toLane="2" />
@@ -134,7 +143,7 @@
     <connection from="merge_zone_29" to="464.0" fromLane="2" toLane="2" />
     <connection from="merge_zone_29" to="464.0" fromLane="1" toLane="1" />
     <connection from="453.0" to="merge_zone_29" fromLane="0" toLane="0" />
-    <connection from="merge_zone_29" to="464.0" fromLane="0" toLane="2" dir="r" state="m" />
+    <connection from="merge_zone_29" to="464.0" fromLane="0" toLane="1" dir="r" state="m" />
     <connection from="35.0" to="merge_zone_3" fromLane="0" toLane="0" />
     <connection from="merge_zone_3" to="10.0" fromLane="0" toLane="4" dir="r" state="m" />
     <connection from="62.0" to="merge_zone_3" fromLane="0" toLane="1" />
@@ -148,19 +157,20 @@
     <connection from="471.0" to="478.0" fromLane="1" toLane="2" />
     <connection from="471.0" to="478.0" fromLane="0" toLane="1" />
     <connection from="511.0" to="merge_zone_31" fromLane="0" toLane="0" />
-    <connection from="merge_zone_31" to="502.0" fromLane="0" toLane="2" dir="r" state="m" />
+    <connection from="merge_zone_31" to="502.0" fromLane="0" toLane="1" dir="r" state="m" />
     <connection from="505.0" to="merge_zone_31" fromLane="1" toLane="2" />
     <connection from="505.0" to="merge_zone_31" fromLane="0" toLane="1" />
     <connection from="merge_zone_31" to="502.0" fromLane="2" toLane="2" />
     <connection from="merge_zone_31" to="502.0" fromLane="1" toLane="1" />
-    <connection from="518.0" to="merge_zone_32" fromLane="0" toLane="1" />
     <connection from="518.0" to="merge_zone_32" fromLane="1" toLane="2" />
+    <connection from="518.0" to="merge_zone_32" fromLane="0" toLane="1" />
     <connection from="merge_zone_32" to="532.0" fromLane="1" toLane="1" />
     <connection from="merge_zone_32" to="532.0" fromLane="2" toLane="2" />
     <connection from="538.0" to="merge_zone_32" fromLane="0" toLane="0" />
-    <connection from="merge_zone_32" to="532.0" fromLane="0" toLane="2" dir="r" state="m" />
+    <connection from="merge_zone_32" to="532.0" fromLane="0" toLane="1" dir="r" state="m" />
     <connection from="552.0" to="549.0" fromLane="2" toLane="2" />
     <connection from="552.0" to="549.0" fromLane="1" toLane="1" />
+    <connection from="552.0" to="549.0" fromLane="1" toLane="0" />
     <connection from="562.0" to="560.0" fromLane="1" toLane="2" />
     <connection from="562.0" to="560.0" fromLane="0" toLane="1" />
     <connection from="600.0" to="579.0" fromLane="1" toLane="1" />
@@ -169,11 +179,12 @@
     <connection from="607.0" to="585.0" fromLane="1" toLane="2" />
     <connection from="597.0" to="593.0" fromLane="2" toLane="4" />
     <connection from="597.0" to="593.0" fromLane="1" toLane="3" />
-    <connection from="577.0" to="593.0" fromLane="0" toLane="4" />
+    <connection from="577.0" to="593.0" fromLane="1" toLane="2" />
+    <connection from="577.0" to="593.0" fromLane="0" toLane="1" />
     <connection from="629.0" to="647.0" fromLane="2" toLane="2" />
     <connection from="629.0" to="647.0" fromLane="1" toLane="1" />
     <connection from="700.0" to="merge_zone_39" fromLane="0" toLane="0" />
-    <connection from="merge_zone_39" to="701.0" fromLane="0" toLane="4" dir="r" state="m" />
+    <connection from="merge_zone_39" to="701.0" fromLane="0" toLane="0" dir="r" state="m" />
     <connection from="692.0" to="merge_zone_39" fromLane="2" toLane="3" />
     <connection from="692.0" to="merge_zone_39" fromLane="3" toLane="4" />
     <connection from="692.0" to="merge_zone_39" fromLane="4" toLane="5" />
@@ -195,7 +206,7 @@
     <connection from="merge_zone_40" to="706.0" fromLane="3" toLane="2" />
     <connection from="merge_zone_40" to="706.0" fromLane="2" toLane="1" />
     <connection from="731.0" to="merge_zone_40" fromLane="0" toLane="0" />
-    <connection from="merge_zone_40" to="706.0" fromLane="0" toLane="4" dir="r" state="m" />
+    <connection from="merge_zone_40" to="706.0" fromLane="0" toLane="0" dir="r" state="m" />
     <connection from="710.0" to="707.0" fromLane="1" toLane="2" />
     <connection from="710.0" to="707.0" fromLane="3" toLane="4" />
     <connection from="710.0" to="707.0" fromLane="0" toLane="1" />
@@ -209,7 +220,7 @@
     <connection from="merge_zone_42" to="745.0" fromLane="5" toLane="5" />
     <connection from="merge_zone_42" to="745.0" fromLane="2" toLane="2" />
     <connection from="765.0" to="merge_zone_42" fromLane="0" toLane="0" />
-    <connection from="merge_zone_42" to="745.0" fromLane="0" toLane="5" dir="r" state="m" />
+    <connection from="merge_zone_42" to="745.0" fromLane="0" toLane="1" dir="r" state="m" />
     <connection from="755.0" to="merge_zone_43" fromLane="4" toLane="5" />
     <connection from="755.0" to="merge_zone_43" fromLane="2" toLane="3" />
     <connection from="755.0" to="merge_zone_43" fromLane="1" toLane="2" />
@@ -219,37 +230,37 @@
     <connection from="merge_zone_43" to="763.0" fromLane="2" toLane="2" />
     <connection from="merge_zone_43" to="763.0" fromLane="4" toLane="4" />
     <connection from="778.0" to="merge_zone_43" fromLane="0" toLane="0" />
-    <connection from="merge_zone_43" to="763.0" fromLane="0" toLane="5" dir="r" state="m" />
+    <connection from="merge_zone_43" to="763.0" fromLane="0" toLane="1" dir="r" state="m" />
     <connection from="800.0" to="782.0" fromLane="0" toLane="1" />
     <connection from="800.0" to="782.0" fromLane="2" toLane="3" />
     <connection from="800.0" to="782.0" fromLane="3" toLane="4" />
     <connection from="800.0" to="782.0" fromLane="1" toLane="2" />
     <connection from="941.0" to="839.0" fromLane="2" toLane="3" />
     <connection from="941.0" to="839.0" fromLane="0" toLane="1" />
-    <connection from="941.0" to="839.0" fromLane="3" toLane="4" />
     <connection from="941.0" to="839.0" fromLane="1" toLane="2" />
+    <connection from="838.0" to="839.0" fromLane="0" toLane="0" />
     <connection from="841.0" to="848.0" fromLane="0" toLane="0" />
     <connection from="841.0" to="848.0" fromLane="2" toLane="2" />
     <connection from="841.0" to="848.0" fromLane="1" toLane="1" />
     <connection from="80.0" to="merge_zone_47" fromLane="0" toLane="0" />
-    <connection from="merge_zone_47" to="854.0" fromLane="0" toLane="4" dir="r" state="m" />
+    <connection from="merge_zone_47" to="854.0" fromLane="0" toLane="1" dir="r" state="m" />
     <connection from="76.0" to="merge_zone_47" fromLane="1" toLane="2" />
     <connection from="76.0" to="merge_zone_47" fromLane="0" toLane="1" />
     <connection from="76.0" to="merge_zone_47" fromLane="2" toLane="3" />
-    <connection from="76.0" to="merge_zone_47" fromLane="3" toLane="4" />
     <connection from="merge_zone_47" to="854.0" fromLane="2" toLane="2" />
     <connection from="merge_zone_47" to="854.0" fromLane="1" toLane="1" />
     <connection from="merge_zone_47" to="854.0" fromLane="3" toLane="3" />
     <connection from="merge_zone_47" to="854.0" fromLane="4" toLane="4" />
-    <connection from="111.0" to="merge_zone_48" fromLane="2" toLane="2" />
-    <connection from="111.0" to="merge_zone_48" fromLane="1" toLane="1" />
-    <connection from="merge_zone_48" to="859.0" fromLane="3" toLane="5" />
-    <connection from="merge_zone_48" to="859.0" fromLane="2" toLane="4" />
-    <connection from="merge_zone_48" to="859.0" fromLane="1" toLane="3" />
+    <connection from="111.0" to="merge_zone_48" fromLane="1" toLane="2" />
+    <connection from="111.0" to="merge_zone_48" fromLane="0" toLane="1" />
+    <connection from="111.0" to="merge_zone_48" fromLane="2" toLane="3" />
+    <connection from="merge_zone_48" to="859.0" fromLane="3" toLane="4" />
+    <connection from="merge_zone_48" to="859.0" fromLane="2" toLane="3" />
+    <connection from="merge_zone_48" to="859.0" fromLane="1" toLane="2" />
     <connection from="886.0" to="merge_zone_48" fromLane="0" toLane="0" />
-    <connection from="merge_zone_48" to="859.0" fromLane="0" toLane="5" dir="r" state="m" />
+    <connection from="merge_zone_48" to="859.0" fromLane="0" toLane="1" dir="r" state="m" />
     <connection from="876.0" to="merge_zone_49" fromLane="0" toLane="0" />
-    <connection from="merge_zone_49" to="871.0" fromLane="0" toLane="1" dir="r" state="m" />
+    <connection from="merge_zone_49" to="871.0" fromLane="0" toLane="0" dir="r" state="m" />
     <connection from="873.0" to="merge_zone_49" fromLane="0" toLane="1" />
     <connection from="873.0" to="merge_zone_49" fromLane="1" toLane="2" />
     <connection from="merge_zone_49" to="871.0" fromLane="1" toLane="0" />
@@ -264,31 +275,32 @@
     <connection from="merge_zone_5" to="16.0" fromLane="2" toLane="2" />
     <connection from="merge_zone_5" to="16.0" fromLane="4" toLane="4" />
     <connection from="merge_zone_5" to="16.0" fromLane="1" toLane="1" />
-    <connection from="948.0" to="merge_zone_50" fromLane="1" toLane="2" />
     <connection from="948.0" to="merge_zone_50" fromLane="0" toLane="1" />
+    <connection from="948.0" to="merge_zone_50" fromLane="1" toLane="2" />
     <connection from="948.0" to="merge_zone_50" fromLane="2" toLane="3" />
-    <connection from="948.0" to="merge_zone_50" fromLane="3" toLane="4" />
     <connection from="merge_zone_50" to="882.0" fromLane="2" toLane="2" />
     <connection from="merge_zone_50" to="882.0" fromLane="1" toLane="1" />
     <connection from="merge_zone_50" to="882.0" fromLane="3" toLane="3" />
-    <connection from="merge_zone_50" to="882.0" fromLane="4" toLane="4" />
     <connection from="884.0" to="merge_zone_50" fromLane="0" toLane="0" />
-    <connection from="merge_zone_50" to="882.0" fromLane="0" toLane="4" dir="r" state="m" />
+    <connection from="merge_zone_50" to="882.0" fromLane="0" toLane="1" dir="r" state="m" />
     <connection from="936.0" to="891.0" fromLane="3" toLane="4" />
     <connection from="936.0" to="891.0" fromLane="1" toLane="2" />
     <connection from="936.0" to="891.0" fromLane="2" toLane="3" />
-    <connection from="634.0" to="merge_zone_53" fromLane="1" toLane="0" />
-    <connection from="merge_zone_53" to="929.0" fromLane="0" toLane="2" dir="r" state="m" />
-    <connection from="921.0" to="merge_zone_53" fromLane="1" toLane="2" />
+    <connection from="634.0" to="merge_zone_53" fromLane="1" toLane="2" />
+    <connection from="634.0" to="merge_zone_53" fromLane="0" toLane="1" />
+    <connection from="merge_zone_53" to="929.0" fromLane="0" toLane="0" dir="r" state="m" />
+    <connection from="921.0" to="merge_zone_53" fromLane="1" toLane="1" />
+    <connection from="921.0" to="merge_zone_53" fromLane="0" toLane="0" />
     <connection from="merge_zone_53" to="929.0" fromLane="2" toLane="2" />
-    <connection from="224.0" to="merge_zone_54" fromLane="0" toLane="1" />
+    <connection from="merge_zone_53" to="929.0" fromLane="1" toLane="1" />
     <connection from="224.0" to="merge_zone_54" fromLane="1" toLane="2" />
+    <connection from="224.0" to="merge_zone_54" fromLane="0" toLane="1" />
     <connection from="merge_zone_54" to="951.0" fromLane="1" toLane="1" />
     <connection from="merge_zone_54" to="951.0" fromLane="2" toLane="2" />
     <connection from="231.0" to="merge_zone_54" fromLane="0" toLane="0" />
-    <connection from="merge_zone_54" to="951.0" fromLane="0" toLane="2" dir="r" state="m" />
+    <connection from="merge_zone_54" to="951.0" fromLane="0" toLane="1" dir="r" state="m" />
     <connection from="304.0" to="merge_zone_55" fromLane="0" toLane="0" />
-    <connection from="merge_zone_55" to="954.0" fromLane="0" toLane="2" dir="r" state="m" />
+    <connection from="merge_zone_55" to="954.0" fromLane="0" toLane="1" dir="r" state="m" />
     <connection from="273.0" to="merge_zone_55" fromLane="0" toLane="1" />
     <connection from="273.0" to="merge_zone_55" fromLane="1" toLane="2" />
     <connection from="merge_zone_55" to="954.0" fromLane="1" toLane="1" />
@@ -338,6 +350,7 @@
     <connection from="97.0" to="938.0" fromLane="2" toLane="2" />
     <connection from="97.0" to="938.0" fromLane="4" toLane="4" />
     <connection from="97.0" to="938.0" fromLane="1" toLane="1" />
+    <connection from="97.0" to="938.0" fromLane="0" toLane="1" />
     <connection from="122.0" to="146.0" fromLane="2" toLane="1" />
     <connection from="122.0" to="146.0" fromLane="1" toLane="0" />
     <connection from="122.0" to="125.0" fromLane="1" toLane="0" />
@@ -368,6 +381,7 @@
     <connection from="185.0" to="199.0" fromLane="0" toLane="0" />
     <connection from="198.0" to="819.0" fromLane="2" toLane="1" />
     <connection from="198.0" to="819.0" fromLane="1" toLane="0" />
+    <connection from="198.0" to="819.0" fromLane="0" toLane="0" />    
     <connection from="219.0" to="229.0" fromLane="0" toLane="0" />
     <connection from="219.0" to="230.0" fromLane="1" toLane="1" />
     <connection from="219.0" to="230.0" fromLane="0" toLane="0" />
@@ -382,6 +396,7 @@
     <connection from="280.0" to="289.0" fromLane="2" toLane="1" />
     <connection from="292.0" to="287.0" fromLane="2" toLane="2" />
     <connection from="292.0" to="287.0" fromLane="1" toLane="1" />
+    <connection from="292.0" to="287.0" fromLane="0" toLane="1" />
     <connection from="310.0" to="314.0" fromLane="2" toLane="1" />
     <connection from="310.0" to="314.0" fromLane="1" toLane="0" />
     <connection from="310.0" to="313.0" fromLane="1" toLane="0" />
@@ -397,7 +412,7 @@
     <connection from="merge_zone_8" to="92.0" fromLane="4" toLane="3" />
     <connection from="merge_zone_8" to="92.0" fromLane="3" toLane="2" />
     <connection from="103.0" to="merge_zone_8" fromLane="0" toLane="0" />
-    <connection from="merge_zone_8" to="92.0" fromLane="0" toLane="4" dir="r" state="m" />
+    <connection from="merge_zone_8" to="92.0" fromLane="0" toLane="0" dir="r" state="m" />
     <connection from="351.0" to="357.0" fromLane="1" toLane="0" />
     <connection from="351.0" to="347.0" fromLane="1" toLane="0" />
     <connection from="351.0" to="347.0" fromLane="2" toLane="1" />
@@ -429,6 +444,7 @@
     <connection from="515.0" to="528.0" fromLane="1" toLane="0" />
     <connection from="119.0" to="127.0" fromLane="2" toLane="2" />
     <connection from="119.0" to="127.0" fromLane="1" toLane="1" />
+    <connection from="119.0" to="127.0" fromLane="1" toLane="0" />
     <connection from="548.0" to="567.0" fromLane="1" toLane="0" />
     <connection from="548.0" to="568.0" fromLane="2" toLane="1" />
     <connection from="548.0" to="568.0" fromLane="1" toLane="0" />
