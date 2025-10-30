@@ -77,7 +77,7 @@ environment:
           placement_mode: xy_angle
           x: 83563.00
           y: 22882.00
-          angle: 268.28
+          angle: 79.99
           object_type: TRUCK
           other_settings:
           # duration: 1200
@@ -86,9 +86,9 @@ environment:
           _convert_: all
           _target_: terasim_nde_nade.adversity.StalledObjectAdversity
           placement_mode: xy_angle
-          x: 90280.00
-          y: 23902.00
-          angle: 268.28
+          x: 31692.00
+          y: 13629.00
+          angle: 58.17
           object_type: veh_passenger
           other_settings:
           # duration: 1200
@@ -98,8 +98,8 @@ environment:
           _target_: terasim_nde_nade.adversity.StalledObjectAdversity
           placement_mode: xy_angle
           x: 120470.00
-          y: 28539.00
-          angle: 268.28
+          y: 28537.71
+          angle: 87.42
           object_type: POLICE
           other_settings:
           # duration: 1200
@@ -108,9 +108,9 @@ environment:
           _convert_: all
           _target_: terasim_nde_nade.adversity.StalledObjectAdversity
           placement_mode: xy_angle
-          x: 120473.00
-          y: 28539.00
-          angle: 268.28
+          x: 120476.00
+          y: 28538.00
+          angle: 87.42
           object_type: veh_passenger
           other_settings:
           # duration: 1200

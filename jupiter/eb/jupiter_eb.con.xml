@@ -179,8 +179,8 @@
     <connection from="607.0" to="585.0" fromLane="1" toLane="2" />
     <connection from="597.0" to="593.0" fromLane="2" toLane="4" />
     <connection from="597.0" to="593.0" fromLane="1" toLane="3" />
-    <connection from="577.0" to="593.0" fromLane="1" toLane="2" />
-    <connection from="577.0" to="593.0" fromLane="0" toLane="1" />
+    <connection from="577.0" to="593.0" fromLane="2" toLane="2" />
+    <connection from="577.0" to="593.0" fromLane="1" toLane="1" />
     <connection from="629.0" to="647.0" fromLane="2" toLane="2" />
     <connection from="629.0" to="647.0" fromLane="1" toLane="1" />
     <connection from="700.0" to="merge_zone_39" fromLane="0" toLane="0" />
