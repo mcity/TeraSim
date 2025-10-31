@@ -75,6 +75,8 @@ python scripts/convert_terasim_to_cosmos.py \
 - `--vehicle_id`: ID of the ego vehicle to track
 - `--time_start/--time_end`: Time window in seconds for conversion
 - `--streetview_retrieval`: Enable real-world street view image integration
+- `--agent_clip_distance`: Radius around the ego vehicle to display nearby agents (default: 80 m)
+- `--map_clip_distance`: Radius around the ego vehicle to render map features (default: 100 m)
 
 ### 5. Use with Cosmos-Drive
 
