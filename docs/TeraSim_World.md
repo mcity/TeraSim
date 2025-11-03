@@ -4,7 +4,7 @@
 <img src="figure/TeraSim_World.png" height="600px">
 </div>
 
-**TeraSim-World** automatically synthesizes geographically grounded, safety-critical data for End-to-End autonomous driving **anywhere in the world**. See 📄 [paper](https://arxiv.org/abs/2503.03629), 🌐 [website](https://wjiawei.com/terasim-world-web/), 🎥 [video](https://www.youtube.com/watch?v=75T1-2Ce0Ds) for details.
+**TeraSim-World** automatically synthesizes geographically grounded, safety-critical data for End-to-End autonomous driving **anywhere in the world**. See 📄 [paper](https://arxiv.org/abs/2509.13164), 🌐 [website](https://wjiawei.com/terasim-world-web/), 🎥 [video](https://www.youtube.com/watch?v=75T1-2Ce0Ds) for details.
 
 
 
