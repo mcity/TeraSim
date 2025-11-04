@@ -166,6 +166,7 @@ def get_environment_maneuver_challenge(env_future_trajectory, env_observation, e
     Returns:
         dict: Environment maneuver challenge information.
         dict: Updated environment command information.
+        dict: Conflict vehicle information.
     """
     normal_future_trajectory_veh = Dict(
         {
@@ -276,5 +277,4 @@ def get_environment_maneuver_challenge(env_future_trajectory, env_observation, e
         AgentType.VEHICLE: maneuver_challenge_veh,
         AgentType.VULNERABLE_ROAD_USER: maneuver_challenge_vru,
     }
-    return env_maneuver_challenge, env_command_information
-
+    return env_maneuver_challenge, env_command_information, conflict_vehicle_info

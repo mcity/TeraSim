@@ -1,5 +1,6 @@
 from addict import Dict
 import copy
+import json
 from loguru import logger
 import numpy as np
 import random
@@ -995,3 +996,21 @@ class NADEWithAV(NADE):
         )
         total_obs_for_DRL = np.clip(total_obs_for_DRL, -5, 5)
         return np.array(total_obs_for_DRL).astype(float)
+
+    def save_conflict_info(self, conflict_veh_info):
+        sim_time = utils.get_time()
+
+        conflict_info_file = self.simulator.output_path / "conflict_info.jsonl"
+        
+        vehicle_conflict_info = conflict_veh_info.get(AgentType.VEHICLE, {})
+        if not vehicle_conflict_info:
+            return
+
+        record = {
+            "timestamp": sim_time,
+            "conflict_veh_info": vehicle_conflict_info
+        }
+        # write JSON Lines file in append mode
+        with open(conflict_info_file, "a") as f:
+            f.write(json.dumps(record) + "\n")
+        return
