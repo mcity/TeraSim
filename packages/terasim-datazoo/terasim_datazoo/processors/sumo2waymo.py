@@ -201,7 +201,10 @@ class SUMO2Waymo:
             external_polylines = [[(x,y) for x,y in zip(*polyline.xy)] for polyline in right_connection_polyline_right_half_width]
             for i, polyline in enumerate(external_polylines):
                 for j, pt in enumerate(polyline):
-                    external_polylines[i][j] = (pt[0], pt[1], right_connection_shapes[i][j][2])
+                    try:
+                        external_polylines[i][j] = (pt[0], pt[1], right_connection_shapes[i][j][2])
+                    except:
+                        external_polylines[i][j] = (pt[0], pt[1], 0)
         else:
             external_polylines = [node_shape]
 
