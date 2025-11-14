@@ -181,7 +181,7 @@ class NADEWithAV(NADE):
         if hasattr(self.av_cfg, "initial_lane_index"):
             possible_lane_indexes = [int(self.av_cfg.initial_lane_index)]
         else:
-            possible_lane_indexes = list(range(0, lanes - 1))
+            possible_lane_indexes = list(range(0, lanes))
 
         for attempt in range(max_attempts):
             if not len(possible_lane_indexes):

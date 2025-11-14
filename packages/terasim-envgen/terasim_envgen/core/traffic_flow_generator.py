@@ -93,21 +93,21 @@ class TrafficFlowGenerator:
         sumo_net_no_internal = sumolib.net.readNet(map_path)
         
         # Load the map metadata
-        with open(map_metadata_path, 'r') as f:
-            map_metadata = json.load(f)
+        # with open(map_metadata_path, 'r') as f:
+        #     map_metadata = json.load(f)
         
-        if "av_route" in map_metadata and map_metadata["av_route"] is not None:
-            # Get AV route coordinates (expected format is a list of [lat, lon] points)
-            av_route = map_metadata["av_route"]
-            av_route_xy = [sumo_net.convertLonLat2XY(point[1], point[0]) for point in av_route]
-            # Verify format and convert if necessary
-            # Map the lat/lon coordinates to SUMO edges
-            # delta parameter controls how far to search for edges (in meters)
-            av_route_sumo_edges = sumolib.route.mapTrace(av_route_xy, sumo_net, delta=10, fillGaps=100, verbose=True)
-            # av_route_sumo_edges_no_internal = sumolib.route.mapTrace(av_route_xy, sumo_net_no_internal, delta=10, verbose=True)
-            av_route_sumo_with_internal = sumolib.route.addInternal(sumo_net, av_route_sumo_edges)
-        else:
-            av_route_sumo_edges, av_route_sumo_with_internal = self.generate_av_fallback_route(map_path)
+        # if "av_route" in map_metadata and map_metadata["av_route"] is not None:
+        #     # Get AV route coordinates (expected format is a list of [lat, lon] points)
+        #     av_route = map_metadata["av_route"]
+        #     av_route_xy = [sumo_net.convertLonLat2XY(point[1], point[0]) for point in av_route]
+        #     # Verify format and convert if necessary
+        #     # Map the lat/lon coordinates to SUMO edges
+        #     # delta parameter controls how far to search for edges (in meters)
+        #     av_route_sumo_edges = sumolib.route.mapTrace(av_route_xy, sumo_net, delta=10, fillGaps=100, verbose=True)
+        #     # av_route_sumo_edges_no_internal = sumolib.route.mapTrace(av_route_xy, sumo_net_no_internal, delta=10, verbose=True)
+        #     av_route_sumo_with_internal = sumolib.route.addInternal(sumo_net, av_route_sumo_edges)
+        # else:
+        av_route_sumo_edges, av_route_sumo_with_internal = self.generate_av_fallback_route(map_path)
 
         av_route_sumo_with_internal_xy = []
         for edge in av_route_sumo_with_internal:
@@ -117,11 +117,11 @@ class TrafficFlowGenerator:
         av_route_sumo_points_latlon = [(point[1], point[0]) for point in av_route_sumo_with_internal_xy]
 
         # save av_route_sumo_points_latlon to metadata.json
-        map_metadata["av_route_sumo"] = av_route_sumo_points_latlon
-        if "av_route" not in map_metadata:
-            map_metadata["av_route"] = av_route_sumo_points_latlon
-        with open(map_metadata_path, "w") as f:
-            json.dump(map_metadata, f)
+        # map_metadata["av_route_sumo"] = av_route_sumo_points_latlon
+        # if "av_route" not in map_metadata:
+        #     map_metadata["av_route"] = av_route_sumo_points_latlon
+        # with open(map_metadata_path, "w") as f:
+        #     json.dump(map_metadata, f)
 
         return av_route_sumo_edges, av_route_sumo_points_latlon
     

@@ -147,13 +147,15 @@ class StalledObjectAdversity(AbstractStaticAdversity):
 
     def set_vehicle_route(self, vehicle_id: str):
         edge_id = traci.lane.getEdgeID(self._lane_id)
-        stalled_object_route_id = f"r_stalled_object"
+        # Use edge_id in route name to allow different routes for different edges
+        stalled_object_route_id = f"r_stalled_object_{edge_id}"
         if stalled_object_route_id not in traci.route.getIDList():
             traci.route.add(stalled_object_route_id, [edge_id])
         return stalled_object_route_id
-    
+
     def set_vehicle_route_for_xy(self, vehicle_id: str, edge_id: str):
-        stalled_object_route_id = f"r_stalled_object_xy"
+        # Use edge_id in route name to allow different routes for different edges
+        stalled_object_route_id = f"r_stalled_object_xy_{edge_id}"
         if stalled_object_route_id not in traci.route.getIDList():
             traci.route.add(stalled_object_route_id, [edge_id])
         return stalled_object_route_id
@@ -170,10 +172,12 @@ class StalledObjectAdversity(AbstractStaticAdversity):
         """Initialize the adversarial event.
         """
         assert self.is_effective(), "Adversarial event is not effective."
+        # Use unique adversity_id to avoid conflicts when multiple stalled objects share the same object_type
+        unique_suffix = str(self._adversity_id).replace("-", "")[:8]  # Use first 8 chars of UUID
         if self._object_type == "PEDESTRIAN":
-            stalled_object_id = f"VRU_{self._object_type}_stalled_object"
+            stalled_object_id = f"VRU_{self._object_type}_stalled_object_{unique_suffix}"
         else:
-            stalled_object_id = f"BV_{self._object_type}_stalled_object"
+            stalled_object_id = f"BV_{self._object_type}_stalled_object_{unique_suffix}"
         self._static_adversarial_object_id_list.append(stalled_object_id)
         
         if self._placement_mode == "lane_position":

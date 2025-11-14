@@ -178,10 +178,8 @@ examples/maps/ann_arbor
 /phase1_results
 phase1_results.zip
 /sumo
-sim_configs
-vis_configs
-uv.lock
 texas_example
 README_QUICKSTART.md
-run_experiments_debug.py
-test_docker.sh
+run_experiments_debug.pyeb.geohjson
+jupiter/eb/eb.geojson
+jupiter/wb/wb.geojson

@@ -141,8 +141,7 @@ class IntegratedScenarioGenerator:
                         "--junctions.join",
                         "--tls.guess-signals",
                         "--tls.discard-simple",
-                        "--tls.join",
-                        "--no-turnarounds"
+                        "--tls.join"
                     ]
                     subprocess.run(cmd, check=True, capture_output=True)
                     if net_file.exists():

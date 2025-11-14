@@ -8,9 +8,7 @@ authors = [
 readme = "README.md"
 license = "Apache-2.0"
 requires-python = ">=3.10,<3.13"
-dependencies = [
-    "terasim-cosmos",
-]
+dependencies = []
 
 [tool.uv.workspace]
 members = [
@@ -19,8 +17,7 @@ members = [
     "packages/terasim-service",
     "packages/terasim-envgen",
     "packages/terasim-datazoo",
-    "packages/terasim-vis",
-    "packages/terasim-cosmos"
+    "packages/terasim-vis"
 ]
 
 [tool.uv.sources]
@@ -31,7 +28,6 @@ terasim-service = { workspace = true }
 terasim-envgen = { workspace = true }
 terasim-datazoo = { workspace = true }
 terasim-vis = { workspace = true }
-terasim-cosmos = { workspace = true }
 
 [dependency-groups]
 dev = [

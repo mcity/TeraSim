@@ -1,0 +1,23 @@
+<?xml version='1.0' encoding='utf-8'?>
+<nodes>
+    <node id="node_0_start" x="384.5899963378906" y="-0.019999999552965164" type="priority" />
+    <node id="node_11_end" x="394.38000530221814" y="-9.849649917457949" type="priority" />
+    <node id="node_13_start" x="-0.029999999329447746" y="-9.960000038146973" type="priority" />
+    <node id="node_13_end" x="11.029646102700507" y="0.019999884301386054" type="priority" />
+    <node id="node_14_start" x="394.3500061035156" y="-318.53997802734375" type="priority" />
+    <node id="node_14_end" x="384.08035380534244" y="-328.6099853515625" type="priority" />
+    <node id="node_15_end" x="0.0099999997792764" y="-317.6000060821478" type="priority" />
+    <node id="node_20_start" x="10.010000228881836" y="-328.53997802734375" type="priority" />
+    <node id="junction_60" x="336.7210137967956" y="-324.89062917728546" type="priority" />
+    <node id="junction_94" x="333.07702894624737" y="-197.322841329713" type="priority" />
+    <node id="junction_184" x="94.04925172609596" y="-57.26866462738756" type="priority" />
+    <node id="junction_167" x="156.06145015795727" y="-53.7270501572288" type="priority" />
+    <node id="junction_43" x="336.91696140731614" y="-3.594382285697693" type="priority" />
+    <node id="junction_111" x="333.11909616417563" y="-57.63978010021096" type="priority" />
+    <node id="junction_139" x="333.09195318921957" y="-131.91942074201765" type="priority" />
+    <node id="junction_195" x="90.4835336560688" y="-324.8229512542254" type="priority" />
+    <node id="junction_77" x="90.81403919203562" y="-3.524941042105089" type="priority" />
+    <node id="junction_128" x="94.07497627723073" y="-197.26380837076474" type="priority" />
+    <node id="junction_26" x="156.3686506762294" y="-3.5403733138625513" type="priority" />
+    <node id="junction_156" x="94.06649729145876" y="-131.0285924563361" type="priority" />
+</nodes>

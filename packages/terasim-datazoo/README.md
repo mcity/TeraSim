@@ -43,7 +43,7 @@ TeraSim Data Zoo is an extensible framework designed to bridge the gap between d
 ```
 terasim-data-zoo/
 ├── src/
-│   ├── terasim_datazoo/           # Core scenario parsing framework
+│   ├── scenparse/           # Core scenario parsing framework
 │   ├── converters/          # Dataset-specific converters
 │   │   ├── waymo/          # Waymo dataset converter
 │   │   ├── nuscenes/       # nuScenes converter (planned)

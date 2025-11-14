@@ -32,6 +32,7 @@ class Simulator(object):
         self,
         sumo_config_file_path: str or Path,
         sumo_net_file_path: str or Path,
+        sumo_additional_file_path: str or Path = None,
         num_tries: int = 10,
         gui_flag: bool = False,
         output_path: str or Path = None,
@@ -59,6 +60,7 @@ class Simulator(object):
         """
         self.sumo_net_file_path = Path(sumo_net_file_path)
         self.sumo_config_file_path = Path(sumo_config_file_path)
+        self.sumo_additional_file_path = Path(sumo_additional_file_path) if sumo_additional_file_path is not None else None
         assert self.sumo_net_file_path.exists(), "sumo_net_file_path does not exist"
         assert self.sumo_config_file_path.exists(), "sumo_config_file_path does not exist"
         self.sumo_net = sumolib.net.readNet(str(self.sumo_net_file_path), withInternal=True, withPrograms=True)
@@ -79,7 +81,8 @@ class Simulator(object):
         self.additional_sumo_args = (
             [additional_sumo_args]
             if isinstance(additional_sumo_args, str)
-            else additional_sumo_args
+            else additional_sumo_args if additional_sumo_args is not None
+            else []
         )
         if seed is not None:
             self.additional_sumo_args += ["--seed", str(seed)]
@@ -143,6 +146,8 @@ class Simulator(object):
             "-c",
             str(self.sumo_config_file_path),
         ]
+        if self.sumo_additional_file_path is not None:
+            sumo_cmd += ["--additional-files", str(self.sumo_additional_file_path)]
         if self.step_length is not None:
             sumo_cmd += ["--step-length", str(self.step_length)]
 

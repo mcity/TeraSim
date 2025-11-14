@@ -1888,48 +1888,99 @@ class OpenDriveToSumoConverter:
                 ))
                 logger.debug(f"Connected via mapping: {from_edge}:{from_lane_idx} -> {to_edge}:{to_lane_idx} "
                            f"(Road {incoming_road_id} lane {from_lane_id} -> Road {connecting_road_id} lane {connecting_lane_id})")
-        
-            # Create connections for Junction B (merge end)
-            # Merge zone to outgoing road (4 lanes to 3 lanes)
-            if outgoing_road:
-                outgoing_edge = f"{outgoing_road.id}.0"
-                outgoing_edge_obj = next((e for e in self.edges if e.id == outgoing_edge), None)
-                
-                if outgoing_edge_obj:
-                    for chain in chains:
 
+        # Create connections for Junction B (merge end) - process once for all lanes
+        # Merge zone to outgoing road
+        if outgoing_road:
+            outgoing_edge = f"{outgoing_road.id}.0"
+            outgoing_edge_obj = next((e for e in self.edges if e.id == outgoing_edge), None)
+
+            if outgoing_edge_obj:
+                # Collect unique merge_zone lane -> outgoing lane mappings
+                # Key: (merge_zone_lane_idx, outgoing_lane_idx), Value: (connecting_road_id, is_from_main)
+                merge_to_outgoing = {}
+                # Track which outgoing lanes are used
+                outgoing_lane_usage = {}  # to_lane_idx -> (from_lane_idx, is_from_main)
+
+                for incoming_road_id, chains in connection_chains.items():
+                    incoming_road = self.road_map.get(incoming_road_id)
+                    is_from_main = incoming_road and incoming_road.id == main_road.id
+
+                    for chain in chains:
                         connecting_road_id = chain['connecting_road']
                         connecting_lane_id = chain['connecting_lane']
                         outgoing_road_id = chain['outgoing_road']
                         outgoing_lane_id = chain['final_lane']
+
+                        # Get SUMO lane indices
                         from_mapping = self._get_sumo_lane_index(connecting_road_id, connecting_lane_id, 'forward')
                         to_mapping = self._get_sumo_lane_index(outgoing_road_id, outgoing_lane_id, 'forward')
 
-                        if incoming_road and incoming_road.id == main_road.id:
-                            # Main road - straight
-                            direction = 's'
-                            state = 'M'
-                        else:
-                            # Ramp - right merge
-                            direction = 'r'
-                            state = 'm'
-                        
+                        logger.debug(f"Junction {junction_id} merge end: connecting_road {connecting_road_id} lane {connecting_lane_id} -> outgoing {outgoing_road_id} lane {outgoing_lane_id}")
+                        logger.debug(f"  SUMO mapping: {from_mapping} -> {to_mapping}")
+
                         if from_mapping is None or to_mapping is None:
                             logger.error(f"Missing lane mapping for merge end: from {connecting_road_id} lane {connecting_lane_id} or to {outgoing_road_id} lane {outgoing_lane_id}")
                             continue
 
                         from_edge, from_lane_idx = from_mapping
                         to_edge, to_lane_idx = to_mapping
-                        self.connections.append(PlainConnection(
-                            from_edge=from_edge,
-                            to_edge=to_edge,
-                            from_lane=from_lane_idx,  # From lanes 1,2,3
-                            to_lane=to_lane_idx,        # To lanes 0,1,2
-                            dir=direction,
-                            state=state
-                        ))
-                        logger.debug(f"Connected merge to outgoing: {from_edge}:{from_lane_idx} -> {to_edge}:{to_lane_idx}")
-        
+
+                        # Verify from_edge is the merge zone
+                        if from_edge != merge_edge:
+                            logger.warning(f"Expected merge zone edge {merge_edge}, but got {from_edge}")
+                            continue
+
+                        # Special handling for ramp lanes: they should connect to rightmost driving lane
+                        # If this is a ramp lane (not from main), override the outgoing lane
+                        if not is_from_main:
+                            # Find the rightmost driving lane in the outgoing road
+                            outgoing_edge_for_check = next((e for e in self.edges if e.id == outgoing_edge), None)
+                            if outgoing_edge_for_check and hasattr(outgoing_edge_for_check, 'lane_data') and outgoing_edge_for_check.lane_data:
+                                # Get driving lanes (exclude shoulders)
+                                driving_lanes = [i for i, lane in enumerate(outgoing_edge_for_check.lane_data)
+                                               if lane.get('type', 'driving') != 'shoulder']
+                                if driving_lanes:
+                                    # Rightmost driving lane is the minimum index among driving lanes
+                                    rightmost_driving_lane = min(driving_lanes)
+                                    if to_lane_idx != rightmost_driving_lane:
+                                        logger.info(f"Ramp lane override: outgoing lane {to_lane_idx} -> {rightmost_driving_lane} (rightmost driving)")
+                                        to_lane_idx = rightmost_driving_lane
+
+                        # Allow multiple lanes to merge into the same outgoing lane (lane drop scenario)
+                        # Just track that we've seen this lane for logging purposes
+                        if to_lane_idx in outgoing_lane_usage:
+                            existing_from_lanes = outgoing_lane_usage[to_lane_idx]
+                            logger.debug(f"Multiple lanes merging to outgoing lane {to_lane_idx}: {existing_from_lanes} + {from_lane_idx}")
+                            outgoing_lane_usage[to_lane_idx].append(from_lane_idx)
+                        else:
+                            outgoing_lane_usage[to_lane_idx] = [from_lane_idx]
+
+                        # Store the mapping - allow duplicates to same outgoing lane
+                        key = (from_lane_idx, to_lane_idx)
+                        merge_to_outgoing[key] = (connecting_road_id, is_from_main)
+
+                # Create connections for each unique merge_zone lane -> outgoing lane mapping
+                for (from_lane_idx, to_lane_idx), (connecting_road_id, is_from_main) in merge_to_outgoing.items():
+                    if is_from_main:
+                        # Main road - straight
+                        direction = 's'
+                        state = 'M'
+                    else:
+                        # Ramp - right merge
+                        direction = 'r'
+                        state = 'm'
+
+                    self.connections.append(PlainConnection(
+                        from_edge=merge_edge,
+                        to_edge=outgoing_edge,
+                        from_lane=from_lane_idx,
+                        to_lane=to_lane_idx,
+                        dir=direction,
+                        state=state
+                    ))
+                    logger.debug(f"Connected merge to outgoing: {merge_edge}:{from_lane_idx} -> {outgoing_edge}:{to_lane_idx} (dir={direction})")
+
         logger.info(f"Created merge connections for junction {junction_id}")
     
     def _get_outgoing_road_from_connecting(self, connecting_road: OpenDriveRoad, contact_point: str) -> Optional[str]:

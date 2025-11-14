@@ -63,8 +63,6 @@ class Trajectory:
         self.angle.append(angle)
         self.lane.append(lane)
         self.colors.append(color)
-        self.length = 4.8
-        self.width = 2
         params = params if params is not None else dict()
         for key in params:
             if key not in self.params:
@@ -302,7 +300,7 @@ class Trajectories:
 
     :ivar mappables: dict of ``vehID: ScalarMappable`` pairs. Useful for generating colorbars.
     """
-    def __init__(self, file=None, start_time=None, end_time=None, vehicle_only=False):
+    def __init__(self, file=None, start_time=None, end_time=None):
         """
         Initializes a Trajectories object.
 
@@ -322,7 +320,7 @@ class Trajectories:
             if type(file) == ET.Element:
                 self.read_from_fcd_root(file)
             elif file.endswith("fcd-output.xml") or file.endswith("fcd.xml") or file.endswith("fcd_all.xml"):
-                self.read_from_fcd(file, start_time, end_time, vehicle_only=vehicle_only)
+                self.read_from_fcd(file, start_time, end_time)
             # check if the file is the xml parsed root
             else:
                 raise NotImplementedError("Reading from this type of file not implemented: " + file)
@@ -400,7 +398,7 @@ class Trajectories:
             self._append(trajectories[vehID])
 
 
-    def read_from_fcd(self, file, start_time=None, end_time=None, vehicle_only=False):
+    def read_from_fcd(self, file, start_time=None, end_time=None):
         """
         Reads trajectories from Sumo floating car data (fcd) output file.
         Uses iterparse to stream the XML file instead of loading it all at once.
@@ -435,14 +433,9 @@ class Trajectories:
                 if self.start is None:
                     self.start = time
                 self.end = time
-
-                if vehicle_only:
-                    vehicle_tags = ["vehicle", "container"]
-                else:
-                    vehicle_tags = ["vehicle", "person", "container"]
-
+                
                 for veh in elem:
-                    if veh.tag in vehicle_tags:
+                    if veh.tag in ["vehicle", "person", "container"]:
                         vehID = veh.attrib["id"]
                         type = veh.attrib.get("type", "")
                         if vehID not in trajectories:
@@ -511,11 +504,10 @@ class Trajectories:
         x, y = center[0], center[1]
         upper_left = self.rotate(x-0.5*length, y+0.5*width, x, y, angle=angle)
         lower_left = self.rotate(x-0.5*length, y-0.5*width, x, y, angle=angle)
-        upper_right = self.rotate(x+0.2*length, y+0.5*width, x, y, angle=angle)
-        center_right = self.rotate(x+0.5*length, y, x, y, angle=angle)
-        lower_right = self.rotate(x+0.2*length, y-0.5*width, x, y, angle=angle)
-        xs = [upper_left[0], upper_right[0], center_right[0], lower_right[0], lower_left[0], upper_left[0], upper_right[0], lower_right[0]]
-        ys = [upper_left[1], upper_right[1], center_right[1], lower_right[1], lower_left[1], upper_left[1], upper_right[1], lower_right[1]]
+        upper_right = self.rotate(x+0.5*length, y+0.5*width, x, y, angle=angle)
+        lower_right = self.rotate(x+0.5*length, y-0.5*width, x, y, angle=angle)
+        xs = [upper_left[0], upper_right[0], lower_right[0], lower_left[0], upper_left[0]]
+        ys = [upper_left[1], upper_right[1], lower_right[1], lower_left[1], upper_left[1]]
         return xs, ys
 
     def plot_points(self, time, ax=None, animate_color=False, lanes=None):
@@ -560,7 +552,7 @@ class Trajectories:
                         self.graphics.pop(traj)
                 continue
             # angle = (360 - angle) % 360
-            xs, ys = self.cal_box(x, y, length=traj.length, width=traj.width, angle=-radians(angle-90))
+            xs, ys = self.cal_box(x, y, length=4.8, angle=-radians(angle-90))
             if animate_color and color is not None:
                 traj.point_plot_kwargs["color"] = color
             

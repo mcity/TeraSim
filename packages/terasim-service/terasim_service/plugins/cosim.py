@@ -597,8 +597,19 @@ class TeraSimCoSimPlugin(BasePlugin):
             simulation_state.agent_details["vru"] = vrus
 
             # Add construction objects
+            # Filter out invisible construction cones from AV perception
             construction_objects = {}
+
             for cid in construction_ids:
+                # Check if this construction object is an invisible cone type
+                # Invisible cones have type "INVISIBLE_CONE" and should not be visible to AV
+                cone_type = traci.vehicle.getTypeID(cid)
+
+                # Skip invisible cones for AV perception
+                if cone_type == "INVISIBLE_CONE":
+                    self.logger.debug(f"Filtering out invisible construction cone: {cid}")
+                    continue
+
                 construction_state = AgentStateSimplified()
                 construction_state.x, construction_state.y, construction_state.z = traci.vehicle.getPosition3D(cid)
                 construction_state.lon, construction_state.lat = traci.simulation.convertGeo(construction_state.x, construction_state.y)
@@ -612,8 +623,14 @@ class TeraSimCoSimPlugin(BasePlugin):
                 construction_state.type = traci.vehicle.getTypeID(cid)
                 construction_state.angular_velocity = 0.0
                 construction_objects[cid] = construction_state
-                
+
             simulation_state.construction_objects = construction_objects
+
+            # Log visibility statistics
+            total_construction = len(construction_ids)
+            visible_construction = len(construction_objects)
+            if total_construction > visible_construction:
+                self.logger.info(f"Construction objects: {visible_construction} visible to AV (orange cones), {total_construction - visible_construction} hidden (green invisible cones)")
 
             # Add traffic light states
             traffic_lights = {}

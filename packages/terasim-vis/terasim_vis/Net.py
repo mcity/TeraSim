@@ -106,10 +106,6 @@ class _Edge:
         for lane in self.lanes:
             if lane.index == index:
                 return lane
-        # if error occurs, check the index is correct
-        print(f"Edge contains no Lane with given index: {index}")
-        print(f"Edge: {self.id}")
-        print(f"Lanes: {self.lanes}")
         raise IndexError("Edge contains no Lane with given index.")
 
     def lane_count(self):
@@ -140,7 +136,7 @@ class _Edge:
         vClasses = Utils.Allowance(allow_string=vc, disallow_string=exceptions)
         self.stop_offsets.append((value, vClasses))
 
-    def plot(self, ax, lane_kwargs=None, lane_marking_kwargs=None, tl_phases=None, **kwargs):
+    def plot(self, ax, lane_kwargs=None, lane_marking_kwargs=None, **kwargs):
         """
         Plots the lane.
         The lane_kwargs and lane_markings_kwargs override the general kwargs for their respective functions.
@@ -158,7 +154,7 @@ class _Edge:
             lane_marking_kwargs = dict()
         for lane in self.lanes:
             lane_artist = lane.plot_shape(ax, **{**kwargs, **lane_kwargs})
-            lane_marking_artist = lane.plot_lane_markings(ax, tl_phases=tl_phases, **{**kwargs, **lane_marking_kwargs})
+            lane_marking_artist = lane.plot_lane_markings(ax, **{**kwargs, **lane_marking_kwargs})
             lane_artists.append(lane_artist)
             lane_marking_artists += lane_marking_artist
         return lane_artists, lane_marking_artists
@@ -444,7 +440,7 @@ class _Lane:
         material = self.params.get(material_param, self.lane_type()+"_lane")
         return Utils.Object3D.from_shape(orient(self.shape), self.id, material, z=z, extrude_height=h, include_bottom_face=include_bottom_face)
 
-    def _guess_lane_markings(self, tl_phases=None):
+    def _guess_lane_markings(self):
         """
         Guesses lane markings based on lane configuration and globally specified lane marking style.
 
@@ -454,7 +450,7 @@ class _Lane:
         if self.parentEdge.function == "internal" or self.allows == "ship" or self.allows == "rail":
             return markings
         if self.parentEdge.function == "crossing":
-            color, dashes = "0.7", (0.2, 0.2)
+            color, dashes = "w", (0.5, 0.5)
             markings.append(_LaneMarking(self.alignment, self.width, color, dashes, purpose="crossing", parent=self))
             return markings
         # US-style markings
@@ -489,13 +485,13 @@ class _Lane:
             # Draw centerline stripe if necessary
             if self.inverse_lane_index() == 0:
                 leftEdge = self.alignment.parallel_offset(self.width/2, side="left")
-                color, dashes = "0.2", (100, 0)
+                color, dashes = "w", (100, 0)
                 markings.append(_LaneMarking(leftEdge, lw, color, dashes, purpose="center", parent=self))
             # Draw non-centerline markings
             else:
                 adjacent_lane = self.parentEdge.get_lane(self.index + 1)
                 leftEdge = self.alignment.parallel_offset(self.width / 2, side="left")
-                color, dashes = "0.2", (3, 9)  # set default settings
+                color, dashes = "w", (3, 9)  # set default settings
                 if self.allows("bicycle") != adjacent_lane.allows("bicycle"):
                     dashes = (100, 0)  # solid line where bicycles may not change lanes
                 elif self.allows("passenger") != adjacent_lane.allows("passenger"):
@@ -507,7 +503,7 @@ class _Lane:
             # draw outer lane marking if necessary
             if self.index == 0 and not (self.allows("pedestrian") and not self.allows("all")):
                 rightEdge = self.alignment.parallel_offset(self.width / 2, side="right")
-                color, dashes = "0.2", (100, 0)
+                color, dashes = "w", (100, 0)
                 markings.append(_LaneMarking(rightEdge, lw, color, dashes, purpose="outer", parent=self))
         # Stop line markings (all styles)
         slw = 0.5
@@ -534,14 +530,10 @@ class _Lane:
                 except (NotImplementedError, IndexError, ValueError):
                     warnings.warn("Can't generate stopline geometry for lane " + self.id)
                 else:
-                    if tl_phases is not None and self.id in tl_phases.get('green', []):
-                        color = "lime"
-                    else:
-                        color = "lightcoral"
-                    markings.append(_LaneMarking(stop_line, slw, color, (100, 0), purpose="stopline", parent=self))
+                    markings.append(_LaneMarking(stop_line, slw, "w", (100, 0), purpose="stopline", parent=self))
         return markings
 
-    def plot_lane_markings(self, ax, tl_phases=None, **kwargs):
+    def plot_lane_markings(self, ax, **kwargs):
         """
         Guesses and plots some simple lane markings.
 
@@ -550,7 +542,7 @@ class _Lane:
         :type ax: plt.Axes
         """
         artists = []
-        for marking in self._guess_lane_markings(tl_phases=tl_phases):
+        for marking in self._guess_lane_markings():
             try:
                 artist = marking.plot(ax, **kwargs)
             except NotImplementedError:
@@ -1078,7 +1070,7 @@ class Net:
 
     def plot(self, ax=None, clip_to_limits=False, zoom_to_extents=True, style=None, stripe_width_scale=1,
              plot_stop_lines=None, apply_netOffset=False, lane_kwargs=None, lane_marking_kwargs=None,
-             junction_kwargs=None, additionals_kwargs=None, tl_phases=None, **kwargs):
+             junction_kwargs=None, additionals_kwargs=None, **kwargs):
         """
         Plots the Net. Kwargs are passed to the plotting functions, with object-specific kwargs overriding general ones.
 
@@ -1135,7 +1127,7 @@ class Net:
         artist_collection = Utils.ArtistCollection()
         for edge in self.edges.values():
             if edge.function != "internal" and (not clip_to_limits or edge.intersects(window)):
-                la, lma = edge.plot(ax, {"zorder": -100, **lane_kwargs}, {"zorder": -90, **lane_marking_kwargs}, tl_phases=tl_phases, **kwargs)
+                la, lma = edge.plot(ax, {"zorder": -100, **lane_kwargs}, {"zorder": -90, **lane_marking_kwargs}, **kwargs)
                 artist_collection.lanes += la
                 artist_collection.lane_markings += lma
         for junction in self.junctions.values():
