@@ -5,6 +5,7 @@ import numpy as np
 from pathlib import Path
 import sys
 import yaml
+import argparse
 
 from terasim_vis import Net, Trajectories
 
@@ -309,6 +310,12 @@ class TrafficVisualizer:
         return anim
 
 
+def parse_arguments():
+    """Parse command-line arguments."""
+    parser = argparse.ArgumentParser(description="Visualize SUMO traffic simulation data.")
+    parser.add_argument("config", type=str, help="Path to the configuration YAML file.")
+    return parser.parse_args()
+
 def main(path_to_config):
     """Main function."""
     config = load_config(path_to_config)
@@ -367,15 +374,6 @@ def main(path_to_config):
 
 
 if __name__ == "__main__":
-    # path_to_config = "vis_configs/France_Paris_PedestrianCrossing.yaml"
-    # path_to_config = "vis_configs/Germany_Rossfeld_AggressiveMerge.yaml"
-    # path_to_config = "vis_configs/US_Arizona_HighwayCutin.yaml"
-    # path_to_config = "vis_configs/US_AnnArbor_RoundaboutFailToYield.yaml"
-    path_to_config = "vis_configs/US_SanDiego_RunRedLight.yaml"
-    # path_to_config = "vis_configs/US_Chicago_UncoordinatedLeftTurn.yaml"
-    # path_to_config = "vis_configs/Mcity_CyclistCrossing.yaml"
-    # path_to_config = "vis_configs/Mcity_PedestrianCrossing.yaml"
-    # path_to_config = "vis_configs/Mcity_UnprotectedLeftTurn.yaml"
-    # path_to_config = "vis_configs/US_AnnArbor_RoundaboutFailToYield.yaml"
-    # path_to_config = "vis_configs/Demo_AnnArborRoundabout.yaml"
+    args = parse_arguments()
+    path_to_config = args.config
     main(path_to_config)

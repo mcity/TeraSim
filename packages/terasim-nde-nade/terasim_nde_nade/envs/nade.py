@@ -347,6 +347,25 @@ class NADE(BaseEnv):
             distance_info_dict[veh_id] = traci.vehicle.getDistance(veh_id)
         return distance_info_dict
 
+
+    def save_conflict_info(self, conflict_veh_info):
+        sim_time = utils.get_time()
+
+        conflict_info_file = self.simulator.output_path / "conflict_info.jsonl"
+        
+        vehicle_conflict_info = conflict_veh_info.get(AgentType.VEHICLE, {})
+        if not vehicle_conflict_info:
+            return
+
+        record = {
+            "timestamp": sim_time,
+            "conflict_veh_info": vehicle_conflict_info
+        }
+        # write JSON Lines file in append mode
+        with open(conflict_info_file, "a") as f:
+            f.write(json.dumps(record) + "\n")
+        return
+
     @profile
     def NADE_decision(self, env_command_information, env_observation):
         """NADE decision here.
@@ -369,12 +388,16 @@ class NADE(BaseEnv):
         )
 
         # Step 2. Get maneuver challenge and mark the conflict vehicles and vrus.
-        env_maneuver_challenge, env_command_information = get_environment_maneuver_challenge(
+        env_maneuver_challenge, env_command_information, conflict_veh_info = get_environment_maneuver_challenge(
             env_future_trajectory,
             env_observation,
             env_command_information,
             centered_agent_set=self.excluded_agent_set,
         )
+
+        # Step 2.5. Save the conflict vehicle information
+        if conflict_veh_info:
+            self.save_conflict_info(conflict_veh_info)
 
         # Step 3. Add collision avoidance and acceptance command for the victim vehicles.
         env_future_trajectory, env_command_information = add_avoid_accept_collision_command(
