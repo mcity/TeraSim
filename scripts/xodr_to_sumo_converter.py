@@ -479,12 +479,12 @@ class OpenDriveToSumoConverter:
         # Collect all junction IDs referenced by roads
         referenced_junctions = set()
         junction_road_endpoints = {}  # junction_id -> list of (x, y, road_id, position)
-        
+
         # First pass: Identify junction connections and collect connection points
         for road_id, road in self.road_map.items():
             if road.junction != '-1':
                 continue  # Skip junction internal roads
-            
+
             # Check predecessor
             if road.predecessor and road.predecessor['elementType'] == 'junction':
                 junction_id = road.predecessor['elementId']
@@ -494,11 +494,28 @@ class OpenDriveToSumoConverter:
                     if junction_id not in junction_road_endpoints:
                         junction_road_endpoints[junction_id] = []
                     junction_road_endpoints[junction_id].append((start_pos[0], start_pos[1], road_id, 'start'))
+            elif road.predecessor and road.predecessor['elementType'] == 'road':
+                # Road-to-road connection - establish node mapping
+                pred_road_id = road.predecessor['elementId']
+                contact_point = road.predecessor.get('contactPoint', 'start')
+                pred_node_key = f"{pred_road_id}_{contact_point}"
+                current_node_key = f"{road_id}_start"
+
+                # Create node if it doesn't exist yet
+                if pred_node_key not in self.node_map:
+                    pred_road = self.road_map.get(pred_road_id)
+                    if pred_road:
+                        node = self._create_road_endpoint_node(pred_road, contact_point)
+                        self.node_map[pred_node_key] = node
+                        self.node_map[current_node_key] = node
+                else:
+                    # Node already exists, just link current road to it
+                    self.node_map[current_node_key] = self.node_map[pred_node_key]
             else:
                 # Create regular start node
                 start_node = self._create_road_endpoint_node(road, 'start')
                 self.node_map[f"{road_id}_start"] = start_node
-            
+
             # Check successor
             if road.successor and road.successor['elementType'] == 'junction':
                 junction_id = road.successor['elementId']
@@ -508,6 +525,21 @@ class OpenDriveToSumoConverter:
                     if junction_id not in junction_road_endpoints:
                         junction_road_endpoints[junction_id] = []
                     junction_road_endpoints[junction_id].append((end_pos[0], end_pos[1], road_id, 'end'))
+            elif road.successor and road.successor['elementType'] == 'road':
+                # Road-to-road connection - establish node mapping
+                succ_road_id = road.successor['elementId']
+                contact_point = road.successor.get('contactPoint', 'start')
+                succ_node_key = f"{succ_road_id}_{contact_point}"
+                current_node_key = f"{road_id}_end"
+
+                # Create node if it doesn't exist yet
+                if current_node_key not in self.node_map:
+                    node = self._create_road_endpoint_node(road, 'end')
+                    self.node_map[current_node_key] = node
+                    self.node_map[succ_node_key] = node
+                # If current_node_key already exists, link successor to it
+                elif succ_node_key not in self.node_map:
+                    self.node_map[succ_node_key] = self.node_map[current_node_key]
             else:
                 # Create regular end node
                 end_node = self._create_road_endpoint_node(road, 'end')
@@ -1152,12 +1184,12 @@ class OpenDriveToSumoConverter:
             if road.predecessor['elementType'] == 'junction':
                 # Road starts from a junction - elementId is the junction ID directly
                 junction_id = road.predecessor['elementId']
-                
+
                 # Check if this is a highway merge junction
                 if hasattr(self, 'highway_merges') and junction_id in self.highway_merges:
                     # This road is outgoing from a merge - use the merge end node
                     return self.highway_merges[junction_id]['merge_end_node']
-                
+
                 # Check if this junction has been converted to merge nodes
                 if junction_id in self.node_map:
                     mapped_node = self.node_map[junction_id]
@@ -1209,11 +1241,18 @@ class OpenDriveToSumoConverter:
     
     def _get_road_to_node(self, road: OpenDriveRoad) -> Optional[str]:
         """Get the to node for a road"""
+        # First check if this road's end node was already created by another road's predecessor link
+        # This handles cases where road A claims to end at a junction, but road B claims road A is its predecessor
+        current_node_key = f"{road.id}_end"
+        if current_node_key in self.node_map:
+            # Already mapped - use existing node (likely from another road's predecessor)
+            return self.node_map[current_node_key]
+
         if road.successor:
             if road.successor['elementType'] == 'junction':
                 # Road ends at a junction - elementId is the junction ID directly
                 junction_id = road.successor['elementId']
-                
+
                 # Check if this is a highway merge junction
                 if hasattr(self, 'highway_merges') and junction_id in self.highway_merges:
                     # This road is incoming to a merge - determine which entry node to use
@@ -1230,7 +1269,7 @@ class OpenDriveToSumoConverter:
                     else:
                         logger.warning(f"Road {road.id} ends at merge junction {junction_id} but is neither main nor ramp")
                         return merge_data.get('main_entry_node', f"junction_{junction_id}")
-                
+
                 # Check if this junction has been converted to merge nodes
                 if junction_id in self.node_map:
                     mapped_node = self.node_map[junction_id]
