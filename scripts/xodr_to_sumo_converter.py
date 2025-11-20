@@ -1172,21 +1172,33 @@ class OpenDriveToSumoConverter:
                 # Road connects to another road - find the shared connection point
                 pred_road_id = road.predecessor['elementId']
                 contact_point = road.predecessor.get('contactPoint', 'start')
-                if contact_point == 'end':
-                    shared_node_key = f"{pred_road_id}_end"
+
+                # Determine the canonical node key - use the predecessor road's contact point as primary
+                pred_node_key = f"{pred_road_id}_{contact_point}"
+                current_node_key = f"{road.id}_start"
+
+                # Check if either node already exists
+                if pred_node_key in self.node_map:
+                    # Predecessor's node already exists - use it and link current to it
+                    shared_node = self.node_map[pred_node_key]
+                    if current_node_key not in self.node_map:
+                        self.node_map[current_node_key] = shared_node
+                    return shared_node
+                elif current_node_key in self.node_map:
+                    # Current road's start node already exists - use it and link predecessor to it
+                    shared_node = self.node_map[current_node_key]
+                    self.node_map[pred_node_key] = shared_node
+                    return shared_node
                 else:
-                    shared_node_key = f"{pred_road_id}_start"
-                
-                # Use the shared node from the predecessor road
-                shared_node = self.node_map.get(shared_node_key)
-                if not shared_node:
-                    # If the shared node doesn't exist, create it based on the predecessor road
+                    # Neither exists - create node at predecessor road's contact point
                     pred_road = self.road_map.get(pred_road_id)
                     if pred_road:
-                        position = 'end' if contact_point == 'end' else 'start'
+                        position = contact_point
                         shared_node = self._create_road_endpoint_node(pred_road, position)
-                        self.node_map[shared_node_key] = shared_node
-                return shared_node
+                        self.node_map[pred_node_key] = shared_node
+                        self.node_map[current_node_key] = shared_node
+                        return shared_node
+                    return None
         # Road has no predecessor - use stored endpoint node (ensure it exists and is unique)
         node_key = f"{road.id}_start"
         if node_key not in self.node_map:
@@ -1233,21 +1245,29 @@ class OpenDriveToSumoConverter:
                 # Road connects to another road - find the shared connection point
                 succ_road_id = road.successor['elementId']
                 contact_point = road.successor.get('contactPoint', 'start')
-                if contact_point == 'end':
-                    shared_node_key = f"{succ_road_id}_end"
+
+                # Determine the canonical node key - use the current road's end as primary
+                current_node_key = f"{road.id}_end"
+                succ_node_key = f"{succ_road_id}_{contact_point}"
+
+                # Check if either node already exists
+                if current_node_key in self.node_map:
+                    # Current road's end node already exists - use it and link successor to it
+                    shared_node = self.node_map[current_node_key]
+                    if succ_node_key not in self.node_map:
+                        self.node_map[succ_node_key] = shared_node
+                    return shared_node
+                elif succ_node_key in self.node_map:
+                    # Successor's node already exists - use it and link current to it
+                    shared_node = self.node_map[succ_node_key]
+                    self.node_map[current_node_key] = shared_node
+                    return shared_node
                 else:
-                    shared_node_key = f"{succ_road_id}_start"
-                
-                # Use the shared node from the successor road
-                shared_node = self.node_map.get(shared_node_key)
-                if not shared_node:
-                    # If the shared node doesn't exist, create it based on the successor road
-                    succ_road = self.road_map.get(succ_road_id)
-                    if succ_road:
-                        position = 'end' if contact_point == 'end' else 'start'
-                        shared_node = self._create_road_endpoint_node(succ_road, position)
-                        self.node_map[shared_node_key] = shared_node
-                return shared_node
+                    # Neither exists - create node at current road's end
+                    shared_node = self._create_road_endpoint_node(road, 'end')
+                    self.node_map[current_node_key] = shared_node
+                    self.node_map[succ_node_key] = shared_node
+                    return shared_node
         # Road has no successor - use stored endpoint node (ensure it exists and is unique)
         node_key = f"{road.id}_end"
         if node_key not in self.node_map:

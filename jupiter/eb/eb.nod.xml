@@ -679,167 +679,167 @@
     <node id="node_972_start" x="738104.1377778992" y="3287212.997143652" type="priority" />
     <node id="node_976_start" x="738263.6514080709" y="3287346.8723708596" type="priority" />
     <node id="junction_71" x="601379.4692907359" y="3274829.0033606635" type="priority" />
-    <node id="junction_112" x="751439.9306100043" y="3291387.8549101334" type="priority" />
-    <node id="junction_18" x="609893.7059418744" y="3276237.563009723" type="priority" />
-    <node id="junction_114" x="738097.7413759548" y="3287178.2571051894" type="priority" />
-    <node id="junction_80" x="635687.9911896746" y="3280983.70588732" type="priority" />
-    <node id="j_main_entry_25" x="645044.0551540316" y="3280944.208993998" type="priority" />
-    <node id="j_ramp_entry_25" x="645043.9242343672" y="3280936.7525121835" type="priority" />
-    <node id="j_merge_end_25" x="645314.0514920102" y="3280929.0338842547" type="priority" />
-    <node id="junction_93" x="737724.0887757972" y="3287158.183945009" type="priority" />
-    <node id="junction_10" x="590116.9716351986" y="3268310.4180470966" type="priority" />
-    <node id="junction_94" x="732662.3724898816" y="3287230.035620418" type="priority" />
-    <node id="j_main_entry_42" x="774819.5815011547" y="3295905.1591409557" type="priority" />
-    <node id="j_ramp_entry_42" x="774828.0329161987" y="3295884.6273500887" type="priority" />
-    <node id="j_merge_end_42" x="775252.0353621285" y="3296067.8854679037" type="priority" />
-    <node id="junction_35" x="733281.0599310539" y="3287245.840782691" type="priority" />
     <node id="j_main_entry_5" x="802172.3494263864" y="3298208.914494679" type="priority" />
     <node id="j_ramp_entry_5" x="802172.7754042363" y="3298194.54562168" type="priority" />
     <node id="j_merge_end_5" x="802335.6506529768" y="3298213.819885502" type="priority" />
-    <node id="junction_99" x="771149.1106256335" y="3295809.5561493053" type="priority" />
-    <node id="junction_77" x="618809.2676297848" y="3277784.5532251084" type="priority" />
-    <node id="junction_109" x="584008.8840583676" y="3266045.6661503376" type="priority" />
-    <node id="junction_89" x="707751.2974268979" y="3286985.4998490717" type="priority" />
+    <node id="junction_108" x="585809.4405702705" y="3266831.5874741287" type="priority" />
+    <node id="junction_59" x="799110.1645549127" y="3298111.4475347106" type="priority" />
     <node id="junction_21" x="616295.1657755796" y="3276912.990196797" type="priority" />
-    <node id="junction_41" x="773115.5676230183" y="3295552.2967144493" type="priority" />
-    <node id="j_main_entry_1" x="785421.7047050553" y="3296976.9780187216" type="priority" />
-    <node id="j_ramp_entry_1" x="785172.9158708637" y="3296978.794361446" type="priority" />
-    <node id="j_merge_end_1" x="785437.245828191" y="3296975.0326119703" type="priority" />
-    <node id="junction_67" x="588208.7336281826" y="3267602.5826442013" type="priority" />
-    <node id="junction_69" x="594860.1474854602" y="3271336.828201107" type="priority" />
-    <node id="junction_44" x="782322.9856195928" y="3297304.75301617" type="priority" />
-    <node id="junction_105" x="607871.9164085303" y="3275681.564063253" type="priority" />
-    <node id="junction_101" x="775815.0859188708" y="3296272.449123042" type="priority" />
-    <node id="junction_46" x="569524.2386888975" y="3260068.6692879125" type="priority" />
-    <node id="junction_11" x="588829.1350915723" y="3267818.3223977583" type="priority" />
-    <node id="junction_63" x="793434.6614969433" y="3298131.194065886" type="priority" />
-    <node id="junction_70" x="596673.2351368974" y="3272504.2247350956" type="priority" />
-    <node id="junction_16" x="599896.5517273219" y="3274811.234261191" type="priority" />
-    <node id="j_main_entry_31" x="703410.2213559087" y="3286740.745475479" type="priority" />
-    <node id="j_ramp_entry_31" x="703412.0250621041" y="3286733.584809683" type="priority" />
-    <node id="j_merge_end_31" x="703596.3433215811" y="3286777.4134202646" type="priority" />
-    <node id="junction_61" x="803396.9246487888" y="3298240.8904337105" type="priority" />
-    <node id="junction_68" x="593439.6805249722" y="3270132.777035598" type="priority" />
-    <node id="junction_26" x="654013.281029199" y="3282050.668146102" type="priority" />
-    <node id="junction_90" x="727205.5504822187" y="3286882.0761208553" type="priority" />
-    <node id="junction_51" x="746588.1303432462" y="3290254.8186406675" type="priority" />
-    <node id="junction_86" x="682605.6603674312" y="3286640.2452814393" type="priority" />
-    <node id="junction_106" x="792544.9784933595" y="3298151.6784068453" type="priority" />
-    <node id="junction_52" x="753434.0730448117" y="3291901.118485114" type="priority" />
-    <node id="j_main_entry_7" x="794447.051200734" y="3298171.7342228433" type="priority" />
-    <node id="j_ramp_entry_7" x="794447.6274045539" y="3298156.965482317" type="priority" />
-    <node id="j_merge_end_7" x="794685.5366396512" y="3298180.013262617" type="priority" />
-    <node id="junction_110" x="747113.9716957152" y="3290326.1874245736" type="priority" />
-    <node id="junction_60" x="800926.7143600378" y="3298166.363533041" type="priority" />
-    <node id="junction_102" x="783149.8204417365" y="3297209.2780350684" type="priority" />
-    <node id="junction_91" x="714815.2533576613" y="3286655.5351842544" type="priority" />
-    <node id="j_main_entry_24" x="636723.0896528659" y="3281192.4801706057" type="priority" />
-    <node id="j_ramp_entry_24" x="636724.3411647149" y="3281185.2523290785" type="priority" />
-    <node id="j_merge_end_24" x="636912.6925662359" y="3281230.2863962" type="priority" />
-    <node id="junction_36" x="731621.2013401556" y="3287200.504441982" type="priority" />
-    <node id="junction_58" x="787604.5759858297" y="3297414.405756371" type="priority" />
-    <node id="j_main_entry_53" x="741807.8485105541" y="3289272.79827604" type="priority" />
-    <node id="j_ramp_entry_53" x="741749.2511245868" y="3289297.5506007145" type="priority" />
-    <node id="j_merge_end_53" x="742197.8893920018" y="3289437.7556767105" type="priority" />
-    <node id="junction_2" x="786298.1981691171" y="3297020.192497559" type="priority" />
-    <node id="j_main_entry_8" x="565482.8206796367" y="3258757.130289882" type="priority" />
-    <node id="j_ramp_entry_8" x="565490.7072117658" y="3258735.6584683675" type="priority" />
-    <node id="j_merge_end_8" x="565784.6001763678" y="3258868.213197923" type="priority" />
-    <node id="junction_74" x="612597.4438191345" y="3276654.899389077" type="priority" />
+    <node id="junction_27" x="664659.9811997967" y="3283370.6141455634" type="priority" />
     <node id="j_main_entry_12" x="593998.9664080004" y="3270736.9269756577" type="priority" />
     <node id="j_ramp_entry_12" x="594002.633218027" y="3270730.6470434037" type="priority" />
     <node id="j_merge_end_12" x="594171.3692343713" y="3270857.5132430014" type="priority" />
-    <node id="junction_62" x="797284.3947275124" y="3298080.920315837" type="priority" />
-    <node id="junction_38" x="738169.1024086432" y="3287269.5236291857" type="priority" />
-    <node id="junction_97" x="767520.3864181512" y="3295039.934723554" type="priority" />
     <node id="junction_19" x="613469.5090722156" y="3276674.219680266" type="priority" />
-    <node id="junction_98" x="773900.6563522015" y="3295567.1312395334" type="priority" />
-    <node id="junction_96" x="757986.2128491445" y="3293067.0397070087" type="priority" />
-    <node id="j_main_entry_6" x="795564.0129076741" y="3298210.769376517" type="priority" />
-    <node id="j_ramp_entry_6" x="795564.5148711386" y="3298196.156033029" type="priority" />
-    <node id="j_merge_end_6" x="795770.5284902914" y="3298217.9427896864" type="priority" />
+    <node id="junction_69" x="594860.1474854602" y="3271336.828201107" type="priority" />
     <node id="junction_14" x="600434.2492059832" y="3274828.6831958652" type="priority" />
-    <node id="j_main_entry_55" x="617994.7301113522" y="3277502.4668878503" type="priority" />
-    <node id="j_ramp_entry_55" x="617997.2699672333" y="3277495.492838051" type="priority" />
-    <node id="j_merge_end_55" x="618251.873043047" y="3277591.626067771" type="priority" />
-    <node id="junction_37" x="735485.5406481187" y="3287307.7977442634" type="priority" />
-    <node id="junction_33" x="715425.1685573817" y="3286719.7550756605" type="priority" />
-    <node id="junction_82" x="652882.1152940548" y="3281896.419789201" type="priority" />
-    <node id="junction_9" x="586187.7611615459" y="3266980.30226917" type="priority" />
-    <node id="junction_79" x="629082.1125988694" y="3280919.1836942113" type="priority" />
-    <node id="junction_73" x="604280.9135067377" y="3274869.007527303" type="priority" />
-    <node id="junction_17" x="601562.9360089665" y="3274840.0730593763" type="priority" />
-    <node id="junction_78" x="625651.1906927985" y="3280007.2611181405" type="priority" />
-    <node id="junction_66" x="592479.593888121" y="3269215.782368224" type="priority" />
-    <node id="junction_75" x="615182.8228156074" y="3276705.0858513894" type="priority" />
-    <node id="j_main_entry_50" x="583200.8507371623" y="3265694.6216778303" type="priority" />
-    <node id="j_ramp_entry_50" x="583206.7556995705" y="3265681.08783342" type="priority" />
-    <node id="j_merge_end_50" x="583492.899482254" y="3265823.5404099524" type="priority" />
-    <node id="junction_95" x="741104.1672081129" y="3288961.089392537" type="priority" />
-    <node id="junction_45" x="568082.6834387385" y="3259586.416943172" type="priority" />
-    <node id="junction_27" x="664659.9811997967" y="3283370.6141455634" type="priority" />
-    <node id="junction_15" x="597593.5558752525" y="3273210.7424624786" type="priority" />
-    <node id="j_main_entry_32" x="708384.4547010581" y="3286717.727376666" type="priority" />
-    <node id="j_ramp_entry_32" x="708381.643899059" y="3286710.9496558574" type="priority" />
-    <node id="j_merge_end_32" x="708531.3803417729" y="3286654.47633851" type="priority" />
+    <node id="junction_90" x="727205.5504822187" y="3286882.0761208553" type="priority" />
+    <node id="junction_30" x="693589.9188949729" y="3286261.081705197" type="priority" />
     <node id="j_main_entry_49" x="585257.5152696026" y="3266590.7291098814" type="priority" />
     <node id="j_ramp_entry_49" x="585260.4091601794" y="3266584.078317611" type="priority" />
     <node id="j_merge_end_49" x="585400.4207968052" y="3266653.6298491964" type="priority" />
-    <node id="junction_81" x="644123.24790149" y="3280993.6825793213" type="priority" />
-    <node id="j_main_entry_40" x="769596.2953542862" y="3295468.450254064" type="priority" />
-    <node id="j_ramp_entry_40" x="769601.550448984" y="3295445.9693700774" type="priority" />
-    <node id="j_merge_end_40" x="769804.654177812" y="3295514.394237937" type="priority" />
-    <node id="junction_100" x="777251.0624219651" y="3297176.6121194935" type="priority" />
+    <node id="j_main_entry_1" x="785421.7047050553" y="3296976.9780187216" type="priority" />
+    <node id="j_ramp_entry_1" x="785172.9158708637" y="3296978.794361446" type="priority" />
+    <node id="j_merge_end_1" x="785437.245828191" y="3296975.0326119703" type="priority" />
+    <node id="junction_17" x="601562.9360089665" y="3274840.0730593763" type="priority" />
+    <node id="junction_82" x="652882.1152940548" y="3281896.419789201" type="priority" />
+    <node id="junction_58" x="787604.5759858297" y="3297414.405756371" type="priority" />
+    <node id="junction_60" x="800926.7143600378" y="3298166.363533041" type="priority" />
+    <node id="junction_99" x="771149.1106256335" y="3295809.5561493053" type="priority" />
+    <node id="junction_52" x="753434.0730448117" y="3291901.118485114" type="priority" />
+    <node id="junction_103" x="780096.053271622" y="3297523.4612083253" type="priority" />
+    <node id="j_main_entry_25" x="645044.0551540316" y="3280944.208993998" type="priority" />
+    <node id="j_ramp_entry_25" x="645043.9242343672" y="3280936.7525121835" type="priority" />
+    <node id="j_merge_end_25" x="645314.0514920102" y="3280929.0338842547" type="priority" />
+    <node id="j_main_entry_53" x="741807.8485105541" y="3289272.79827604" type="priority" />
+    <node id="j_ramp_entry_53" x="741749.2511245868" y="3289297.5506007145" type="priority" />
+    <node id="j_merge_end_53" x="742197.8893920018" y="3289437.7556767105" type="priority" />
+    <node id="junction_84" x="668597.9534084352" y="3285380.6184993535" type="priority" />
     <node id="junction_113" x="742748.259231533" y="3289567.1378194434" type="priority" />
-    <node id="junction_104" x="574197.0603304644" y="3261879.323222277" type="priority" />
-    <node id="j_main_entry_23" x="630119.9649025856" y="3280847.521025861" type="priority" />
-    <node id="j_ramp_entry_23" x="630119.2142117984" y="3280840.16132578" type="priority" />
-    <node id="j_merge_end_23" x="630357.6771950932" y="3280830.5961664575" type="priority" />
-    <node id="junction_83" x="663659.5255643876" y="3283260.5260769427" type="priority" />
-    <node id="junction_76" x="617039.2075853975" y="3277168.4076107987" type="priority" />
-    <node id="junction_92" x="730936.9696565736" y="3287181.176845319" type="priority" />
-    <node id="junction_107" x="580985.2287438723" y="3264712.1670523486" type="priority" />
-    <node id="junction_64" x="566852.4677994973" y="3259211.4430854525" type="priority" />
+    <node id="junction_80" x="635687.9911896746" y="3280983.70588732" type="priority" />
+    <node id="junction_102" x="783149.8204417365" y="3297209.2780350684" type="priority" />
+    <node id="junction_37" x="735485.5406481187" y="3287307.7977442634" type="priority" />
+    <node id="junction_75" x="615182.8228156074" y="3276705.0858513894" type="priority" />
+    <node id="junction_100" x="777251.0624219651" y="3297176.6121194935" type="priority" />
+    <node id="junction_26" x="654013.281029199" y="3282050.668146102" type="priority" />
+    <node id="junction_73" x="604280.9135067377" y="3274869.007527303" type="priority" />
+    <node id="junction_114" x="738097.7413759548" y="3287178.2571051894" type="priority" />
+    <node id="junction_94" x="732662.3724898816" y="3287230.035620418" type="priority" />
     <node id="j_main_entry_29" x="684087.6344997635" y="3286703.9074194105" type="priority" />
     <node id="j_ramp_entry_29" x="684087.8294460517" y="3286696.503000464" type="priority" />
     <node id="j_merge_end_29" x="684265.0481960534" y="3286710.967111784" type="priority" />
-    <node id="junction_30" x="693589.9188949729" y="3286261.081705197" type="priority" />
-    <node id="junction_28" x="669551.3909696302" y="3285777.9491672884" type="priority" />
-    <node id="j_main_entry_48" x="579559.108613675" y="3264084.635174673" type="priority" />
-    <node id="j_ramp_entry_48" x="580095.135318898" y="3264303.0128972856" type="priority" />
-    <node id="j_merge_end_48" x="580210.3117341107" y="3264375.684895082" type="priority" />
-    <node id="junction_84" x="668597.9534084352" y="3285380.6184993535" type="priority" />
-    <node id="junction_85" x="675833.5140212165" y="3286025.824922787" type="priority" />
-    <node id="junction_13" x="595976.815380812" y="3272067.279283436" type="priority" />
-    <node id="j_main_entry_54" x="605024.8522397979" y="3274909.5999544905" type="priority" />
-    <node id="j_ramp_entry_54" x="605026.151973672" y="3274902.109621775" type="priority" />
-    <node id="j_merge_end_54" x="605337.9563831061" y="3274990.167369412" type="priority" />
-    <node id="junction_56" x="738070.1336430203" y="3287216.8398257843" type="priority" />
+    <node id="j_main_entry_31" x="703410.2213559087" y="3286740.745475479" type="priority" />
+    <node id="j_ramp_entry_31" x="703412.0250621041" y="3286733.584809683" type="priority" />
+    <node id="j_merge_end_31" x="703596.3433215811" y="3286777.4134202646" type="priority" />
     <node id="junction_87" x="692848.3644896509" y="3286263.078274209" type="priority" />
-    <node id="junction_20" x="619741.7226338484" y="3278107.588327011" type="priority" />
-    <node id="j_main_entry_39" x="765907.8018683197" y="3294786.485576228" type="priority" />
-    <node id="j_ramp_entry_39" x="765911.925715076" y="3294763.65256909" type="priority" />
-    <node id="j_merge_end_39" x="766083.4749985865" y="3294814.6013194034" type="priority" />
-    <node id="j_main_entry_22" x="626723.241982674" y="3280355.2708227304" type="priority" />
-    <node id="j_ramp_entry_22" x="626725.1938869728" y="3280348.075082746" type="priority" />
-    <node id="j_merge_end_22" x="626887.9319699407" y="3280408.332024444" type="priority" />
+    <node id="junction_13" x="595976.815380812" y="3272067.279283436" type="priority" />
+    <node id="junction_67" x="588208.7336281826" y="3267602.5826442013" type="priority" />
+    <node id="junction_63" x="793434.6614969433" y="3298131.194065886" type="priority" />
+    <node id="junction_72" x="598542.4057467147" y="3273972.4404538805" type="priority" />
+    <node id="junction_16" x="599896.5517273219" y="3274811.234261191" type="priority" />
+    <node id="junction_36" x="731621.2013401556" y="3287200.504441982" type="priority" />
+    <node id="j_main_entry_24" x="636723.0896528659" y="3281192.4801706057" type="priority" />
+    <node id="j_ramp_entry_24" x="636724.3411647149" y="3281185.2523290785" type="priority" />
+    <node id="j_merge_end_24" x="636912.6925662359" y="3281230.2863962" type="priority" />
+    <node id="junction_77" x="618809.2676297848" y="3277784.5532251084" type="priority" />
+    <node id="junction_66" x="592479.593888121" y="3269215.782368224" type="priority" />
+    <node id="j_main_entry_42" x="774819.5815011547" y="3295905.1591409557" type="priority" />
+    <node id="j_ramp_entry_42" x="774828.0329161987" y="3295884.6273500887" type="priority" />
+    <node id="j_merge_end_42" x="775252.0353621285" y="3296067.8854679037" type="priority" />
+    <node id="junction_44" x="782322.9856195928" y="3297304.75301617" type="priority" />
+    <node id="junction_41" x="773115.5676230183" y="3295552.2967144493" type="priority" />
+    <node id="j_main_entry_8" x="565482.8206796367" y="3258757.130289882" type="priority" />
+    <node id="j_ramp_entry_8" x="565490.7072117658" y="3258735.6584683675" type="priority" />
+    <node id="j_merge_end_8" x="565784.6001763678" y="3258868.213197923" type="priority" />
+    <node id="j_main_entry_23" x="630119.9649025856" y="3280847.521025861" type="priority" />
+    <node id="j_ramp_entry_23" x="630119.2142117984" y="3280840.16132578" type="priority" />
+    <node id="j_merge_end_23" x="630357.6771950932" y="3280830.5961664575" type="priority" />
     <node id="junction_88" x="702486.2993076891" y="3286556.884334327" type="priority" />
-    <node id="j_main_entry_47" x="790647.7905846357" y="3298338.2557841246" type="priority" />
-    <node id="j_ramp_entry_47" x="790650.8077890894" y="3298323.650843482" type="priority" />
-    <node id="j_merge_end_47" x="790860.861199988" y="3298374.986128351" type="priority" />
-    <node id="junction_59" x="799110.1645549127" y="3298111.4475347106" type="priority" />
+    <node id="junction_86" x="682605.6603674312" y="3286640.2452814393" type="priority" />
+    <node id="junction_96" x="757986.2128491445" y="3293067.0397070087" type="priority" />
+    <node id="junction_57" x="738088.7306806839" y="3287306.8919013953" type="priority" />
     <node id="j_main_entry_43" x="779098.0463352907" y="3297462.698063934" type="priority" />
     <node id="j_ramp_entry_43" x="779100.8072902535" y="3297442.0677719265" type="priority" />
     <node id="j_merge_end_43" x="779275.1818218704" y="3297478.23257525" type="priority" />
+    <node id="junction_89" x="707751.2974268979" y="3286985.4998490717" type="priority" />
+    <node id="junction_101" x="775815.0859188708" y="3296272.449123042" type="priority" />
+    <node id="junction_61" x="803396.9246487888" y="3298240.8904337105" type="priority" />
+    <node id="junction_83" x="663659.5255643876" y="3283260.5260769427" type="priority" />
+    <node id="junction_34" x="727938.7223575161" y="3286948.839691522" type="priority" />
+    <node id="j_main_entry_7" x="794447.051200734" y="3298171.7342228433" type="priority" />
+    <node id="j_ramp_entry_7" x="794447.6274045539" y="3298156.965482317" type="priority" />
+    <node id="j_merge_end_7" x="794685.5366396512" y="3298180.013262617" type="priority" />
+    <node id="junction_93" x="737724.0887757972" y="3287158.183945009" type="priority" />
+    <node id="junction_4" x="800218.8882229631" y="3298144.9058819064" type="priority" />
+    <node id="junction_56" x="738070.1336430203" y="3287216.8398257843" type="priority" />
+    <node id="junction_35" x="733281.0599310539" y="3287245.840782691" type="priority" />
+    <node id="junction_106" x="792544.9784933595" y="3298151.6784068453" type="priority" />
+    <node id="junction_51" x="746588.1303432462" y="3290254.8186406675" type="priority" />
+    <node id="junction_70" x="596673.2351368974" y="3272504.2247350956" type="priority" />
+    <node id="junction_107" x="580985.2287438723" y="3264712.1670523486" type="priority" />
+    <node id="junction_112" x="751439.9306100043" y="3291387.8549101334" type="priority" />
+    <node id="j_main_entry_32" x="708384.4547010581" y="3286717.727376666" type="priority" />
+    <node id="j_ramp_entry_32" x="708381.643899059" y="3286710.9496558574" type="priority" />
+    <node id="j_merge_end_32" x="708531.3803417729" y="3286654.47633851" type="priority" />
+    <node id="junction_74" x="612597.4438191345" y="3276654.899389077" type="priority" />
+    <node id="j_main_entry_47" x="790647.7905846357" y="3298338.2557841246" type="priority" />
+    <node id="j_ramp_entry_47" x="790650.8077890894" y="3298323.650843482" type="priority" />
+    <node id="j_merge_end_47" x="790860.861199988" y="3298374.986128351" type="priority" />
+    <node id="junction_28" x="669551.3909696302" y="3285777.9491672884" type="priority" />
+    <node id="junction_18" x="609893.7059418744" y="3276237.563009723" type="priority" />
+    <node id="junction_111" x="760665.81375156" y="3293757.8115213346" type="priority" />
+    <node id="junction_91" x="714815.2533576613" y="3286655.5351842544" type="priority" />
+    <node id="junction_97" x="767520.3864181512" y="3295039.934723554" type="priority" />
+    <node id="j_main_entry_40" x="769596.2953542862" y="3295468.450254064" type="priority" />
+    <node id="j_ramp_entry_40" x="769601.550448984" y="3295445.9693700774" type="priority" />
+    <node id="j_merge_end_40" x="769804.654177812" y="3295514.394237937" type="priority" />
+    <node id="junction_92" x="730936.9696565736" y="3287181.176845319" type="priority" />
+    <node id="junction_45" x="568082.6834387385" y="3259586.416943172" type="priority" />
+    <node id="junction_104" x="574197.0603304644" y="3261879.323222277" type="priority" />
     <node id="junction_65" x="589583.8545111581" y="3268104.068170752" type="priority" />
-    <node id="junction_72" x="598542.4057467147" y="3273972.4404538805" type="priority" />
+    <node id="junction_79" x="629082.1125988694" y="3280919.1836942113" type="priority" />
+    <node id="j_main_entry_48" x="579559.108613675" y="3264084.635174673" type="priority" />
+    <node id="j_ramp_entry_48" x="580095.135318898" y="3264303.0128972856" type="priority" />
+    <node id="j_merge_end_48" x="580210.3117341107" y="3264375.684895082" type="priority" />
+    <node id="junction_15" x="597593.5558752525" y="3273210.7424624786" type="priority" />
+    <node id="junction_11" x="588829.1350915723" y="3267818.3223977583" type="priority" />
+    <node id="junction_95" x="741104.1672081129" y="3288961.089392537" type="priority" />
     <node id="j_main_entry_3" x="798377.5630685423" y="3298094.2851435975" type="priority" />
     <node id="j_ramp_entry_3" x="798378.0418663353" y="3298079.229830855" type="priority" />
     <node id="j_merge_end_3" x="798694.1195333574" y="3298103.2842939124" type="priority" />
-    <node id="junction_108" x="585809.4405702705" y="3266831.5874741287" type="priority" />
-    <node id="junction_103" x="780096.053271622" y="3297523.4612083253" type="priority" />
-    <node id="junction_4" x="800218.8882229631" y="3298144.9058819064" type="priority" />
-    <node id="junction_111" x="760665.81375156" y="3293757.8115213346" type="priority" />
-    <node id="junction_34" x="727938.7223575161" y="3286948.839691522" type="priority" />
-    <node id="junction_57" x="738088.7306806839" y="3287306.8919013953" type="priority" />
+    <node id="junction_9" x="586187.7611615459" y="3266980.30226917" type="priority" />
+    <node id="junction_33" x="715425.1685573817" y="3286719.7550756605" type="priority" />
+    <node id="junction_62" x="797284.3947275124" y="3298080.920315837" type="priority" />
+    <node id="junction_10" x="590116.9716351986" y="3268310.4180470966" type="priority" />
+    <node id="j_main_entry_54" x="605024.8522397979" y="3274909.5999544905" type="priority" />
+    <node id="j_ramp_entry_54" x="605026.151973672" y="3274902.109621775" type="priority" />
+    <node id="j_merge_end_54" x="605337.9563831061" y="3274990.167369412" type="priority" />
+    <node id="junction_76" x="617039.2075853975" y="3277168.4076107987" type="priority" />
+    <node id="junction_85" x="675833.5140212165" y="3286025.824922787" type="priority" />
+    <node id="j_main_entry_55" x="617994.7301113522" y="3277502.4668878503" type="priority" />
+    <node id="j_ramp_entry_55" x="617997.2699672333" y="3277495.492838051" type="priority" />
+    <node id="j_merge_end_55" x="618251.873043047" y="3277591.626067771" type="priority" />
+    <node id="j_main_entry_6" x="795564.0129076741" y="3298210.769376517" type="priority" />
+    <node id="j_ramp_entry_6" x="795564.5148711386" y="3298196.156033029" type="priority" />
+    <node id="j_merge_end_6" x="795770.5284902914" y="3298217.9427896864" type="priority" />
+    <node id="junction_109" x="584008.8840583676" y="3266045.6661503376" type="priority" />
+    <node id="junction_2" x="786298.1981691171" y="3297020.192497559" type="priority" />
+    <node id="j_main_entry_39" x="765907.8018683197" y="3294786.485576228" type="priority" />
+    <node id="j_ramp_entry_39" x="765911.925715076" y="3294763.65256909" type="priority" />
+    <node id="j_merge_end_39" x="766083.4749985865" y="3294814.6013194034" type="priority" />
+    <node id="junction_105" x="607871.9164085303" y="3275681.564063253" type="priority" />
+    <node id="junction_64" x="566852.4677994973" y="3259211.4430854525" type="priority" />
+    <node id="junction_46" x="569524.2386888975" y="3260068.6692879125" type="priority" />
+    <node id="junction_38" x="738169.1024086432" y="3287269.5236291857" type="priority" />
+    <node id="junction_20" x="619741.7226338484" y="3278107.588327011" type="priority" />
+    <node id="junction_81" x="644123.24790149" y="3280993.6825793213" type="priority" />
+    <node id="junction_78" x="625651.1906927985" y="3280007.2611181405" type="priority" />
+    <node id="junction_110" x="747113.9716957152" y="3290326.1874245736" type="priority" />
+    <node id="j_main_entry_22" x="626723.241982674" y="3280355.2708227304" type="priority" />
+    <node id="j_ramp_entry_22" x="626725.1938869728" y="3280348.075082746" type="priority" />
+    <node id="j_merge_end_22" x="626887.9319699407" y="3280408.332024444" type="priority" />
+    <node id="junction_68" x="593439.6805249722" y="3270132.777035598" type="priority" />
+    <node id="j_main_entry_50" x="583200.8507371623" y="3265694.6216778303" type="priority" />
+    <node id="j_ramp_entry_50" x="583206.7556995705" y="3265681.08783342" type="priority" />
+    <node id="j_merge_end_50" x="583492.899482254" y="3265823.5404099524" type="priority" />
+    <node id="junction_98" x="773900.6563522015" y="3295567.1312395334" type="priority" />
 </nodes>
