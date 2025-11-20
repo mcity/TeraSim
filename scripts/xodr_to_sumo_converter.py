@@ -701,58 +701,54 @@ class OpenDriveToSumoConverter:
     
     def _handle_highway_merge(self, junction_id: str, internal_road_ids: List[str]):
         """
-        Handle highway merge by creating edges instead of junction
-        Creates: Junction A (merge start) -> Merge Edge (4 lanes) -> Junction B (merge end)
+        Handle highway merge by creating separate entry nodes and internal edges
+        Creates: Main Entry -> Internal Edge (main) -> Merge End
+                 Ramp Entry -> Internal Edge (ramp) -> Merge End
         """
         logger.info(f"Handling highway merge for junction {junction_id}")
-        
+
         # Analyze the merge configuration
         merge_info = self._analyze_merge_roads(junction_id, internal_road_ids)
         if not merge_info:
             logger.error(f"Failed to analyze merge roads for junction {junction_id}")
             return
-        
-        # Create Junction A (merge start)
-        junction_a = self._create_merge_start_junction(junction_id, merge_info)
-        if junction_a:
-            self.nodes.append(junction_a)
-            self.node_map[f"merge_start_{junction_id}"] = junction_a.id
-        
-        # Create Junction B (merge end)
-        junction_b = self._create_merge_end_junction(junction_id, merge_info)
-        if junction_b:
-            self.nodes.append(junction_b)
-            self.node_map[f"merge_end_{junction_id}"] = junction_b.id
-        
-        # Mark junction as handled - but we need to be smarter about the mapping
-        # Incoming roads (main and ramp) should map to merge start
-        # Outgoing road should map to merge end
-        
-        # For roads ending at this junction (incoming), use merge start
-        for road_id, road in self.road_map.items():
-            if road.successor and road.successor.get('elementId') == junction_id:
-                # This road ends at the junction - it's an incoming road
-                # It should connect to the merge start node
-                pass  # Will be handled by the updated _get_road_to_node logic
-            if road.predecessor and road.predecessor.get('elementId') == junction_id:
-                # This road starts from the junction - it's an outgoing road
-                # It should connect to the merge end node
-                pass  # Will be handled by the updated _get_road_from_node logic
-        
-        # Store a special marker for this junction
+
+        # Create separate entry nodes for main road and ramp
+        main_entry = self._create_main_entry_node(junction_id, merge_info)
+        if main_entry:
+            self.nodes.append(main_entry)
+            self.node_map[f"main_entry_{junction_id}"] = main_entry.id
+            logger.info(f"Created main entry node: {main_entry.id}")
+
+        ramp_entry = self._create_ramp_entry_node(junction_id, merge_info)
+        if ramp_entry:
+            self.nodes.append(ramp_entry)
+            self.node_map[f"ramp_entry_{junction_id}"] = ramp_entry.id
+            logger.info(f"Created ramp entry node: {ramp_entry.id}")
+
+        # Create merge end junction (where both internal edges converge)
+        merge_end = self._create_merge_end_junction(junction_id, merge_info)
+        if merge_end:
+            self.nodes.append(merge_end)
+            self.node_map[f"merge_end_{junction_id}"] = merge_end.id
+            logger.info(f"Created merge end node: {merge_end.id}")
+
+        # Store junction information
         self.node_map[junction_id] = f"merge_zone_{junction_id}"
-        
-        # Also store specific mappings for incoming and outgoing
+
+        # Store detailed merge information
         self.highway_merges = getattr(self, 'highway_merges', {})
         self.highway_merges[junction_id] = {
-            'start_node': junction_a.id if junction_a else None,
-            'end_node': junction_b.id if junction_b else None,
+            'main_entry_node': main_entry.id if main_entry else None,
+            'ramp_entry_node': ramp_entry.id if ramp_entry else None,
+            'merge_end_node': merge_end.id if merge_end else None,
             'merge_info': merge_info
         }
-        
-        logger.info(f"Created merge zone for junction {junction_id}: "
-                   f"{junction_a.id if junction_a else 'None'} -> merge_zone_{junction_id} -> "
-                   f"{junction_b.id if junction_b else 'None'}")
+
+        logger.info(f"Created merge structure for junction {junction_id}: "
+                   f"Main({main_entry.id if main_entry else 'None'}) + "
+                   f"Ramp({ramp_entry.id if ramp_entry else 'None'}) -> "
+                   f"End({merge_end.id if merge_end else 'None'})")
     
     def _analyze_merge_roads(self, junction_id: str, internal_road_ids: List[str]) -> Optional[dict]:
         """
@@ -820,8 +816,10 @@ class OpenDriveToSumoConverter:
     
     def _create_merge_start_junction(self, junction_id: str, merge_info: dict) -> Optional[PlainNode]:
         """Create the junction node at the merge start (where main road and ramp meet)"""
+        # This method is deprecated - we now create separate entry nodes for main and ramp
+        # Keeping for backward compatibility, but it won't be used
         main_road = merge_info['main_road']
-        
+
         # Use main road's end position as junction location
         if main_road.successor and main_road.successor['elementType'] == 'junction':
             end_pos = self._calculate_road_end(main_road)
@@ -832,8 +830,44 @@ class OpenDriveToSumoConverter:
                     y=end_pos[1],
                     type="priority"
                 )
-        
+
         logger.warning(f"Could not determine merge start position for junction {junction_id}")
+        return None
+
+    def _create_main_entry_node(self, junction_id: str, merge_info: dict) -> Optional[PlainNode]:
+        """Create the entry node for the main road"""
+        main_road = merge_info['main_road']
+
+        # Use main road's end position
+        if main_road.successor and main_road.successor['elementType'] == 'junction':
+            end_pos = self._calculate_road_end(main_road)
+            if end_pos:
+                return PlainNode(
+                    id=f"j_main_entry_{junction_id}",
+                    x=end_pos[0],
+                    y=end_pos[1],
+                    type="priority"
+                )
+
+        logger.warning(f"Could not determine main entry position for junction {junction_id}")
+        return None
+
+    def _create_ramp_entry_node(self, junction_id: str, merge_info: dict) -> Optional[PlainNode]:
+        """Create the entry node for the ramp"""
+        ramp_road = merge_info['ramp_road']
+
+        # Use ramp road's end position
+        if ramp_road.successor and ramp_road.successor['elementType'] == 'junction':
+            end_pos = self._calculate_road_end(ramp_road)
+            if end_pos:
+                return PlainNode(
+                    id=f"j_ramp_entry_{junction_id}",
+                    x=end_pos[0],
+                    y=end_pos[1],
+                    type="priority"
+                )
+
+        logger.warning(f"Could not determine ramp entry position for junction {junction_id}")
         return None
     
     def _create_merge_end_junction(self, junction_id: str, merge_info: dict) -> Optional[PlainNode]:
@@ -1122,7 +1156,7 @@ class OpenDriveToSumoConverter:
                 # Check if this is a highway merge junction
                 if hasattr(self, 'highway_merges') and junction_id in self.highway_merges:
                     # This road is outgoing from a merge - use the merge end node
-                    return self.highway_merges[junction_id]['end_node']
+                    return self.highway_merges[junction_id]['merge_end_node']
                 
                 # Check if this junction has been converted to merge nodes
                 if junction_id in self.node_map:
@@ -1170,8 +1204,20 @@ class OpenDriveToSumoConverter:
                 
                 # Check if this is a highway merge junction
                 if hasattr(self, 'highway_merges') and junction_id in self.highway_merges:
-                    # This road is incoming to a merge - use the merge start node
-                    return self.highway_merges[junction_id]['start_node']
+                    # This road is incoming to a merge - determine which entry node to use
+                    merge_data = self.highway_merges[junction_id]
+                    merge_info = merge_data['merge_info']
+                    main_road = merge_info.get('main_road')
+                    ramp_road = merge_info.get('ramp_road')
+
+                    # Check if this road is the main road or ramp
+                    if main_road and road.id == main_road.id:
+                        return merge_data['main_entry_node']
+                    elif ramp_road and road.id == ramp_road.id:
+                        return merge_data['ramp_entry_node']
+                    else:
+                        logger.warning(f"Road {road.id} ends at merge junction {junction_id} but is neither main nor ramp")
+                        return merge_data.get('main_entry_node', f"junction_{junction_id}")
                 
                 # Check if this junction has been converted to merge nodes
                 if junction_id in self.node_map:
@@ -1553,38 +1599,45 @@ class OpenDriveToSumoConverter:
         predecessor_id = connecting_road.predecessor.get('elementId') if connecting_road.predecessor else None
         successor_id = connecting_road.successor.get('elementId') if connecting_road.successor else None
 
-        # Determine the from and to nodes based on predecessor/successor
-        from_node = None
-        to_node = None
+        main_road = merge_info.get('main_road')
+        ramp_road = merge_info.get('ramp_road')
+        outgoing_road = merge_info.get('outgoing_road')
 
-        # Check if predecessor is an incoming road (external) or the junction
+        # Determine the from node based on which road this connecting road comes from
+        from_node = None
         if predecessor_id:
-            # If predecessor is one of the incoming roads, this edge starts at merge_start
-            if predecessor_id == merge_info.get('main_road').id or predecessor_id == merge_info.get('ramp_road').id:
-                from_node = f"j_merge_start_{junction_id}"
+            if main_road and predecessor_id == main_road.id:
+                # This connecting road comes from the main road
+                from_node = f"j_main_entry_{junction_id}"
+                logger.debug(f"Connecting road {connecting_road.id} starts from main entry")
+            elif ramp_road and predecessor_id == ramp_road.id:
+                # This connecting road comes from the ramp
+                from_node = f"j_ramp_entry_{junction_id}"
+                logger.debug(f"Connecting road {connecting_road.id} starts from ramp entry")
             else:
                 logger.warning(f"Connecting road {connecting_road.id} has unexpected predecessor {predecessor_id}")
-                from_node = f"j_merge_start_{junction_id}"
 
-        # Check if successor is an outgoing road (external) or the junction
+        # Determine the to node - all internal edges end at the merge end
+        to_node = None
         if successor_id:
-            # If successor is the outgoing road, this edge ends at merge_end
-            outgoing_road = merge_info.get('outgoing_road')
             if outgoing_road and successor_id == outgoing_road.id:
                 to_node = f"j_merge_end_{junction_id}"
+                logger.debug(f"Connecting road {connecting_road.id} ends at merge end")
             else:
                 logger.warning(f"Connecting road {connecting_road.id} has unexpected successor {successor_id}")
                 to_node = f"j_merge_end_{junction_id}"
 
-        # Fallback to default nodes if not determined
+        # Fallback if nodes not determined
         if not from_node:
-            from_node = f"j_merge_start_{junction_id}"
+            logger.warning(f"Could not determine from_node for connecting road {connecting_road.id}, using main entry")
+            from_node = f"j_main_entry_{junction_id}"
         if not to_node:
+            logger.warning(f"Could not determine to_node for connecting road {connecting_road.id}, using merge end")
             to_node = f"j_merge_end_{junction_id}"
 
         # Check if nodes exist
         if from_node not in [n.id for n in self.nodes] or to_node not in [n.id for n in self.nodes]:
-            logger.error(f"Nodes not found for connecting road {connecting_road.id} in junction {junction_id}")
+            logger.error(f"Nodes not found for connecting road {connecting_road.id} in junction {junction_id}: from={from_node}, to={to_node}")
             return None
 
         # Get geometry from connecting road
@@ -1970,8 +2023,44 @@ class OpenDriveToSumoConverter:
                     direction = 's'  # straight
                     state = 'M'  # major
                 else:
+                    # Ramp lane connections
                     direction = 'r'  # right merge
                     state = 'm'  # minor
+
+                    # Only override for the rightmost ramp lane (lane 0 of internal edge)
+                    # Multi-lane ramps: lane 0 → rightmost outgoing, lane 1 → lane 1, etc.
+                    if internal_lane_idx == 0:
+                        # This is the rightmost ramp lane - ensure it connects to rightmost outgoing lane
+                        outgoing_edge_obj = next((e for e in self.edges if e.id == to_edge), None)
+                        if outgoing_edge_obj:
+                            # Check if there are any shoulder lanes we should skip
+                            rightmost_driving_lane = 0
+                            if hasattr(outgoing_edge_obj, 'lane_data') and outgoing_edge_obj.lane_data:
+                                # Find the rightmost driving lane (skip shoulders)
+                                driving_lanes = [i for i, lane in enumerate(outgoing_edge_obj.lane_data)
+                                               if lane.get('type', 'driving') != 'shoulder']
+                                if driving_lanes:
+                                    rightmost_driving_lane = min(driving_lanes)
+
+                            if to_lane_idx != rightmost_driving_lane:
+                                logger.info(f"Ramp override: junction {junction_id}, internal {internal_edge} lane {internal_lane_idx} -> {to_edge} lane {to_lane_idx} changed to lane {rightmost_driving_lane} (rightmost)")
+                                to_lane_idx = rightmost_driving_lane
+                    else:
+                        # For other ramp lanes, ensure proper lane offset from rightmost
+                        # internal_lane_idx 1 should go to rightmost + 1, etc.
+                        outgoing_edge_obj = next((e for e in self.edges if e.id == to_edge), None)
+                        if outgoing_edge_obj:
+                            rightmost_driving_lane = 0
+                            if hasattr(outgoing_edge_obj, 'lane_data') and outgoing_edge_obj.lane_data:
+                                driving_lanes = [i for i, lane in enumerate(outgoing_edge_obj.lane_data)
+                                               if lane.get('type', 'driving') != 'shoulder']
+                                if driving_lanes:
+                                    rightmost_driving_lane = min(driving_lanes)
+
+                            expected_lane = rightmost_driving_lane + internal_lane_idx
+                            if to_lane_idx != expected_lane:
+                                logger.info(f"Ramp lane offset correction: junction {junction_id}, internal {internal_edge} lane {internal_lane_idx} -> {to_edge} lane {to_lane_idx} changed to lane {expected_lane}")
+                                to_lane_idx = expected_lane
 
                 self.connections.append(PlainConnection(
                     from_edge=internal_edge,
