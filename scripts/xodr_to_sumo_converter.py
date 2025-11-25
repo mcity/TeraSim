@@ -383,48 +383,61 @@ class OpenDriveToSumoConverter:
     def _is_highway_merge(self, junction_id: str, internal_road_ids: List[str]) -> bool:
         """
         Check if a junction represents a highway merge scenario
-        
+
         Highway merge criteria:
         1. Exactly 2 incoming roads (main line + ramp)
         2. Exactly 1 outgoing road (merged highway)
-        3. Connecting road length > 150m (sufficient merge distance)
-        
+        3. Different lane counts on incoming roads (asymmetric merge)
+
         Returns:
             True if this is a highway merge, False otherwise
         """
         incoming_roads = set()
         outgoing_roads = set()
         max_connecting_length = 0
-        
+        incoming_lane_counts = {}
+
         for road_id in internal_road_ids:
             if road_id not in self.road_map:
                 continue
-                
+
             road = self.road_map[road_id]
-            
+
             # Track maximum connecting road length
             max_connecting_length = max(max_connecting_length, road.length)
-            
+
             # Collect incoming roads (predecessors of connecting roads)
             if road.predecessor and road.predecessor['elementType'] == 'road':
-                incoming_roads.add(road.predecessor['elementId'])
-            
+                inc_road_id = road.predecessor['elementId']
+                incoming_roads.add(inc_road_id)
+                # Track lane count of this connecting road (proxy for incoming road lanes)
+                lane_count = len(road.lanes_right) + len(road.lanes_left)
+                incoming_lane_counts[inc_road_id] = lane_count
+
             # Collect outgoing roads (successors of connecting roads)
             if road.successor and road.successor['elementType'] == 'road':
                 outgoing_roads.add(road.successor['elementId'])
-        
+
         # Check highway merge criteria
+        # A merge is when 2 roads join into 1, regardless of length
+        # Additional check: asymmetric lane counts (e.g., 1-lane ramp merging with 3-lane highway)
+        is_asymmetric = False
+        if len(incoming_lane_counts) == 2:
+            lane_counts = list(incoming_lane_counts.values())
+            is_asymmetric = lane_counts[0] != lane_counts[1]
+
         is_merge = (
-            len(incoming_roads) == 2 and 
-            len(outgoing_roads) == 1 and 
-            max_connecting_length > 150
+            len(incoming_roads) == 2 and
+            len(outgoing_roads) == 1 and
+            (max_connecting_length > 50 or is_asymmetric)  # Relaxed threshold: >50m OR asymmetric lanes
         )
-        
+
         if is_merge:
             logger.info(f"Junction {junction_id} identified as highway merge: "
-                       f"incoming={incoming_roads}, outgoing={outgoing_roads}, "
-                       f"max_length={max_connecting_length:.1f}m")
-        
+                       f"incoming={incoming_roads} (lanes={incoming_lane_counts}), "
+                       f"outgoing={outgoing_roads}, max_length={max_connecting_length:.1f}m, "
+                       f"asymmetric={is_asymmetric}")
+
         return is_merge
     
     def _determine_junction_type(self, junction_id: str, internal_road_ids: List[str]) -> str:

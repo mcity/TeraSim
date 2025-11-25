@@ -40,7 +40,6 @@ class ConflictGenerationModel(BaseModel):
         vehicle_location = get_location(
             obs_dict["ego"]["veh_id"], obs_dict["ego"]["lane_id"], obs_dict=obs_dict
         )
-
         command, command_dict = self.adversity_manager.derive_command(obs_dict)
 
         return command, {"ndd_command_distribution": command_dict}

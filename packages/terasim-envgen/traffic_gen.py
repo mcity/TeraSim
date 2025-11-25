@@ -23,7 +23,7 @@ traffic_gen = TrafficFlowGenerator("configs/config.yaml")
 # Generate traffic for single map
 print("Generating traffic flows for jupiter_eb.net.xml...")
 routes_file = traffic_gen.generate_flows(
-    net_path="/home/sdai/harry/TeraSim/jupiter/eb/map.net.xml",
+    net_path="/home/sdai/harry/TeraSim/jupiter/eb/eb.net.xml",
     end_time=3600,
     traffic_level="high",
     vehicle_types=["vehicle"]
