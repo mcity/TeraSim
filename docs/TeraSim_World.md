@@ -33,7 +33,7 @@ python scripts/generate_experiments.py \
     --lon -83.70771003426997 \
     --bbox 500 \
     --output generated_experiments \
-    --name ann_arbor_roudabout
+    --name ann_arbor_roundabout
 ```
 
 **Key Parameters:**
