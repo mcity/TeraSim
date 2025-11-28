@@ -1,0 +1,40 @@
+# Example configuration for stalled object using latlon_degree placement mode
+adversity_cfg:
+  static:
+    stalled_object:
+      _target_: terasim_nde_nade.adversity.StalledObjectAdversity
+      _convert_: 'all'
+      placement_mode: "latlon_degree"  # Use lat/lon/degree placement mode
+      lon: -83.7430  # Longitude (example: Ann Arbor, MI)
+      lat: 42.2808   # Latitude (example: Ann Arbor, MI)
+      degree: 90.0   # Heading angle in degrees (0=North, 90=East, 180=South, 270=West)
+      object_type: "TRUCK"  # Type of stalled object
+      start_time: 0  # Start time in simulation seconds
+      end_time: -1   # End time (-1 for infinite duration)
+      other_settings:
+        duration: 1200
+
+# Alternative examples:
+#
+# Using xy_angle mode:
+# adversity_cfg:
+#   static:
+#     stalled_object:
+#       _target_: terasim_nde_nade.adversity.StalledObjectAdversity
+#       _convert_: 'all'
+#       placement_mode: "xy_angle"
+#       x: 100.0
+#       y: 200.0
+#       angle: 90.0
+#       object_type: "TRUCK"
+#
+# Using lane_position mode (default):
+# adversity_cfg:
+#   static:
+#     stalled_object:
+#       _target_: terasim_nde_nade.adversity.StalledObjectAdversity
+#       _convert_: 'all'
+#       placement_mode: "lane_position"
+#       lane_id: "edge1_0"
+#       lane_position: 100
+#       object_type: "veh_passenger"

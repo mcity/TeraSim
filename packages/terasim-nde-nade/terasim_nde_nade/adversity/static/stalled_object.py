@@ -74,7 +74,7 @@ class StalledObjectAdversity(AbstractStaticAdversity):
         Returns:
             bool: Flag to indicate if the adversarial event is effective.
         """
-        
+
         if self._placement_mode == "lane_position":
             if self._lane_id == "":
                 logger.warning("Lane ID is not provided.")
@@ -97,8 +97,15 @@ class StalledObjectAdversity(AbstractStaticAdversity):
             if self._angle is None:
                 logger.warning("Angle is not provided for xy_angle placement mode.")
                 return False
+        elif self._placement_mode == "latlon_degree":
+            if self._lon is None or self._lat is None:
+                logger.warning("Longitude and latitude are not provided for latlon_degree placement mode.")
+                return False
+            if self._degree is None:
+                logger.warning("Degree (heading angle) is not provided for latlon_degree placement mode.")
+                return False
         else:
-            logger.warning(f"Invalid placement mode: {self._placement_mode}. Must be 'lane_position' or 'xy_angle'.")
+            logger.warning(f"Invalid placement mode: {self._placement_mode}. Must be 'lane_position', 'xy_angle', or 'latlon_degree'.")
             return False
             
         if self._object_type == "":
@@ -124,12 +131,15 @@ class StalledObjectAdversity(AbstractStaticAdversity):
     def add_vehicle(self, vehicle_id: str):
         if self._placement_mode == "lane_position":
             stalled_object_route_id = self.set_vehicle_route(vehicle_id)
-            traci.vehicle.add(
-                vehicle_id,
-                routeID=stalled_object_route_id,
-                typeID=self._object_type,
-                vclass=self._vclass
-            )
+            # Handle optional _vclass attribute
+            add_kwargs = {
+                "vehID": vehicle_id,
+                "routeID": stalled_object_route_id,
+                "typeID": self._object_type,
+            }
+            if hasattr(self, '_vclass') and self._vclass is not None:
+                add_kwargs["vclass"] = self._vclass
+            traci.vehicle.add(**add_kwargs)
             self.set_vehicle_feature(vehicle_id)
             traci.vehicle.moveTo(vehicle_id, self._lane_id, self._lane_position)
             traci.vehicle.setSpeed(vehicle_id, 0)
@@ -143,6 +153,24 @@ class StalledObjectAdversity(AbstractStaticAdversity):
             )
             self.set_vehicle_feature(vehicle_id)
             traci.vehicle.moveToXY(vehicle_id, "", -1, self._x, self._y, self._angle, keepRoute=2)
+            traci.vehicle.setSpeed(vehicle_id, 0)
+        elif self._placement_mode == "latlon_degree":
+            # Convert lat/lon to x/y coordinates
+            x, y = self._convert_latlon_to_xy()
+            if x is None or y is None:
+                logger.error(f"Failed to convert lat/lon to x/y coordinates. Cannot place vehicle {vehicle_id}.")
+                return
+
+            edge_id = self._get_edge_from_latlon()
+            stalled_object_route_id = self.set_vehicle_route_for_xy(vehicle_id, edge_id)
+            traci.vehicle.add(
+                vehicle_id,
+                routeID=stalled_object_route_id,
+                typeID=self._object_type,
+            )
+            self.set_vehicle_feature(vehicle_id)
+            # Use moveToXY with converted coordinates and degree as angle
+            traci.vehicle.moveToXY(vehicle_id, "", -1, x, y, self._degree, keepRoute=2)
             traci.vehicle.setSpeed(vehicle_id, 0)
 
     def set_vehicle_route(self, vehicle_id: str):
@@ -167,6 +195,36 @@ class StalledObjectAdversity(AbstractStaticAdversity):
         except:
             logger.warning(f"Failed to get edge from coordinates ({self._x}, {self._y}). Using default edge.")
             return "1"
+
+    def _convert_latlon_to_xy(self):
+        """Convert latitude/longitude to SUMO x/y coordinates.
+
+        Returns:
+            tuple: (x, y) coordinates in SUMO coordinate system
+        """
+        try:
+            x, y = traci.simulation.convertGeo(self._lon, self._lat, fromGeo=True)
+            return x, y
+        except Exception as e:
+            logger.warning(f"Failed to convert lat/lon ({self._lat}, {self._lon}) to x/y coordinates: {e}")
+            return None, None
+
+    def _get_edge_from_latlon(self):
+        """Get edge ID from latitude/longitude coordinates.
+
+        Returns:
+            str: Edge ID
+        """
+        try:
+            x, y = self._convert_latlon_to_xy()
+            if x is None or y is None:
+                logger.warning("Failed to convert lat/lon to x/y. Using default edge.")
+                return "1"
+            edge_id = traci.simulation.convertRoad(x, y, isGeo=False)[0]
+            return edge_id
+        except Exception as e:
+            logger.warning(f"Failed to get edge from lat/lon ({self._lat}, {self._lon}): {e}. Using default edge.")
+            return "1"
     
     def initialize(self, time: float):
         """Initialize the adversarial event.
@@ -190,7 +248,12 @@ class StalledObjectAdversity(AbstractStaticAdversity):
             self.edge_id = edge_id
             self.lane_index = 0
             self.lane_position = None
-        
+        elif self._placement_mode == "latlon_degree":
+            edge_id = self._get_edge_from_latlon()
+            self.edge_id = edge_id
+            self.lane_index = 0
+            self.lane_position = None
+
         self.add_vehicle(stalled_object_id)
 
         self._duration=0
@@ -210,6 +273,11 @@ class StalledObjectAdversity(AbstractStaticAdversity):
             elif self._placement_mode == "xy_angle":
                 edge_id = self._get_edge_from_xy()
                 traci.vehicle.moveToXY(self.stalled_object_id, "", -1, self._x, self._y, self._angle, keepRoute=2)
+            elif self._placement_mode == "latlon_degree":
+                # Convert lat/lon to x/y coordinates for each update to maintain position
+                x, y = self._convert_latlon_to_xy()
+                if x is not None and y is not None:
+                    traci.vehicle.moveToXY(self.stalled_object_id, "", -1, x, y, self._degree, keepRoute=2)
             traci.vehicle.setSpeed(self.stalled_object_id, 0)
 
     
