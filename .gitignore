@@ -183,5 +183,7 @@ README_QUICKSTART.md
 run_experiments_debug.pyeb.geohjson
 jupiter/eb/eb.geojson
 jupiter/wb/wb.geojson
+jupiter
 *.geojson
 output.geojson
+11_03_demo
